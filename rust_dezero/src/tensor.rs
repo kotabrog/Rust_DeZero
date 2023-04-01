@@ -1,6 +1,7 @@
-pub mod scalar;
+mod scaler;
+mod specialize;
 
-pub use self::scalar::Scaler;
+pub use self::scaler::Scaler;
 
 /// Struct to perform calculations
 /// 
@@ -58,6 +59,10 @@ impl<T> Tensor<T>
     pub fn data_type(&self) -> &str {
         std::any::type_name::<T>()
     }
+
+    pub fn is_scalar(&self) -> bool {
+        self.ndim() == 0
+    }
 }
 
 impl<T> Tensor<T>
@@ -94,6 +99,164 @@ where
     pub fn new_from_num_vec<U: IntoIterator<Item = T>, V: AsRef<[usize]>>(data: U, shape: V) -> Self {
         let data: Vec<Scaler<T>> = data.into_iter().map(Scaler::from).collect();
         Tensor::new(data, shape)
+    }
+}
+
+impl<T> std::ops::Add for Tensor<T>
+where
+    T: std::ops::Add<Output = T> + Clone
+{
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        assert_eq!(self.shape, other.shape, "Shape mismatch");
+        let data =
+            self.data
+            .into_iter()
+            .zip(other.data.into_iter()).map(|(x, y)| x + y)
+            .collect();
+        Self { data, shape: self.shape }
+    }
+}
+
+impl<T> std::ops::Sub for Tensor<T>
+where
+    T: std::ops::Sub<Output = T> + Clone
+{
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        assert_eq!(self.shape, other.shape, "Shape mismatch");
+        let data =
+            self.data
+            .into_iter()
+            .zip(other.data.into_iter()).map(|(x, y)| x - y)
+            .collect();
+        Self { data, shape: self.shape }
+    }
+}
+
+impl<T> std::ops::Mul for Tensor<T>
+where
+    T: std::ops::Mul<Output = T> + Clone
+{
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
+        assert_eq!(self.shape, other.shape, "Shape mismatch");
+        let data =
+            self.data
+            .into_iter()
+            .zip(other.data.into_iter()).map(|(x, y)| x * y)
+            .collect();
+        Self { data, shape: self.shape }
+    }
+}
+
+impl<T> std::ops::Div for Tensor<T>
+where
+    T: std::ops::Div<Output = T> + Clone
+{
+    type Output = Self;
+
+    fn div(self, other: Self) -> Self {
+        assert_eq!(self.shape, other.shape, "Shape mismatch");
+        let data =
+            self.data
+            .into_iter()
+            .zip(other.data.into_iter()).map(|(x, y)| x / y)
+            .collect();
+        Self { data, shape: self.shape }
+    }
+}
+
+impl<T> std::ops::Neg for Tensor<T>
+where
+    T: std::ops::Neg<Output = T> + Clone
+{
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        let data = self.data.into_iter().map(|x| -x).collect();
+        Self { data, shape: self.shape }
+    }
+}
+
+impl<T> std::ops::AddAssign for Tensor<T>
+where
+    T: std::ops::AddAssign + Clone
+{
+    fn add_assign(&mut self, other: Self) {
+        assert_eq!(self.shape, other.shape, "Shape mismatch");
+        for (x, y) in self.data.iter_mut().zip(other.data.into_iter()) {
+            *x += y;
+        }
+    }
+}
+
+impl<T> std::ops::SubAssign for Tensor<T>
+where
+    T: std::ops::SubAssign + Clone
+{
+    fn sub_assign(&mut self, other: Self) {
+        assert_eq!(self.shape, other.shape, "Shape mismatch");
+        for (x, y) in self.data.iter_mut().zip(other.data.into_iter()) {
+            *x -= y;
+        }
+    }
+}
+
+impl<T> std::ops::MulAssign for Tensor<T>
+where
+    T: std::ops::MulAssign + Clone
+{
+    fn mul_assign(&mut self, other: Self) {
+        assert_eq!(self.shape, other.shape, "Shape mismatch");
+        for (x, y) in self.data.iter_mut().zip(other.data.into_iter()) {
+            *x *= y;
+        }
+    }
+}
+
+impl<T> std::ops::DivAssign for Tensor<T>
+where
+    T: std::ops::DivAssign + Clone
+{
+    fn div_assign(&mut self, other: Self) {
+        assert_eq!(self.shape, other.shape, "Shape mismatch");
+        for (x, y) in self.data.iter_mut().zip(other.data.into_iter()) {
+            *x /= y;
+        }
+    }
+}
+
+impl<T> Tensor<T>
+where
+    T: std::ops::Mul<Output = T> + Copy
+{
+    /// Multiply a Tensor by a scalar
+    /// 
+    /// # Arguments
+    /// 
+    /// * `scalar` - Scalar to multiply by
+    pub fn scalar_mul(&self, scalar: Scaler<T>) -> Self {
+        let data = self.data.iter().map(|x| *x * scalar).collect();
+        Self { data, shape: self.shape.clone() }
+    }
+}
+
+impl<T> Tensor<T>
+where
+    T: std::ops::Div<Output = T> + Copy
+{
+    /// Divide a Tensor by a scalar
+    /// 
+    /// # Arguments
+    /// 
+    /// * `scalar` - Scalar to divide by
+    pub fn scalar_div(&self, scalar: Scaler<T>) -> Self {
+        let data = self.data.iter().map(|x| *x / scalar).collect();
+        Self { data, shape: self.shape.clone() }
     }
 }
 
@@ -182,5 +345,173 @@ mod tests {
         assert_eq!(x.ndim(), 2);
         let x = Tensor::new([1.0.into()], []);
         assert_eq!(x.ndim(), 0);
+    }
+
+    #[test]
+    fn is_scalar_normal() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        assert_eq!(x.is_scalar(), false);
+        let x = Tensor::new([1.0.into()], []);
+        assert_eq!(x.is_scalar(), true);
+    }
+
+    #[test]
+    fn add_normal() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
+        let z = x + y;
+        assert_eq!(z.data(), &vec![3.0.into(), 5.0.into(), 7.0.into()]);
+        assert_eq!(z.shape(), &vec![3]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn add_error_mismatch_shape() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
+        let _ = x + y;
+    }
+
+    #[test]
+    fn sub_normal() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
+        let z = x - y;
+        assert_eq!(z.data(), &vec![(-3.0).into(), (-3.0).into(), (-3.0).into()]);
+        assert_eq!(z.shape(), &vec![3]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn sub_error_mismatch_shape() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
+        let _ = x - y;
+    }
+
+    #[test]
+    fn mul_normal() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
+        let z = x * y;
+        assert_eq!(z.data(), &vec![0.0.into(), 4.0.into(), 10.0.into()]);
+        assert_eq!(z.shape(), &vec![3]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn mul_error_mismatch_shape() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
+        let _ = x * y;
+    }
+
+    #[test]
+    fn div_normal() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
+        let z = x / y;
+        assert_eq!(z.data(), &vec![0.0.into(), 0.25.into(), 0.4.into()]);
+        assert_eq!(z.shape(), &vec![3]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn div_error_mismatch_shape() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
+        let _ = x / y;
+    }
+
+    #[test]
+    fn neg_normal() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = -x;
+        assert_eq!(y.data(), &vec![0.0.into(), (-1.0).into(), (-2.0).into()]);
+        assert_eq!(y.shape(), &vec![3]);
+    }
+
+    #[test]
+    fn add_assign_normal() {
+        let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
+        x += y;
+        assert_eq!(x.data(), &vec![3.0.into(), 5.0.into(), 7.0.into()]);
+        assert_eq!(x.shape(), &vec![3]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn add_assign_error_mismatch_shape() {
+        let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
+        x += y;
+    }
+
+    #[test]
+    fn sub_assign_normal() {
+        let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
+        x -= y;
+        assert_eq!(x.data(), &vec![(-3.0).into(), (-3.0).into(), (-3.0).into()]);
+        assert_eq!(x.shape(), &vec![3]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn sub_assign_error_mismatch_shape() {
+        let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
+        x -= y;
+    }
+
+    #[test]
+    fn mul_assign_normal() {
+        let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
+        x *= y;
+        assert_eq!(x.data(), &vec![0.0.into(), 4.0.into(), 10.0.into()]);
+        assert_eq!(x.shape(), &vec![3]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn mul_assign_error_mismatch_shape() {
+        let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
+        x *= y;
+    }
+
+    #[test]
+    fn div_assign_normal() {
+        let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
+        x /= y;
+        assert_eq!(x.data(), &vec![0.0.into(), 0.25.into(), 0.4.into()]);
+        assert_eq!(x.shape(), &vec![3]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn div_assign_error_mismatch_shape() {
+        let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
+        x /= y;
+    }
+
+    #[test]
+    fn scalar_mul_normal() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = x.scalar_mul(3.0.into());
+        assert_eq!(y.data(), &vec![0.0.into(), 3.0.into(), 6.0.into()]);
+        assert_eq!(y.shape(), &vec![3]);
+    }
+
+    #[test]
+    fn scalar_div_normal() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = x.scalar_div(2.0.into());
+        assert_eq!(y.data(), &vec![0.0.into(), 0.5.into(), 1.0.into()]);
+        assert_eq!(y.shape(), &vec![3]);
     }
 }
