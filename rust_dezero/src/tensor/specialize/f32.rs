@@ -22,6 +22,17 @@ impl Tensor<f32> {
             shape: self.shape.clone(),
         }
     }
+
+    /// Returns the exponential of each element
+    pub fn exp(&self) -> Self {
+        Self {
+            data: self.data
+                .iter()
+                .map(|x| x.exp())
+                .collect(),
+            shape: self.shape.clone(),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -38,5 +49,12 @@ mod tests {
     fn powf_normal() {
         let x = Tensor::<f32>::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]);
         assert_eq!(x.powf(2.0), Tensor::<f32>::new_from_num_vec(vec![1.0, 4.0, 9.0], vec![3]));
+    }
+
+    #[test]
+    fn exp_normal() {
+        let data = vec![1.0, 2.0, 3.0];
+        let x = Tensor::<f32>::new_from_num_vec(data.clone(), vec![3]);
+        assert_eq!(x.exp(), Tensor::<f32>::new_from_num_vec(data.iter().map(|x| x.exp()), vec![3]));
     }
 }

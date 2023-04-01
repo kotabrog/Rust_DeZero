@@ -10,6 +10,10 @@ impl Scaler<f32> {
     pub fn powf(&self, n: f32) -> Self {
         Self { data: self.data.powf(n) }
     }
+
+    pub fn exp(&self) -> Self {
+        Self { data: self.data.exp() }
+    }
 }
 
 #[cfg(test)]
@@ -26,5 +30,11 @@ mod tests {
     fn powf_normal() {
         let x = Scaler::<f32>::new(2.0);
         assert_eq!(x.powf(2.0), Scaler::<f32>::new(4.0));
+    }
+
+    #[test]
+    fn exp_normal() {
+        let x = Scaler::<f32>::new(2.0);
+        assert_eq!(x.exp(), Scaler::<f32>::new((2.0 as f32).exp()));
     }
 }

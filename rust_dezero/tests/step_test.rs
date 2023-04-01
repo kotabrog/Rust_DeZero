@@ -21,3 +21,19 @@ fn step2() {
     let y = f.call(x);
     println!("y: {:?}", y);
 }
+
+#[test]
+fn step3() {
+    use rust_dezero::{Variable, Tensor, Function, function::sample::{Square, Exp}};
+
+    let a = Square::new();
+    let b = Exp::new();
+    let c = Square::new();
+
+    let data = Tensor::new_from_num_vec(vec![0.5], vec![]);
+    let x = Variable::new(data);
+    let a = a.call(x);
+    let b = b.call(a);
+    let y = c.call(b);
+    println!("y: {:?}", y);
+}
