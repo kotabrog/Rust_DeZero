@@ -1,4 +1,5 @@
 mod f32;
+mod f64;
 
 /// Scalar is a wrapper of a single value
 /// 

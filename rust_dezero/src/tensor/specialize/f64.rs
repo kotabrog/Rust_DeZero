@@ -1,0 +1,60 @@
+use super::super::Tensor;
+
+impl Tensor<f64> {
+    /// Returns the result of performing an integer power over the value of each element
+    pub fn powi(&self, n: i32) -> Self {
+        Self {
+            data: self.data
+                .iter()
+                .map(|x| x.powi(n))
+                .collect(),
+            shape: self.shape.clone(),
+        }
+    }
+
+    /// Returns the result of performing a floating point power over the value of each element
+    pub fn powf(&self, n: f64) -> Self {
+        Self {
+            data: self.data
+                .iter()
+                .map(|x| x.powf(n))
+                .collect(),
+            shape: self.shape.clone(),
+        }
+    }
+
+    /// Returns the exponential of each element
+    pub fn exp(&self) -> Self {
+        Self {
+            data: self.data
+                .iter()
+                .map(|x| x.exp())
+                .collect(),
+            shape: self.shape.clone(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn powi_normal() {
+        let x = Tensor::<f64>::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]);
+        assert_eq!(x.powi(2), Tensor::<f64>::new_from_num_vec(vec![1.0, 4.0, 9.0], vec![3]));
+    }
+
+    #[test]
+    fn powf_normal() {
+        let x = Tensor::<f64>::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]);
+        assert_eq!(x.powf(2.0), Tensor::<f64>::new_from_num_vec(vec![1.0, 4.0, 9.0], vec![3]));
+    }
+
+    #[test]
+    fn exp_normal() {
+        let data = vec![1.0, 2.0, 3.0];
+        let x = Tensor::<f64>::new_from_num_vec(data.clone(), vec![3]);
+        assert_eq!(x.exp(), Tensor::<f64>::new_from_num_vec(data.iter().map(|x| x.exp()), vec![3]));
+    }
+}
