@@ -4,11 +4,13 @@ use crate::Tensor;
 /// 
 /// # Fields
 /// 
-/// * `data` - Contents of Tensor
+/// * `data` - Contents of Variable
+/// * `grad` - Gradient of Variable
 #[derive(Debug, Clone)]
 pub struct Variable<T>
 {
     data: Tensor<T>,
+    grad: Option<Tensor<T>>,
 }
 
 impl<T> Variable<T>
@@ -17,9 +19,9 @@ impl<T> Variable<T>
     /// 
     /// # Arguments
     /// 
-    /// * `data` - Contents of Tensor
+    /// * `data` - Contents of Variable
     pub fn new(data: Tensor<T>) -> Self {
-        Self { data }
+        Self { data, grad: None }
     }
 
     /// Get the data
@@ -41,9 +43,31 @@ impl<T> Variable<T>
     /// 
     /// # Arguments
     /// 
-    /// * `data` - Contents of Tensor
+    /// * `data` - Contents of Variable
     pub fn set_data(&mut self, data: Tensor<T>) {
         self.data = data;
+    }
+
+    /// Get the grad
+    pub fn grad(&self) -> Option<&Tensor<T>> {
+        self.grad.as_ref()
+    }
+
+    /// Get the grad shape
+    pub fn grad_shape(&self) -> Option<&Vec<usize>> {
+        match &self.grad {
+            Some(grad) => Some(grad.shape()),
+            None => None,
+        }
+    }
+
+    /// Set the grad
+    /// 
+    /// # Arguments
+    /// 
+    /// * `grad` - Gradient of Variable
+    pub fn set_grad(&mut self, grad: Tensor<T>) {
+        self.grad = Some(grad);
     }
 }
 
@@ -69,5 +93,15 @@ mod tests {
         assert_eq!(*x.data(), tensor);
         assert_eq!(*x.shape(), vec![3]);
         assert_eq!(x.data_type(), "f32");
+    }
+
+    #[test]
+    fn set_grad_normal() {
+        let tensor = Tensor::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]);
+        let mut x = Variable::<f32>::new(tensor);
+        let tensor = Tensor::new_from_num_vec(vec![4.0, 5.0, 6.0], vec![3]);
+        x.set_grad(tensor.clone());
+        assert_eq!(*x.grad().unwrap(), tensor);
+        assert_eq!(*x.grad_shape().unwrap(), vec![3]);
     }
 }

@@ -28,7 +28,7 @@ pub fn assert_approx_eq(a: f64, b: f64, eps: f64) {
 /// * `f` - Function to calculate the gradient of
 /// * `x` - Input variable
 /// * `eps` - Small value to calculate the gradient
-pub fn numerical_diff<T>(f: &dyn Fn(&Variable<T>) -> Variable<T>, x: &Variable<T>, eps: T) -> Tensor<T>
+pub fn numerical_diff<T>(f: &mut dyn FnMut(&Variable<T>) -> Variable<T>, x: &Variable<T>, eps: T) -> Tensor<T>
 where
     T: std::ops::Add<Output = T> + std::ops::Sub<Output = T> +
         std::ops::Mul<Output = T> + std::ops::Div<Output = T> +
@@ -61,9 +61,9 @@ mod tests {
     #[test]
     fn numerical_diff_normal() {
         let x = Variable::<f64>::new(Tensor::new_from_num_vec(vec![2.0], vec![]));
-        let square = Square::new();
-        let f = |x: &Variable<f64>| square.call(x);
-        let dy = numerical_diff(&f, &x, 1e-4);
+        let mut square = Square::new();
+        let mut f = |x: &Variable<f64>| square.call_mut(x);
+        let dy = numerical_diff(&mut f, &x, 1e-4);
         assert_approx_eq(*dy.at(&[]).data(), 4.0, 1e-6);
     }
 }
