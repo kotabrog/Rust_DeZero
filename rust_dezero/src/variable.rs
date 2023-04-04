@@ -1,4 +1,6 @@
-use crate::Tensor;
+use std::cell::RefCell;
+use std::rc::Rc;
+use crate::{Tensor, Function};
 
 /// Variable
 /// 
@@ -11,6 +13,7 @@ pub struct Variable<T>
 {
     data: Tensor<T>,
     grad: Option<Tensor<T>>,
+    creator: Option<Rc<RefCell<dyn Function<T>>>>,
 }
 
 impl<T> Variable<T>
@@ -21,7 +24,7 @@ impl<T> Variable<T>
     /// 
     /// * `data` - Contents of Variable
     pub fn new(data: Tensor<T>) -> Self {
-        Self { data, grad: None }
+        Self { data, grad: None, creator: None }
     }
 
     /// Get the data
@@ -68,6 +71,20 @@ impl<T> Variable<T>
     /// * `grad` - Gradient of Variable
     pub fn set_grad(&mut self, grad: Tensor<T>) {
         self.grad = Some(grad);
+    }
+
+    /// Get the creator
+    pub fn creator(&self) -> Option<&Rc<RefCell<dyn Function<T>>>> {
+        self.creator.as_ref()
+    }
+
+    /// Set the creator
+    /// 
+    /// # Arguments
+    /// 
+    /// * `creator` - Creator of Variable
+    pub fn set_creator(&mut self, creator: Rc<RefCell<dyn Function<T>>>) {
+        self.creator = Some(creator);
     }
 }
 

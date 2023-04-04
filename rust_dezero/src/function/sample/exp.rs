@@ -1,24 +1,27 @@
-use super::super::Function;
+use std::cell::{RefCell, Ref};
+use std::rc::Rc;
+use super::super::{Function, FunctionInternal};
 use crate::{Tensor, Variable};
 
+#[derive(Debug, Clone)]
 pub struct Exp<T> {
-    input: Option<Variable<T>>,
+    internal: FunctionInternal<T>,
 }
 
 /// Exponential function
 impl<T> Exp<T> {
     pub fn new() -> Self {
-        Self { input: None }
+        Self { internal: FunctionInternal::new() }
     }
 }
 
 impl Function<f64> for Exp<f64> {
-    fn get_input(&self) -> Option<&Variable<f64>> {
-        self.input.as_ref()
+    fn get_internal(&self) -> &FunctionInternal<f64> {
+        &self.internal
     }
 
-    fn set_input(&mut self, input: &Variable<f64>) {
-        self.input = Some(input.clone());
+    fn get_internal_mut(&mut self) -> &mut FunctionInternal<f64> {
+        &mut self.internal
     }
 
     fn forward(&self, input: &Tensor<f64>) -> Tensor<f64> {
@@ -26,9 +29,10 @@ impl Function<f64> for Exp<f64> {
     }
 
     fn backward(&self, grad: &Tensor<f64>) -> Tensor<f64> {
-        let input = self.get_input()
-            .expect("input is None")
-            .data();
+        let input_borrowed =
+            self.get_input()
+            .expect("input is None");
+        let input = input_borrowed.data();
         let gx = &input.exp() * grad;
         gx
     }
