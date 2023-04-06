@@ -1,6 +1,67 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-use crate::{Tensor, Function};
+use std::collections::HashMap;
+use crate::Tensor;
+use crate::function::FunctionTable;
+
+/// Variable type
+#[derive(Debug, Clone)]
+pub enum VariableType {
+    F64(Box<Variable<f64>>),
+}
+
+/// Variable wrapper
+/// 
+/// # Fields
+/// 
+/// * `id` - ID
+/// * `variable` - Variable
+/// * `creator` - Creator
+#[derive(Debug, Clone)]
+pub struct VariableWrapper {
+    id: usize,
+    variable: VariableType,
+    creator: Option<usize>,
+}
+
+impl VariableWrapper {
+    /// Create a new VariableWrapper from Variable<f64>
+    /// 
+    /// # Arguments
+    /// 
+    /// * `variable` - Variable<f64>
+    pub fn from_variable_f64(variable: Variable<f64>) -> Self {
+        Self { id: usize::MAX, variable: VariableType::F64(Box::new(variable)), creator: None }
+    }
+
+    /// Get the ID
+    pub fn get_id(&self) -> usize {
+        self.id
+    }
+
+    /// Set the ID
+    pub fn set_id(&mut self, id: usize) {
+        self.id = id;
+    }
+
+    /// Get the variable
+    pub fn get_variable(&self) -> &VariableType {
+        &self.variable
+    }
+
+    /// Get the variable mutably
+    pub fn get_variable_mut(&mut self) -> &mut VariableType {
+        &mut self.variable
+    }
+
+    /// Get the creator
+    pub fn get_creator(&self) -> Option<usize> {
+        self.creator
+    }
+
+    /// Set the creator
+    pub fn set_creator(&mut self, creator: usize) {
+        self.creator = Some(creator);
+    }
+}
 
 /// Variable
 /// 
@@ -13,7 +74,6 @@ pub struct Variable<T>
 {
     data: Tensor<T>,
     grad: Option<Tensor<T>>,
-    creator: Option<Rc<RefCell<dyn Function<T>>>>,
 }
 
 impl<T> Variable<T>
@@ -24,7 +84,7 @@ impl<T> Variable<T>
     /// 
     /// * `data` - Contents of Variable
     pub fn new(data: Tensor<T>) -> Self {
-        Self { data, grad: None, creator: None }
+        Self { data, grad: None }
     }
 
     /// Get the data
@@ -72,19 +132,107 @@ impl<T> Variable<T>
     pub fn set_grad(&mut self, grad: Tensor<T>) {
         self.grad = Some(grad);
     }
+}
 
-    /// Get the creator
-    pub fn creator(&self) -> Option<&Rc<RefCell<dyn Function<T>>>> {
-        self.creator.as_ref()
+/// Variable table
+/// 
+/// # Fields
+/// 
+/// * `table` - Variable table
+/// * `id_max` - Maximum ID
+pub struct VariableTable {
+    table: HashMap<usize, Box<VariableWrapper>>,
+    id_max: usize,
+}
+
+impl VariableTable {
+    /// Create a new VariableTable
+    pub fn new() -> Self {
+        Self { table: HashMap::new(), id_max: 0 }
     }
 
-    /// Set the creator
+    /// Add a new variable
     /// 
     /// # Arguments
     /// 
-    /// * `creator` - Creator of Variable
-    pub fn set_creator(&mut self, creator: Rc<RefCell<dyn Function<T>>>) {
-        self.creator = Some(creator);
+    /// * `var` - Variable wrapper
+    pub fn add(&mut self, var: Box<VariableWrapper>) -> usize {
+        let id = self.id_max;
+        self.table.insert(id, var);
+        self.table.get_mut(&id).unwrap().set_id(id);
+        self.id_max = self.id_max.checked_add(1).expect("VariableTable::add: id_max overflow");
+        id
+    }
+
+    /// Get a variable
+    /// 
+    /// # Arguments
+    /// 
+    /// * `id` - ID
+    pub fn get(&self, id: usize) -> Option<&Box<VariableWrapper>> {
+        self.table.get(&id)
+    }
+
+    /// Get a variable mutably
+    /// 
+    /// # Arguments
+    /// 
+    /// * `id` - ID
+    pub fn get_mut(&mut self, id: usize) -> Option<&mut Box<VariableWrapper>> {
+        self.table.get_mut(&id)
+    }
+
+    /// Get a variable type
+    /// 
+    /// # Arguments
+    /// 
+    /// * `id` - ID
+    pub fn get_variable_type(&self, id: usize) -> Option<&VariableType> {
+        match self.table.get(&id) {
+            Some(var) => Some(var.get_variable()),
+            None => None,
+        }
+    }
+
+    /// Get a variable type mutably
+    /// 
+    /// # Arguments
+    /// 
+    /// * `id` - ID
+    pub fn get_variable_type_mut(&mut self, id: usize) -> Option<&mut VariableType> {
+        match self.table.get_mut(&id) {
+            Some(var) => Some(var.get_variable_mut()),
+            None => None,
+        }
+    }
+
+    /// Backward of the specified variable
+    /// 
+    /// # Arguments
+    /// 
+    /// * `id` - ID
+    /// * `functions` - Function table
+    pub fn backward(&mut self, id: usize, functions: &mut FunctionTable) {
+        let y =
+            self.get_mut(id).expect("VariableTable::backward: variable not found")
+                .get_variable_mut();
+        match y {
+            VariableType::F64(y) => {
+                if y.grad().is_none() {
+                    y.set_grad(Tensor::ones_like(&y.data()));
+                }
+            }
+        }
+        let y = self.get(id).expect("VariableTable::backward: variable not found");
+        let f_id = y.creator;
+        let f_id = match f_id {
+            Some(f_id) => f_id,
+            None => return,
+        };
+        let f = functions.get_mut(f_id).expect("VariableWrapper::backward: function not found");
+        f.backward(y.get_id(), self);
+        let x_id = f.get_input().expect("VariableWrapper::backward: input not found");
+        self.backward(x_id, functions);
     }
 }
 

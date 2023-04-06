@@ -33,6 +33,14 @@ impl Tensor<f64> {
             shape: self.shape.clone(),
         }
     }
+
+    /// Returns a tensor with a value of 1 and the same shape as tensor
+    pub fn ones_like(tensor: &Self) -> Self {
+        Self {
+            data: vec![1.0.into(); tensor.data.len()],
+            shape: tensor.shape.clone(),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -56,5 +64,11 @@ mod tests {
         let data = vec![1.0, 2.0, 3.0];
         let x = Tensor::<f64>::new_from_num_vec(data.clone(), vec![3]);
         assert_eq!(x.exp(), Tensor::<f64>::new_from_num_vec(data.iter().map(|x| x.exp()), vec![3]));
+    }
+
+    #[test]
+    fn ones_like_normal() {
+        let x = Tensor::<f64>::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]);
+        assert_eq!(Tensor::ones_like(&x), Tensor::<f64>::new_from_num_vec(vec![1.0, 1.0, 1.0], vec![3]));
     }
 }

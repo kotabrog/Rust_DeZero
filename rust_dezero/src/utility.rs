@@ -1,4 +1,4 @@
-use crate::{Variable, Tensor};
+use crate::Tensor;
 
 /// Assert that two floats are approximately equal.
 /// 
@@ -26,26 +26,25 @@ pub fn assert_approx_eq(a: f64, b: f64, eps: f64) {
 /// # Arguments
 /// 
 /// * `f` - Function to calculate the gradient of
-/// * `x` - Input variable
+/// * `x` - Input tensor
 /// * `eps` - Small value to calculate the gradient
-pub fn numerical_diff<T>(f: &mut dyn FnMut(&Variable<T>) -> Variable<T>, x: &Variable<T>, eps: T) -> Tensor<T>
+pub fn numerical_diff<T>(f: &mut dyn FnMut(&Tensor<T>) -> Tensor<T>, x: &Tensor<T>, eps: T) -> Tensor<T>
 where
     T: std::ops::Add<Output = T> + std::ops::Sub<Output = T> +
         std::ops::Mul<Output = T> + std::ops::Div<Output = T> +
         Copy + From<i8>,
 {
-    let x0 = Variable::<T>::new(x.data().scalar_sub(eps.into()));
-    let x1 = Variable::<T>::new(x.data().scalar_add(eps.into()));
+    let x0 = x.scalar_sub(eps.into());
+    let x1 = x.scalar_add(eps.into());
     let y0 = f(&x0);
     let y1 = f(&x1);
-    (y1.data() - y0.data()).scalar_div((T::from(2) * eps).into())
+    (y1 - y0).scalar_div((T::from(2) * eps).into())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::function::sample::Square;
-    use crate::Function;
+    use crate::Tensor;
 
     #[test]
     fn assert_approx_eq_normal() {
@@ -60,9 +59,8 @@ mod tests {
 
     #[test]
     fn numerical_diff_normal() {
-        let x = Variable::<f64>::new(Tensor::new_from_num_vec(vec![2.0], vec![]));
-        let mut square = Square::new();
-        let mut f = |x: &Variable<f64>| square.call_mut(x);
+        let x = Tensor::new_from_num_vec(vec![2.0], vec![]);
+        let mut f = |x: &Tensor<f64>| x.powi(2);
         let dy = numerical_diff(&mut f, &x, 1e-4);
         assert_approx_eq(*dy.at(&[]).data(), 4.0, 1e-6);
     }
