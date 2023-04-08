@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use crate::Tensor;
 use crate::function::FunctionTable;
 
@@ -210,29 +210,38 @@ impl VariableTable {
     /// 
     /// # Arguments
     /// 
-    /// * `id` - ID
+    /// * `ids` - ID
     /// * `functions` - Function table
-    pub fn backward(&mut self, id: usize, functions: &mut FunctionTable) {
-        let y =
-            self.get_mut(id).expect("VariableTable::backward: variable not found")
-                .get_variable_mut();
-        match y {
-            VariableType::F64(y) => {
-                if y.grad().is_none() {
-                    y.set_grad(Tensor::ones_like(&y.data()));
+    pub fn backward(&mut self, ids: Vec<usize>, functions: &mut FunctionTable) {
+        for id in &ids {
+            let y =
+                self.get_mut(*id).expect("VariableTable::backward: variable not found")
+                    .get_variable_mut();
+            match y {
+                VariableType::F64(y) => {
+                    if y.grad().is_none() {
+                        y.set_grad(Tensor::ones_like(&y.data()));
+                    }
                 }
             }
         }
-        let y = self.get(id).expect("VariableTable::backward: variable not found");
-        let f_id = y.creator;
-        let f_id = match f_id {
-            Some(f_id) => f_id,
-            None => return,
-        };
-        let f = functions.get_mut(f_id).expect("VariableWrapper::backward: function not found");
-        f.backward(y.get_id(), self);
-        let x_id = f.get_input().expect("VariableWrapper::backward: input not found");
-        self.backward(x_id, functions);
+
+        let mut function_ids = VecDeque::new();
+        function_ids.extend(ids);
+        while !function_ids.is_empty() {
+            let id = function_ids.pop_front().unwrap();
+            let y = self.get(id).expect("VariableTable::backward: variable not found");
+            let f_id = y.creator;
+            let f_id = match f_id {
+                Some(f_id) => f_id,
+                None => continue,
+            };
+            let f = functions.get_mut(f_id).expect("VariableWrapper::backward: function not found");
+            // wip
+            f.backward(vec![y.get_id()], self);
+            let id_list = f.get_input().expect("VariableWrapper::backward: input not found");
+            function_ids.extend(id_list);
+        }
     }
 }
 

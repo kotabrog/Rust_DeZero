@@ -8,19 +8,19 @@ use crate::variable::VariableTable;
 /// # Fields
 /// 
 /// * `id` - function ID
-/// * `input` - function input
-/// * `output` - function output
+/// * `inputs` - function input
+/// * `outputs` - function output
 #[derive(Debug, Clone)]
 pub struct FunctionInfo {
     pub id: usize,
-    pub input: Option<usize>,
-    pub output: Option<usize>,
+    pub inputs: Option<Vec<usize>>,
+    pub outputs: Option<Vec<usize>>,
 }
 
 impl FunctionInfo {
     /// Create a new FunctionInfo
     pub fn new() -> Self {
-        Self { id: usize::MAX, input: None, output: None }
+        Self { id: usize::MAX, inputs: None, outputs: None }
     }
 }
 
@@ -65,32 +65,32 @@ impl FunctionWrapper {
         self.info.id = id;
     }
 
-    /// Get the input variable ID
-    pub fn get_input(&self) -> Option<usize> {
-        self.info.input
+    /// Get the input variable ID list
+    pub fn get_input(&self) -> Option<&Vec<usize>> {
+        self.info.inputs.as_ref()
     }
 
     /// Set the input
     /// 
     /// # Arguments
     /// 
-    /// * `input` - Input Variable ID
-    pub fn set_input(&mut self, input: usize) {
-        self.info.input = Some(input);
+    /// * `inputs` - Input Variable ID list
+    pub fn set_input(&mut self, inputs: Vec<usize>) {
+        self.info.inputs = Some(inputs);
     }
 
-    /// Get the output variable ID
-    pub fn get_output(&self) -> Option<usize> {
-        self.info.output
+    /// Get the output variable ID list
+    pub fn get_output(&self) -> Option<&Vec<usize>> {
+        self.info.outputs.as_ref()
     }
 
     /// Set the output
     /// 
     /// # Arguments
     /// 
-    /// * `output` - Output Variable ID
-    pub fn set_output(&mut self, output: usize) {
-        self.info.output = Some(output);
+    /// * `outputs` - Output Variable ID list
+    pub fn set_output(&mut self, outputs: Vec<usize>) {
+        self.info.outputs = Some(outputs);
     }
 
     /// Get the function
@@ -107,32 +107,35 @@ impl FunctionWrapper {
     /// 
     /// # Arguments
     /// 
-    /// * `input` - Input Variable ID
+    /// * `inputs` - Input Variable ID list
     /// * `variables` - Variable table
     /// 
     /// # Returns
     /// 
-    /// * `usize` - Output Variable ID
-    pub fn call_mut(&mut self, input: usize, variables: &mut VariableTable) -> usize {
-        let y = self.function.forward(&self.info, &input, variables);
-        self.info.input = Some(input);
-        self.info.output = Some(y);
-        variables.get_mut(y).unwrap().set_creator(self.info.id);
-        y
+    /// * `Vec<usize>` - Output Variable ID list
+    pub fn call_mut(&mut self, inputs: Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
+        let outputs = self.function.forward(&self.info, &inputs, variables);
+        self.info.inputs = Some(inputs);
+        for y in outputs.iter() {
+            variables.get_mut(*y).unwrap().set_creator(self.info.id);
+        }
+        // variables.get_mut(y).unwrap().set_creator(self.info.id);
+        self.info.outputs = Some(outputs.clone());
+        outputs
     }
 
     /// backward the function
     /// 
     /// # Arguments
     /// 
-    /// * `grad_id` - Gradient Variable ID
+    /// * `outputs` - Gradient Variable ID
     /// * `variables` - Variable table
     /// 
     /// # Returns
     /// 
     /// * `usize` - Input Variable ID
-    pub fn backward(&mut self, grad_id: usize, variables: &mut VariableTable) -> usize {
-        self.function.backward(&self.info, &grad_id, variables)
+    pub fn backward(&mut self, outputs: Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
+        self.function.backward(&self.info, &outputs, variables)
     }
 }
 
@@ -209,6 +212,6 @@ impl FunctionTable {
 /// * `forward` - Forward propagation
 /// * `backward` - Backward propagation
 pub trait Function {
-    fn forward(&self, info: &FunctionInfo, input: &usize, variables: &mut VariableTable) -> usize;
-    fn backward(&self, info: &FunctionInfo, grad: &usize, variables: &mut VariableTable) -> usize;
+    fn forward(&self, info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize>;
+    fn backward(&self, info: &FunctionInfo, outputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize>;
 }

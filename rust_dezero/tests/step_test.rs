@@ -106,7 +106,7 @@ fn step7() {
     let x_id = variables.add(Box::new(x));
 
     let f = functions.get_mut(square1_id).unwrap();
-    let a_id = f.call_mut(x_id, &mut variables);
+    let a_id = f.call_mut(vec![x_id], &mut variables);
 
     let f = functions.get_mut(exp1_id).unwrap();
     let b_id = f.call_mut(a_id, &mut variables);
@@ -114,7 +114,7 @@ fn step7() {
     let f = functions.get_mut(square2_id).unwrap();
     let y_id = f.call_mut(b_id, &mut variables);
 
-    let y = variables.get(y_id).unwrap();
+    let y = variables.get(y_id[0]).unwrap();
     println!("y: {:?}", y);
 
     variables.backward(y_id, &mut functions);
@@ -124,4 +124,34 @@ fn step7() {
         VariableType::F64(x) => x.grad(),
     };
     println!("x grad: {:?}", x_grad);
+}
+
+#[test]
+fn step11() {
+    use rust_dezero::{
+        Tensor,
+        variable::{VariableTable, Variable, VariableWrapper},
+        function::{FunctionTable, sample::Add},
+    };
+
+    let mut variables = VariableTable::new();
+    let mut functions = FunctionTable::new();
+
+    let function = Add::new();
+
+    let function_id = functions.add_function(Box::new(function));
+
+    let data = Tensor::new_from_num_vec(vec![2.0], vec![]);
+    let a = VariableWrapper::from_variable_f64(Variable::new(data));
+    let a_id = variables.add(Box::new(a));
+
+    let data = Tensor::new_from_num_vec(vec![3.0], vec![]);
+    let b = VariableWrapper::from_variable_f64(Variable::new(data));
+    let b_id = variables.add(Box::new(b));
+
+    let f = functions.get_mut(function_id).unwrap();
+    let y_id = f.call_mut(vec![a_id, b_id], &mut variables);
+
+    let y = variables.get(y_id[0]).unwrap();
+    println!("y: {:?}", y);
 }

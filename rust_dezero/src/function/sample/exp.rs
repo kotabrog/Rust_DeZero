@@ -12,8 +12,12 @@ impl Exp {
 }
 
 impl Function for Exp {
-    fn forward(&self, _info: &FunctionInfo, input: &usize, variables: &mut VariableTable) -> usize {
-        let input = variables.get_variable_type(*input).expect("input is None");
+    fn forward(&self, _info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
+        if inputs.len() != 1 {
+            panic!("Exp error: inputs.len() != 1");
+        }
+        let input = inputs[0];
+        let input = variables.get_variable_type(input).expect("input is None");
         let input = match input {
             VariableType::F64(x) => x.data(),
         };
@@ -21,15 +25,20 @@ impl Function for Exp {
         let output = input.exp();
 
         let output = VariableWrapper::from_variable_f64(Variable::new(output));
-        variables.add(Box::new(output))
+        let id = variables.add(Box::new(output));
+        vec![id]
     }
 
-    fn backward(&self, info: &FunctionInfo, grad_id: &usize, variables: &mut VariableTable) -> usize {
+    fn backward(&self, info: &FunctionInfo, outputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
+        if outputs.len() != 1 {
+            panic!("Exp error: outputs.len() != 1");
+        }
+        let output = outputs[0];
         let input = variables.get_variable_type(info.id).expect("input is None");
         let input = match input {
             VariableType::F64(x) => x.data(),
         };
-        let grad = variables.get_variable_type(*grad_id).expect("grad is None");
+        let grad = variables.get_variable_type(output).expect("grad is None");
         let grad = match grad {
             VariableType::F64(x) =>
                 x.grad()
@@ -42,7 +51,7 @@ impl Function for Exp {
             VariableType::F64(x) => x,
         };
         input_variable.set_grad(gx);
-        *grad_id
+        vec![output]
     }
 }
 
@@ -65,8 +74,8 @@ mod tests {
         let f = FunctionWrapper::new(Box::new(f));
         let f_id = functions.add(f);
         let f = functions.get_mut(f_id).expect("f is None");
-        let y_id = f.call_mut(x_id, &mut variables);
-        let y = variables.get_variable_type(y_id).expect("y is None");
+        let y_ids = f.call_mut(vec![x_id], &mut variables);
+        let y = variables.get_variable_type(y_ids[0]).expect("y is None");
         let y = match y {
             VariableType::F64(x) => x,
         };
@@ -85,7 +94,7 @@ mod tests {
         let f = FunctionWrapper::new(Box::new(f));
         let f_id = functions.add(f);
         let f = functions.get_mut(f_id).expect("f is None");
-        let y_id = f.call_mut(x_id, &mut variables);
+        let y_id = f.call_mut(vec![x_id], &mut variables);
         variables.backward(y_id, &mut functions);
         let x_grad = variables.get_variable_type(x_id).expect("x is None");
         let x_grad = match x_grad {
