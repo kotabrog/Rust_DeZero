@@ -95,4 +95,29 @@ mod tests {
         };
         assert_eq!(*output, Tensor::new_from_num_vec(vec![5.0, 7.0, 9.0], vec![3]));
     }
+
+    #[test]
+    fn add_backward() {
+        let mut functions = FunctionTable::new();
+        let mut variables = VariableTable::new();
+        let x = Variable::new(Tensor::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]));
+        let y = Variable::new(Tensor::new_from_num_vec(vec![4.0, 5.0, 6.0], vec![3]));
+        let x_id = variables.add(Box::new(VariableWrapper::from_variable_f64(x)));
+        let y_id = variables.add(Box::new(VariableWrapper::from_variable_f64(y)));
+        let add = Add::new();
+        let add_id = functions.add(FunctionWrapper::new(Box::new(add)));
+        let add = functions.get_mut(add_id).expect("add is None");
+        let outputs = add.call_mut(vec![x_id, y_id], &mut variables);
+        variables.backward(outputs, &mut functions);
+        let x = variables.get_variable_type(x_id).expect("x is None");
+        let x_grad = match x {
+            VariableType::F64(x) => x.grad().unwrap(),
+        };
+        assert_eq!(*x_grad, Tensor::new_from_num_vec(vec![1.0, 1.0, 1.0], vec![3]));
+        let y = variables.get_variable_type(y_id).expect("y is None");
+        let y_grad = match y {
+            VariableType::F64(y) => y.grad().unwrap(),
+        };
+        assert_eq!(*y_grad, Tensor::new_from_num_vec(vec![1.0, 1.0, 1.0], vec![3]));
+    }
 }

@@ -155,3 +155,60 @@ fn step11() {
     let y = variables.get(y_id[0]).unwrap();
     println!("y: {:?}", y);
 }
+
+#[test]
+fn step12() {
+    use rust_dezero::{
+        Tensor,
+        variable::{VariableTable, Variable, VariableWrapper, VariableType},
+        function::{FunctionTable, sample::{Add, Square}},
+    };
+
+    let mut variables = VariableTable::new();
+    let mut functions = FunctionTable::new();
+
+    let square1 = Square::new();
+    let square2 = Square::new();
+    let add = Add::new();
+
+    let square1_id = functions.add_function(Box::new(square1));
+    let square2_id = functions.add_function(Box::new(square2));
+    let add_id = functions.add_function(Box::new(add));
+
+    let data = Tensor::new_from_num_vec(vec![2.0], vec![]);
+    let a = VariableWrapper::from_variable_f64(Variable::new(data));
+    let a_id = variables.add(Box::new(a));
+
+    let data = Tensor::new_from_num_vec(vec![3.0], vec![]);
+    let b = VariableWrapper::from_variable_f64(Variable::new(data));
+    let b_id = variables.add(Box::new(b));
+
+    let f = functions.get_mut(square1_id).unwrap();
+    let c_id = f.call_mut(vec![a_id], &mut variables)[0];
+
+    let f = functions.get_mut(square2_id).unwrap();
+    let d_id = f.call_mut(vec![b_id], &mut variables)[0];
+
+    let f = functions.get_mut(add_id).unwrap();
+    let y_id = f.call_mut(vec![c_id, d_id], &mut variables);
+
+    variables.backward(y_id.clone(), &mut functions);
+
+    let a = variables.get(a_id).unwrap().get_variable();
+    let b = variables.get(b_id).unwrap().get_variable();
+    let y = variables.get(y_id[0]).unwrap().get_variable();
+
+    let a_grad = match a {
+        VariableType::F64(a) => a.grad().unwrap(),
+    };
+    let b_grad = match b {
+        VariableType::F64(b) => b.grad().unwrap(),
+    };
+    let y = match y {
+        VariableType::F64(y) => y.data(),
+    };
+
+    println!("y: {:?}", y);
+    println!("a grad: {:?}", a_grad);
+    println!("b grad: {:?}", b_grad);
+}
