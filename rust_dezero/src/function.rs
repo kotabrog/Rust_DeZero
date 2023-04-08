@@ -128,14 +128,13 @@ impl FunctionWrapper {
     /// 
     /// # Arguments
     /// 
-    /// * `outputs` - Gradient Variable ID
     /// * `variables` - Variable table
     /// 
     /// # Returns
     /// 
     /// * `usize` - Input Variable ID
-    pub fn backward(&mut self, outputs: Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
-        self.function.backward(&self.info, &outputs, variables)
+    pub fn backward(&mut self, variables: &mut VariableTable) -> Vec<usize> {
+        self.function.backward(&self.info, variables)
     }
 }
 
@@ -213,5 +212,5 @@ impl FunctionTable {
 /// * `backward` - Backward propagation
 pub trait Function {
     fn forward(&self, info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize>;
-    fn backward(&self, info: &FunctionInfo, outputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize>;
+    fn backward(&self, info: &FunctionInfo, variables: &mut VariableTable) -> Vec<usize>;
 }

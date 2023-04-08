@@ -29,7 +29,8 @@ impl Function for Square {
         vec![id]
     }
 
-    fn backward(&self, info: &FunctionInfo, outputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
+    fn backward(&self, info: &FunctionInfo, variables: &mut VariableTable) -> Vec<usize> {
+        let outputs = info.outputs.as_ref().expect("outputs is None");
         if outputs.len() != 1 {
             panic!("Square error: outputs.len() != 1");
         }

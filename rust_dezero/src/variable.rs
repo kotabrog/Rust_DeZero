@@ -227,19 +227,29 @@ impl VariableTable {
         }
 
         let mut function_ids = VecDeque::new();
-        function_ids.extend(ids);
-        while !function_ids.is_empty() {
-            let id = function_ids.pop_front().unwrap();
-            let y = self.get(id).expect("VariableTable::backward: variable not found");
-            let f_id = y.creator;
+        for id in &ids {
+            let y = self.get(*id).expect("VariableTable::backward: variable not found");
+            let f_id = y.get_creator();
             let f_id = match f_id {
                 Some(f_id) => f_id,
                 None => continue,
             };
+            function_ids.push_back(f_id);
+        }
+
+        while !function_ids.is_empty() {
+            let f_id = function_ids.pop_front().unwrap();
             let f = functions.get_mut(f_id).expect("VariableWrapper::backward: function not found");
-            // wip
-            let id_list = f.backward(vec![y.get_id()], self);
-            function_ids.extend(id_list);
+            let input_ids = f.backward(self);
+            for id in &input_ids {
+                let y = self.get_mut(*id).expect("VariableTable::backward: variable not found");
+                let f_id = y.get_creator();
+                let f_id = match f_id {
+                    Some(f_id) => f_id,
+                    None => continue,
+                };
+                function_ids.push_back(f_id);
+            }
         }
     }
 }
