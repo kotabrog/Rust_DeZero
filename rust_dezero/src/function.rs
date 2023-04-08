@@ -22,6 +22,24 @@ impl FunctionInfo {
     pub fn new() -> Self {
         Self { id: usize::MAX, inputs: None, outputs: None }
     }
+
+    /// Get the input variable ID list
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if inputs is None
+    pub fn get_inputs_unchecked(&self) -> &Vec<usize> {
+        self.inputs.as_ref().expect("inputs is None")
+    }
+
+    /// Get the output variable ID list
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if outputs is None
+    pub fn get_outputs_unchecked(&self) -> &Vec<usize> {
+        self.outputs.as_ref().expect("outputs is None")
+    }
 }
 
 /// FunctionWrapper

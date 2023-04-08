@@ -35,7 +35,7 @@ impl Function for Add {
     }
 
     fn backward(&self, info: &FunctionInfo, variables: &mut VariableTable) -> Vec<usize> {
-        let outputs = info.outputs.as_ref().expect("outputs is None");
+        let outputs = info.get_outputs_unchecked();
         if outputs.len() != 1 {
             panic!("Add error: outputs.len() != 1");
         }
@@ -50,19 +50,23 @@ impl Function for Add {
         let gx1 = grad.clone();
         let gx2 = grad.clone();
 
-        let input_id1 = info.inputs.as_ref().expect("input is None").get(0).expect("input size is 0");
-        let input1 = variables.get_variable_type_mut(*input_id1).expect("input1 is None");
+        let inputs = info.get_inputs_unchecked();
+        if inputs.len() != 2 {
+            panic!("Add error: inputs.len() != 2");
+        }
+        let input_id1 = inputs[0];
+        let input1 = variables.get_variable_type_mut(input_id1).expect("input1 is None");
         let input1_variable = match input1 {
             VariableType::F64(x) => x,
         };
         input1_variable.set_grad(gx1);
-        let input_id2 = info.inputs.as_ref().expect("input is None").get(1).expect("input size is 1");
-        let input2 = variables.get_variable_type_mut(*input_id2).expect("input2 is None");
+        let input_id2 = inputs[1];
+        let input2 = variables.get_variable_type_mut(input_id2).expect("input2 is None");
         let input2_variable = match input2 {
             VariableType::F64(x) => x,
         };
         input2_variable.set_grad(gx2);
-        vec![*input_id1, *input_id2]
+        vec![input_id1, input_id2]
     }
 }
 

@@ -30,13 +30,17 @@ impl Function for Square {
     }
 
     fn backward(&self, info: &FunctionInfo, variables: &mut VariableTable) -> Vec<usize> {
-        let outputs = info.outputs.as_ref().expect("outputs is None");
+        let outputs = info.get_outputs_unchecked();
         if outputs.len() != 1 {
             panic!("Square error: outputs.len() != 1");
         }
         let output = outputs[0];
-        let input_id = info.inputs.as_ref().expect("input is None").get(0).expect("input size is 0");
-        let input = variables.get_variable_type(*input_id).expect("input is None");
+        let inputs = info.get_inputs_unchecked();
+        if inputs.len() != 1 {
+            panic!("Exp error: inputs.len() != 1");
+        }
+        let input_id = inputs[0];
+        let input = variables.get_variable_type(input_id).expect("input is None");
         let input = match input {
             VariableType::F64(x) => x.data(),
         };
@@ -49,12 +53,12 @@ impl Function for Square {
 
         let gx = (input * grad).scalar_mul(2.0.into());
 
-        let input = variables.get_variable_type_mut(*input_id).expect("input is None");
+        let input = variables.get_variable_type_mut(input_id).expect("input is None");
         let input_variable = match input {
             VariableType::F64(x) => x,
         };
         input_variable.set_grad(gx);
-        vec![*input_id]
+        vec![input_id]
     }
 }
 
