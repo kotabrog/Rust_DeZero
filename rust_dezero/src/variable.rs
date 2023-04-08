@@ -238,8 +238,7 @@ impl VariableTable {
             };
             let f = functions.get_mut(f_id).expect("VariableWrapper::backward: function not found");
             // wip
-            f.backward(vec![y.get_id()], self);
-            let id_list = f.get_input().expect("VariableWrapper::backward: input not found");
+            let id_list = f.backward(vec![y.get_id()], self);
             function_ids.extend(id_list);
         }
     }

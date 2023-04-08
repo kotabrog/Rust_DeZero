@@ -34,7 +34,8 @@ impl Function for Exp {
             panic!("Exp error: outputs.len() != 1");
         }
         let output = outputs[0];
-        let input = variables.get_variable_type(info.id).expect("input is None");
+        let input_id = info.inputs.as_ref().expect("input is None").get(0).expect("input size is 0");
+        let input = variables.get_variable_type(*input_id).expect("input is None");
         let input = match input {
             VariableType::F64(x) => x.data(),
         };
@@ -46,12 +47,12 @@ impl Function for Exp {
         };
         let gx = &input.exp() * grad;
 
-        let input = variables.get_variable_type_mut(info.id).expect("input is None");
+        let input = variables.get_variable_type_mut(*input_id).expect("input is None");
         let input_variable = match input {
             VariableType::F64(x) => x,
         };
         input_variable.set_grad(gx);
-        vec![output]
+        vec![*input_id]
     }
 }
 

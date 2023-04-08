@@ -49,17 +49,19 @@ impl Function for Add {
         let gx1 = grad.clone();
         let gx2 = grad.clone();
 
-        let input1 = variables.get_variable_type_mut(info.id).expect("input1 is None");
+        let input_id1 = info.inputs.as_ref().expect("input is None").get(0).expect("input size is 0");
+        let input1 = variables.get_variable_type_mut(*input_id1).expect("input1 is None");
         let input1_variable = match input1 {
             VariableType::F64(x) => x,
         };
         input1_variable.set_grad(gx1);
-        let input2 = variables.get_variable_type_mut(info.id + 1).expect("input2 is None");
+        let input_id2 = info.inputs.as_ref().expect("input is None").get(1).expect("input size is 1");
+        let input2 = variables.get_variable_type_mut(*input_id2).expect("input2 is None");
         let input2_variable = match input2 {
             VariableType::F64(x) => x,
         };
         input2_variable.set_grad(gx2);
-        vec![output]
+        vec![*input_id1, *input_id2]
     }
 }
 
