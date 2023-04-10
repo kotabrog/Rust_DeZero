@@ -322,50 +322,50 @@ where
     }
 }
 
-impl<T> std::ops::AddAssign for Tensor<T>
+impl<T> std::ops::AddAssign<&Tensor<T>> for Tensor<T>
 where
-    T: std::ops::AddAssign + Clone
+    T: std::ops::AddAssign + Copy
 {
-    fn add_assign(&mut self, other: Self) {
+    fn add_assign(&mut self, other: &Self) {
         assert_eq!(self.shape, other.shape, "Shape mismatch");
-        for (x, y) in self.data.iter_mut().zip(other.data.into_iter()) {
-            *x += y;
+        for (x, y) in self.data.iter_mut().zip(other.data.iter()) {
+            *x += *y;
         }
     }
 }
 
-impl<T> std::ops::SubAssign for Tensor<T>
+impl<T> std::ops::SubAssign<&Tensor<T>> for Tensor<T>
 where
-    T: std::ops::SubAssign + Clone
+    T: std::ops::SubAssign + Copy
 {
-    fn sub_assign(&mut self, other: Self) {
+    fn sub_assign(&mut self, other: &Self) {
         assert_eq!(self.shape, other.shape, "Shape mismatch");
-        for (x, y) in self.data.iter_mut().zip(other.data.into_iter()) {
-            *x -= y;
+        for (x, y) in self.data.iter_mut().zip(other.data.iter()) {
+            *x -= *y;
         }
     }
 }
 
-impl<T> std::ops::MulAssign for Tensor<T>
+impl<T> std::ops::MulAssign<&Tensor<T>> for Tensor<T>
 where
-    T: std::ops::MulAssign + Clone
+    T: std::ops::MulAssign + Copy
 {
-    fn mul_assign(&mut self, other: Self) {
+    fn mul_assign(&mut self, other: &Self) {
         assert_eq!(self.shape, other.shape, "Shape mismatch");
-        for (x, y) in self.data.iter_mut().zip(other.data.into_iter()) {
-            *x *= y;
+        for (x, y) in self.data.iter_mut().zip(other.data.iter()) {
+            *x *= *y;
         }
     }
 }
 
-impl<T> std::ops::DivAssign for Tensor<T>
+impl<T> std::ops::DivAssign<&Tensor<T>> for Tensor<T>
 where
-    T: std::ops::DivAssign + Clone
+    T: std::ops::DivAssign + Copy
 {
-    fn div_assign(&mut self, other: Self) {
+    fn div_assign(&mut self, other: &Tensor<T>) {
         assert_eq!(self.shape, other.shape, "Shape mismatch");
-        for (x, y) in self.data.iter_mut().zip(other.data.into_iter()) {
-            *x /= y;
+        for (x, y) in self.data.iter_mut().zip(other.data.iter()) {
+            *x /= *y;
         }
     }
 }
@@ -764,7 +764,7 @@ mod tests {
     fn add_assign_normal() {
         let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
         let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
-        x += y;
+        x += &y;
         assert_eq!(x.data(), &vec![3.0.into(), 5.0.into(), 7.0.into()]);
         assert_eq!(x.shape(), &vec![3]);
     }
@@ -774,14 +774,14 @@ mod tests {
     fn add_assign_error_mismatch_shape() {
         let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
         let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
-        x += y;
+        x += &y;
     }
 
     #[test]
     fn sub_assign_normal() {
         let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
         let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
-        x -= y;
+        x -= &y;
         assert_eq!(x.data(), &vec![(-3.0).into(), (-3.0).into(), (-3.0).into()]);
         assert_eq!(x.shape(), &vec![3]);
     }
@@ -791,14 +791,14 @@ mod tests {
     fn sub_assign_error_mismatch_shape() {
         let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
         let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
-        x -= y;
+        x -= &y;
     }
 
     #[test]
     fn mul_assign_normal() {
         let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
         let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
-        x *= y;
+        x *= &y;
         assert_eq!(x.data(), &vec![0.0.into(), 4.0.into(), 10.0.into()]);
         assert_eq!(x.shape(), &vec![3]);
     }
@@ -808,14 +808,14 @@ mod tests {
     fn mul_assign_error_mismatch_shape() {
         let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
         let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
-        x *= y;
+        x *= &y;
     }
 
     #[test]
     fn div_assign_normal() {
         let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
         let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
-        x /= y;
+        x /= &y;
         assert_eq!(x.data(), &vec![0.0.into(), 0.25.into(), 0.4.into()]);
         assert_eq!(x.shape(), &vec![3]);
     }
@@ -825,7 +825,7 @@ mod tests {
     fn div_assign_error_mismatch_shape() {
         let mut x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
         let y = Tensor::new([3.0.into(), 4.0.into()], [2,]);
-        x /= y;
+        x /= &y;
     }
 
     #[test]
