@@ -1,4 +1,4 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::{HashMap, HashSet, BinaryHeap};
 use crate::Tensor;
 use crate::function::FunctionTable;
 
@@ -15,11 +15,13 @@ pub enum VariableType {
 /// * `id` - ID
 /// * `variable` - Variable
 /// * `creator` - Creator
+/// * `generation` - Generation
 #[derive(Debug, Clone)]
 pub struct VariableWrapper {
     id: usize,
     variable: VariableType,
     creator: Option<usize>,
+    generation: usize,
 }
 
 impl VariableWrapper {
@@ -29,7 +31,7 @@ impl VariableWrapper {
     /// 
     /// * `variable` - Variable<f64>
     pub fn from_variable_f64(variable: Variable<f64>) -> Self {
-        Self { id: usize::MAX, variable: VariableType::F64(Box::new(variable)), creator: None }
+        Self { id: usize::MAX, variable: VariableType::F64(Box::new(variable)), creator: None, generation: 0 }
     }
 
     /// Get the ID
@@ -57,9 +59,21 @@ impl VariableWrapper {
         self.creator
     }
 
-    /// Set the creator
-    pub fn set_creator(&mut self, creator: usize) {
+    /// Set the creator and generation
+    pub fn set_creator(&mut self, creator: usize, generation: usize) {
         self.creator = Some(creator);
+        self.generation = generation;
+    }
+
+    /// Clear the grad
+    pub fn clear_grad(&mut self) {
+        match &mut self.variable {
+            VariableType::F64(x) => x.clear_grad(),
+        }
+    }
+
+    pub fn get_generation(&self) -> usize {
+        self.generation
     }
 }
 
@@ -131,6 +145,97 @@ impl<T> Variable<T>
     /// * `grad` - Gradient of Variable
     pub fn set_grad(&mut self, grad: Tensor<T>) {
         self.grad = Some(grad);
+    }
+
+    /// Clear the grad
+    pub fn clear_grad(&mut self) {
+        self.grad = None;
+    }
+}
+
+impl<T> Variable<T>
+where
+    T: std::ops::AddAssign + Copy
+{
+    pub fn update_grad(&mut self, grad: Tensor<T>) {
+        match &mut self.grad {
+            Some(g) => {
+                *g += &grad;
+            },
+            None => {
+                self.grad = Some(grad);
+            },
+        }
+    }
+}
+
+/// Structure for comparison in function generation
+/// 
+/// # Fields
+/// 
+/// * `id` - ID
+/// * `generation` - Generation
+#[derive(Debug, Eq)]
+struct FunctionGeneration {
+    id: usize,
+    generation: usize,
+}
+
+impl FunctionGeneration {
+    fn new(id: usize, generation: usize) -> Self {
+        Self { id, generation }
+    }
+
+    fn get_id(&self) -> usize {
+        self.id
+    }
+}
+
+impl PartialEq for FunctionGeneration {
+    fn eq(&self, other: &Self) -> bool {
+        self.generation == other.generation
+    }
+}
+
+impl PartialOrd for FunctionGeneration {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for FunctionGeneration {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.generation.cmp(&other.generation)
+    }
+}
+
+struct FunctionGenerationPriorityQueue {
+    queue: BinaryHeap<FunctionGeneration>,
+    id_set: HashSet<usize>,
+}
+
+impl FunctionGenerationPriorityQueue {
+    fn new() -> Self {
+        Self { queue: BinaryHeap::new(), id_set: HashSet::new() }
+    }
+
+    fn push(&mut self, id: usize, generation: usize) {
+        if self.id_set.contains(&id) {
+            return;
+        }
+        self.id_set.insert(id);
+        self.queue.push(FunctionGeneration::new(id, generation));
+    }
+
+    fn pop(&mut self) -> Option<usize> {
+        match self.queue.pop() {
+            Some(x) => Some(x.get_id()),
+            None => None,
+        }
+    }
+
+    fn is_empty(&self) -> bool {
+        self.queue.is_empty()
     }
 }
 
@@ -206,6 +311,33 @@ impl VariableTable {
         }
     }
 
+    /// If grad of the specified variable is not set, set to 1.
+    fn set_grad_default(&mut self, id: usize) {
+        let y = self.get_mut(id).expect("VariableTable::set_grad_default: variable not found");
+        match y.get_variable_mut() {
+            VariableType::F64(y) => {
+                if y.grad().is_none() {
+                    y.set_grad(Tensor::ones_like(&y.data()));
+                }
+            }
+        }
+    }
+
+    /// Add a function to the function queue
+    fn add_function(&self, functions: &mut FunctionTable,
+        function_ids: &mut FunctionGenerationPriorityQueue, id: usize) {
+        let y = self.get(id).expect("VariableTable::backward: variable not found");
+        let f_id = y.get_creator();
+        let f_id = match f_id {
+            Some(f_id) => f_id,
+            None => return,
+        };
+        let f_generation = functions
+            .get(f_id).expect("VariableTable::backward: function not found")
+            .get_generation();
+        function_ids.push(f_id, f_generation);
+    }
+
     /// Backward of the specified variable
     /// 
     /// # Arguments
@@ -214,41 +346,20 @@ impl VariableTable {
     /// * `functions` - Function table
     pub fn backward(&mut self, ids: Vec<usize>, functions: &mut FunctionTable) {
         for id in &ids {
-            let y =
-                self.get_mut(*id).expect("VariableTable::backward: variable not found")
-                    .get_variable_mut();
-            match y {
-                VariableType::F64(y) => {
-                    if y.grad().is_none() {
-                        y.set_grad(Tensor::ones_like(&y.data()));
-                    }
-                }
-            }
+            self.set_grad_default(*id);
         }
 
-        let mut function_ids = VecDeque::new();
+        let mut function_ids = FunctionGenerationPriorityQueue::new();
         for id in &ids {
-            let y = self.get(*id).expect("VariableTable::backward: variable not found");
-            let f_id = y.get_creator();
-            let f_id = match f_id {
-                Some(f_id) => f_id,
-                None => continue,
-            };
-            function_ids.push_back(f_id);
+            self.add_function(functions, &mut function_ids, *id);
         }
 
         while !function_ids.is_empty() {
-            let f_id = function_ids.pop_front().unwrap();
+            let f_id = function_ids.pop().unwrap();
             let f = functions.get_mut(f_id).expect("VariableWrapper::backward: function not found");
             let input_ids = f.backward(self);
             for id in &input_ids {
-                let y = self.get_mut(*id).expect("VariableTable::backward: variable not found");
-                let f_id = y.get_creator();
-                let f_id = match f_id {
-                    Some(f_id) => f_id,
-                    None => continue,
-                };
-                function_ids.push_back(f_id);
+                self.add_function(functions, &mut function_ids, *id);
             }
         }
     }

@@ -57,7 +57,7 @@ impl Function for Square {
         let input_variable = match input {
             VariableType::F64(x) => x,
         };
-        input_variable.set_grad(gx);
+        input_variable.update_grad(gx);
         vec![input_id]
     }
 }

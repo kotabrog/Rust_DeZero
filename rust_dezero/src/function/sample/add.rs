@@ -59,13 +59,13 @@ impl Function for Add {
         let input1_variable = match input1 {
             VariableType::F64(x) => x,
         };
-        input1_variable.set_grad(gx1);
+        input1_variable.update_grad(gx1);
         let input_id2 = inputs[1];
         let input2 = variables.get_variable_type_mut(input_id2).expect("input2 is None");
         let input2_variable = match input2 {
             VariableType::F64(x) => x,
         };
-        input2_variable.set_grad(gx2);
+        input2_variable.update_grad(gx2);
         vec![input_id1, input_id2]
     }
 }

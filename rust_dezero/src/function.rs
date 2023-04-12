@@ -15,12 +15,13 @@ pub struct FunctionInfo {
     pub id: usize,
     pub inputs: Option<Vec<usize>>,
     pub outputs: Option<Vec<usize>>,
+    pub generation: usize,
 }
 
 impl FunctionInfo {
     /// Create a new FunctionInfo
     pub fn new() -> Self {
-        Self { id: usize::MAX, inputs: None, outputs: None }
+        Self { id: usize::MAX, inputs: None, outputs: None, generation: 0 }
     }
 
     /// Get the input variable ID list
@@ -111,6 +112,12 @@ impl FunctionWrapper {
         self.info.outputs = Some(outputs);
     }
 
+    /// Get the generation
+    /// 
+    pub fn get_generation(&self) -> usize {
+        self.info.generation
+    }
+
     /// Get the function
     pub fn get_function(&self) -> &Box<dyn Function> {
         &self.function
@@ -134,10 +141,15 @@ impl FunctionWrapper {
     pub fn call_mut(&mut self, inputs: Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
         let outputs = self.function.forward(&self.info, &inputs, variables);
         self.info.inputs = Some(inputs);
+        self.info.generation = self.info.inputs.as_ref().unwrap()
+            .iter().map(|x| variables.get(*x)
+            .expect("FunctionWrapper::call_mut: Variable not found")
+            .get_generation())
+            .max().expect("FunctionWrapper::call_mut: Generation not found");
+        let generation = self.info.generation.checked_add(1).expect("FunctionWrapper::call_mut: Overflow");
         for y in outputs.iter() {
-            variables.get_mut(*y).unwrap().set_creator(self.info.id);
+            variables.get_mut(*y).unwrap().set_creator(self.info.id, generation);
         }
-        // variables.get_mut(y).unwrap().set_creator(self.info.id);
         self.info.outputs = Some(outputs.clone());
         outputs
     }
