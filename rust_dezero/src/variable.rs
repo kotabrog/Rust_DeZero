@@ -344,7 +344,7 @@ impl VariableTable {
     /// 
     /// * `ids` - ID
     /// * `functions` - Function table
-    pub fn backward(&mut self, ids: Vec<usize>, functions: &mut FunctionTable) {
+    pub fn backward(&mut self, ids: Vec<usize>, functions: &mut FunctionTable, retain_grad: bool) {
         for id in &ids {
             self.set_grad_default(*id);
         }
@@ -360,6 +360,14 @@ impl VariableTable {
             let input_ids = f.backward(self);
             for id in &input_ids {
                 self.add_function(functions, &mut function_ids, *id);
+            }
+
+            let f = functions.get(f_id).expect("VariableWrapper::backward: function not found");
+            if !retain_grad {
+                for id in f.get_output().expect("VariableWrapper::backward: output not found") {
+                    self.get_mut(*id).expect("VariableWrapper::backward: variable not found")
+                        .clear_grad();
+                }
             }
         }
     }

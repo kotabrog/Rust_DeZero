@@ -138,19 +138,21 @@ impl FunctionWrapper {
     /// # Returns
     /// 
     /// * `Vec<usize>` - Output Variable ID list
-    pub fn call_mut(&mut self, inputs: Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
+    pub fn call_mut(&mut self, inputs: Vec<usize>, variables: &mut VariableTable, no_grad: bool) -> Vec<usize> {
         let outputs = self.function.forward(&self.info, &inputs, variables);
-        self.info.inputs = Some(inputs);
-        self.info.generation = self.info.inputs.as_ref().unwrap()
-            .iter().map(|x| variables.get(*x)
-            .expect("FunctionWrapper::call_mut: Variable not found")
-            .get_generation())
-            .max().expect("FunctionWrapper::call_mut: Generation not found");
-        let generation = self.info.generation.checked_add(1).expect("FunctionWrapper::call_mut: Overflow");
-        for y in outputs.iter() {
-            variables.get_mut(*y).unwrap().set_creator(self.info.id, generation);
+        if !no_grad {
+            self.info.inputs = Some(inputs);
+            self.info.generation = self.info.inputs.as_ref().unwrap()
+                .iter().map(|x| variables.get(*x)
+                .expect("FunctionWrapper::call_mut: Variable not found")
+                .get_generation())
+                .max().expect("FunctionWrapper::call_mut: Generation not found");
+            let generation = self.info.generation.checked_add(1).expect("FunctionWrapper::call_mut: Overflow");
+            for y in outputs.iter() {
+                variables.get_mut(*y).unwrap().set_creator(self.info.id, generation);
+            }
+            self.info.outputs = Some(outputs.clone());
         }
-        self.info.outputs = Some(outputs.clone());
         outputs
     }
 

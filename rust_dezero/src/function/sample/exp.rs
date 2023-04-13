@@ -80,7 +80,7 @@ mod tests {
         let f = FunctionWrapper::new(Box::new(f));
         let f_id = functions.add(f);
         let f = functions.get_mut(f_id).expect("f is None");
-        let y_ids = f.call_mut(vec![x_id], &mut variables);
+        let y_ids = f.call_mut(vec![x_id], &mut variables, false);
         let y = variables.get_variable_type(y_ids[0]).expect("y is None");
         let y = match y {
             VariableType::F64(x) => x,
@@ -100,8 +100,8 @@ mod tests {
         let f = FunctionWrapper::new(Box::new(f));
         let f_id = functions.add(f);
         let f = functions.get_mut(f_id).expect("f is None");
-        let y_id = f.call_mut(vec![x_id], &mut variables);
-        variables.backward(y_id, &mut functions);
+        let y_id = f.call_mut(vec![x_id], &mut variables, false);
+        variables.backward(y_id, &mut functions, true);
         let x_grad = variables.get_variable_type(x_id).expect("x is None");
         let x_grad = match x_grad {
             VariableType::F64(x) => x.grad().unwrap(),

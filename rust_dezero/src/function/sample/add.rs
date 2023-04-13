@@ -88,7 +88,7 @@ mod tests {
         let add = Add::new();
         let add_id = functions.add(FunctionWrapper::new(Box::new(add)));
         let add = functions.get_mut(add_id).expect("add is None");
-        let outputs = add.call_mut(vec![x_id, y_id], &mut variables);
+        let outputs = add.call_mut(vec![x_id, y_id], &mut variables, false);
         let output = variables.get_variable_type(outputs[0]).expect("outputs[0] is None");
         let output = match output {
             VariableType::F64(x) => x.data(),
@@ -107,8 +107,8 @@ mod tests {
         let add = Add::new();
         let add_id = functions.add(FunctionWrapper::new(Box::new(add)));
         let add = functions.get_mut(add_id).expect("add is None");
-        let outputs = add.call_mut(vec![x_id, y_id], &mut variables);
-        variables.backward(outputs, &mut functions);
+        let outputs = add.call_mut(vec![x_id, y_id], &mut variables, false);
+        variables.backward(outputs, &mut functions, true);
         let x = variables.get_variable_type(x_id).expect("x is None");
         let x_grad = match x {
             VariableType::F64(x) => x.grad().unwrap(),

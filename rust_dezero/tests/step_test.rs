@@ -106,18 +106,18 @@ fn step7() {
     let x_id = variables.add(Box::new(x));
 
     let f = functions.get_mut(square1_id).unwrap();
-    let a_id = f.call_mut(vec![x_id], &mut variables);
+    let a_id = f.call_mut(vec![x_id], &mut variables, false);
 
     let f = functions.get_mut(exp1_id).unwrap();
-    let b_id = f.call_mut(a_id, &mut variables);
+    let b_id = f.call_mut(a_id, &mut variables, false);
 
     let f = functions.get_mut(square2_id).unwrap();
-    let y_id = f.call_mut(b_id, &mut variables);
+    let y_id = f.call_mut(b_id, &mut variables, false);
 
     let y = variables.get(y_id[0]).unwrap();
     println!("y: {:?}", y);
 
-    variables.backward(y_id, &mut functions);
+    variables.backward(y_id, &mut functions, true);
 
     let x = variables.get(x_id).unwrap().get_variable();
     let x_grad = match x {
@@ -150,7 +150,7 @@ fn step11() {
     let b_id = variables.add(Box::new(b));
 
     let f = functions.get_mut(function_id).unwrap();
-    let y_id = f.call_mut(vec![a_id, b_id], &mut variables);
+    let y_id = f.call_mut(vec![a_id, b_id], &mut variables, false);
 
     let y = variables.get(y_id[0]).unwrap();
     println!("y: {:?}", y);
@@ -184,15 +184,15 @@ fn step12() {
     let b_id = variables.add(Box::new(b));
 
     let f = functions.get_mut(square1_id).unwrap();
-    let c_id = f.call_mut(vec![a_id], &mut variables)[0];
+    let c_id = f.call_mut(vec![a_id], &mut variables, false)[0];
 
     let f = functions.get_mut(square2_id).unwrap();
-    let d_id = f.call_mut(vec![b_id], &mut variables)[0];
+    let d_id = f.call_mut(vec![b_id], &mut variables, false)[0];
 
     let f = functions.get_mut(add_id).unwrap();
-    let y_id = f.call_mut(vec![c_id, d_id], &mut variables);
+    let y_id = f.call_mut(vec![c_id, d_id], &mut variables, false);
 
-    variables.backward(y_id.clone(), &mut functions);
+    variables.backward(y_id.clone(), &mut functions, true);
 
     let a = variables.get(a_id).unwrap().get_variable();
     let b = variables.get(b_id).unwrap().get_variable();
@@ -237,9 +237,9 @@ fn step14() {
     let x_id = variables.add(Box::new(x));
 
     let f = functions.get_mut(add1_id).unwrap();
-    let y = f.call_mut(vec![x_id, x_id], &mut variables);
+    let y = f.call_mut(vec![x_id, x_id], &mut variables, false);
 
-    variables.backward(y, &mut functions);
+    variables.backward(y, &mut functions, true);
 
     let x = variables.get_mut(x_id).unwrap();
     let x_type = x.get_variable();
@@ -251,12 +251,12 @@ fn step14() {
     x.clear_grad();
 
     let f = functions.get_mut(add2_id).unwrap();
-    let y_id = f.call_mut(vec![x_id, x_id], &mut variables)[0];
+    let y_id = f.call_mut(vec![x_id, x_id], &mut variables, false)[0];
 
     let f = functions.get_mut(add3_id).unwrap();
-    let y = f.call_mut(vec![y_id, x_id], &mut variables);
+    let y = f.call_mut(vec![y_id, x_id], &mut variables, false);
 
-    variables.backward(y, &mut functions);
+    variables.backward(y, &mut functions, true);
 
     let x = variables.get_mut(x_id).unwrap().get_variable();
     let x_grad = match x {
@@ -291,18 +291,18 @@ fn step16() {
     let x_id = variables.add(Box::new(x));
 
     let f = functions.get_mut(square1_id).unwrap();
-    let a = f.call_mut(vec![x_id], &mut variables);
+    let a = f.call_mut(vec![x_id], &mut variables, false);
 
     let f = functions.get_mut(square2_id).unwrap();
-    let b = f.call_mut(a.clone(), &mut variables);
+    let b = f.call_mut(a.clone(), &mut variables, false);
 
     let f = functions.get_mut(square3_id).unwrap();
-    let c = f.call_mut(a.clone(), &mut variables);
+    let c = f.call_mut(a.clone(), &mut variables, false);
 
     let f = functions.get_mut(add_id).unwrap();
-    let y = f.call_mut(vec![b[0], c[0]], &mut variables);
+    let y = f.call_mut(vec![b[0], c[0]], &mut variables, false);
 
-    variables.backward(y.clone(), &mut functions);
+    variables.backward(y.clone(), &mut functions, true);
 
     let y = variables.get(y[0]).unwrap().get_variable();
     let y = match y {
@@ -317,4 +317,95 @@ fn step16() {
     };
     assert_eq!(x_grad, &Tensor::new_from_num_vec(vec![64.0], vec![]));
     println!("x grad: {:?}", x_grad);
+}
+
+#[test]
+fn step18_1() {
+    use rust_dezero::{
+        Tensor,
+        variable::{VariableTable, Variable, VariableWrapper, VariableType},
+        function::{FunctionTable, sample::Add},
+    };
+
+    let mut variables = VariableTable::new();
+    let mut functions = FunctionTable::new();
+
+    let add1 = Add::new();
+    let add2 = Add::new();
+
+    let add1_id = functions.add_function(Box::new(add1));
+    let add2_id = functions.add_function(Box::new(add2));
+
+    let data = Tensor::new_from_num_vec(vec![1.0], vec![]);
+    let x0 = VariableWrapper::from_variable_f64(Variable::new(data.clone()));
+    let x0_id = variables.add(Box::new(x0));
+
+    let x1 = VariableWrapper::from_variable_f64(Variable::new(data));
+    let x1_id = variables.add(Box::new(x1));
+
+    let f = functions.get_mut(add1_id).unwrap();
+    let t = f.call_mut(vec![x0_id, x1_id], &mut variables, false);
+
+    let f = functions.get_mut(add2_id).unwrap();
+    let y = f.call_mut(vec![x0_id, t[0]], &mut variables, false);
+
+    variables.backward(y.clone(), &mut functions, false);
+
+    let y = variables.get(y[0]).unwrap().get_variable();
+    let y_grad = match y {
+        VariableType::F64(y) => y.grad(),
+    };
+    assert_eq!(y_grad, None);
+    println!("y grad: {:?}", y_grad);
+
+    let t = variables.get(t[0]).unwrap().get_variable();
+    let t_grad = match t {
+        VariableType::F64(t) => t.grad(),
+    };
+    assert_eq!(t_grad, None);
+    println!("t grad: {:?}", t_grad);
+
+    let x0 = variables.get_mut(x0_id).unwrap().get_variable();
+    let x0_grad = match x0 {
+        VariableType::F64(x0) => x0.grad().unwrap(),
+    };
+    assert_eq!(x0_grad, &Tensor::new_from_num_vec(vec![2.0], vec![]));
+    println!("x0 grad: {:?}", x0_grad);
+
+    let x1 = variables.get_mut(x1_id).unwrap().get_variable();
+    let x1_grad = match x1 {
+        VariableType::F64(x1) => x1.grad().unwrap(),
+    };
+    assert_eq!(x1_grad, &Tensor::new_from_num_vec(vec![1.0], vec![]));
+    println!("x1 grad: {:?}", x1_grad);
+}
+
+#[test]
+fn step18_2() {
+    use rust_dezero::{
+        Tensor,
+        variable::{VariableTable, Variable, VariableWrapper, VariableType},
+        function::{FunctionTable, sample::Square},
+    };
+
+    let mut variables = VariableTable::new();
+    let mut functions = FunctionTable::new();
+
+    let square = Square::new();
+
+    functions.add_function(Box::new(square));
+
+    let data = Tensor::new_from_num_vec(vec![2.0], vec![]);
+    let x = VariableWrapper::from_variable_f64(Variable::new(data.clone()));
+    let x_id = variables.add(Box::new(x));
+
+    let f = functions.get_mut(x_id).unwrap();
+    let y = f.call_mut(vec![x_id], &mut variables, true);
+
+    let y = variables.get(y[0]).unwrap().get_variable();
+    let y = match y {
+        VariableType::F64(y) => y.data(),
+    };
+    assert_eq!(y, &Tensor::new_from_num_vec(vec![4.0], vec![]));
+    println!("y: {:?}", y);
 }
