@@ -344,6 +344,7 @@ impl VariableTable {
     /// 
     /// * `ids` - ID
     /// * `functions` - Function table
+    /// * `retain_grad` - If true, retain grad
     pub fn backward(&mut self, ids: Vec<usize>, functions: &mut FunctionTable, retain_grad: bool) {
         for id in &ids {
             self.set_grad_default(*id);

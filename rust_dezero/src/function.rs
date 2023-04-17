@@ -134,6 +134,7 @@ impl FunctionWrapper {
     /// 
     /// * `inputs` - Input Variable ID list
     /// * `variables` - Variable table
+    /// * `no_grad` - If true, function does not record gradient
     /// 
     /// # Returns
     /// 
