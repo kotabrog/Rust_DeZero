@@ -24,7 +24,7 @@ impl Function for Square {
 
         let output = input.powi(2);
 
-        let output = VariableWrapper::from_variable_f64(Variable::new(output));
+        let output = VariableWrapper::from_variable_f64(Variable::new(output), None);
         let id = variables.add(Box::new(output));
         vec![id]
     }
@@ -75,7 +75,7 @@ mod tests {
         let mut variables = VariableTable::new();
         let mut functions = FunctionTable::new();
         let x = Variable::<f64>::new(Tensor::new_from_num_vec(data.clone(), vec![3]));
-        let x = VariableWrapper::from_variable_f64(x);
+        let x = VariableWrapper::from_variable_f64(x, None);
         let x_id = variables.add(Box::new(x));
         let f = Square::new();
         let f = FunctionWrapper::new(Box::new(f));
@@ -95,7 +95,7 @@ mod tests {
         let mut variables = VariableTable::new();
         let mut functions = FunctionTable::new();
         let x = Variable::<f64>::new(Tensor::new_from_num_vec(data.clone(), vec![3]));
-        let x = VariableWrapper::from_variable_f64(x);
+        let x = VariableWrapper::from_variable_f64(x, None);
         let x_id = variables.add(Box::new(x));
         let f = Square::new();
         let f = FunctionWrapper::new(Box::new(f));

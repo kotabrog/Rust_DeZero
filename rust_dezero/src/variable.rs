@@ -13,12 +13,14 @@ pub enum VariableType {
 /// # Fields
 /// 
 /// * `id` - ID
+/// * `name` - Name
 /// * `variable` - Variable
 /// * `creator` - Creator
 /// * `generation` - Generation
 #[derive(Debug, Clone)]
 pub struct VariableWrapper {
     id: usize,
+    name: String,
     variable: VariableType,
     creator: Option<usize>,
     generation: usize,
@@ -30,8 +32,12 @@ impl VariableWrapper {
     /// # Arguments
     /// 
     /// * `variable` - Variable<f64>
-    pub fn from_variable_f64(variable: Variable<f64>) -> Self {
-        Self { id: usize::MAX, variable: VariableType::F64(Box::new(variable)), creator: None, generation: 0 }
+    pub fn from_variable_f64(variable: Variable<f64>, name: Option<&str>) -> Self {
+        let name = match name {
+            Some(name) => name.to_string(),
+            None => "".to_string(),
+        };
+        Self { id: usize::MAX, name, variable: VariableType::F64(Box::new(variable)), creator: None, generation: 0 }
     }
 
     /// Get the ID
@@ -42,6 +48,11 @@ impl VariableWrapper {
     /// Set the ID
     pub fn set_id(&mut self, id: usize) {
         self.id = id;
+    }
+
+    /// Get the name
+    pub fn get_name(&self) -> &str {
+        &self.name
     }
 
     /// Get the variable
@@ -72,6 +83,7 @@ impl VariableWrapper {
         }
     }
 
+    /// Get the generation
     pub fn get_generation(&self) -> usize {
         self.generation
     }

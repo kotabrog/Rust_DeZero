@@ -29,7 +29,7 @@ impl Function for Add {
 
         let output = input1 + input2;
 
-        let output = VariableWrapper::from_variable_f64(Variable::new(output));
+        let output = VariableWrapper::from_variable_f64(Variable::new(output), None);
         let id = variables.add(Box::new(output));
         vec![id]
     }
@@ -83,8 +83,8 @@ mod tests {
         let mut variables = VariableTable::new();
         let x = Variable::new(Tensor::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]));
         let y = Variable::new(Tensor::new_from_num_vec(vec![4.0, 5.0, 6.0], vec![3]));
-        let x_id = variables.add(Box::new(VariableWrapper::from_variable_f64(x)));
-        let y_id = variables.add(Box::new(VariableWrapper::from_variable_f64(y)));
+        let x_id = variables.add(Box::new(VariableWrapper::from_variable_f64(x, None)));
+        let y_id = variables.add(Box::new(VariableWrapper::from_variable_f64(y, None)));
         let add = Add::new();
         let add_id = functions.add(FunctionWrapper::new(Box::new(add)));
         let add = functions.get_mut(add_id).expect("add is None");
@@ -102,8 +102,8 @@ mod tests {
         let mut variables = VariableTable::new();
         let x = Variable::new(Tensor::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]));
         let y = Variable::new(Tensor::new_from_num_vec(vec![4.0, 5.0, 6.0], vec![3]));
-        let x_id = variables.add(Box::new(VariableWrapper::from_variable_f64(x)));
-        let y_id = variables.add(Box::new(VariableWrapper::from_variable_f64(y)));
+        let x_id = variables.add(Box::new(VariableWrapper::from_variable_f64(x, None)));
+        let y_id = variables.add(Box::new(VariableWrapper::from_variable_f64(y, None)));
         let add = Add::new();
         let add_id = functions.add(FunctionWrapper::new(Box::new(add)));
         let add = functions.get_mut(add_id).expect("add is None");

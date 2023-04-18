@@ -102,7 +102,7 @@ fn step7() {
     let square2_id = functions.add_function(Box::new(square2));
 
     let data = Tensor::new_from_num_vec(vec![0.5], vec![]);
-    let x = VariableWrapper::from_variable_f64(Variable::new(data));
+    let x = VariableWrapper::from_variable_f64(Variable::new(data), None);
     let x_id = variables.add(Box::new(x));
 
     let f = functions.get_mut(square1_id).unwrap();
@@ -142,11 +142,11 @@ fn step11() {
     let function_id = functions.add_function(Box::new(function));
 
     let data = Tensor::new_from_num_vec(vec![2.0], vec![]);
-    let a = VariableWrapper::from_variable_f64(Variable::new(data));
+    let a = VariableWrapper::from_variable_f64(Variable::new(data), None);
     let a_id = variables.add(Box::new(a));
 
     let data = Tensor::new_from_num_vec(vec![3.0], vec![]);
-    let b = VariableWrapper::from_variable_f64(Variable::new(data));
+    let b = VariableWrapper::from_variable_f64(Variable::new(data), None);
     let b_id = variables.add(Box::new(b));
 
     let f = functions.get_mut(function_id).unwrap();
@@ -176,11 +176,11 @@ fn step12() {
     let add_id = functions.add_function(Box::new(add));
 
     let data = Tensor::new_from_num_vec(vec![2.0], vec![]);
-    let a = VariableWrapper::from_variable_f64(Variable::new(data));
+    let a = VariableWrapper::from_variable_f64(Variable::new(data), None);
     let a_id = variables.add(Box::new(a));
 
     let data = Tensor::new_from_num_vec(vec![3.0], vec![]);
-    let b = VariableWrapper::from_variable_f64(Variable::new(data));
+    let b = VariableWrapper::from_variable_f64(Variable::new(data), None);
     let b_id = variables.add(Box::new(b));
 
     let f = functions.get_mut(square1_id).unwrap();
@@ -233,7 +233,7 @@ fn step14() {
     let add3_id = functions.add_function(Box::new(add3));
 
     let data = Tensor::new_from_num_vec(vec![3.0], vec![]);
-    let x = VariableWrapper::from_variable_f64(Variable::new(data));
+    let x = VariableWrapper::from_variable_f64(Variable::new(data), None);
     let x_id = variables.add(Box::new(x));
 
     let f = functions.get_mut(add1_id).unwrap();
@@ -287,7 +287,7 @@ fn step16() {
     let add_id = functions.add_function(Box::new(add));
 
     let data = Tensor::new_from_num_vec(vec![2.0], vec![]);
-    let x = VariableWrapper::from_variable_f64(Variable::new(data));
+    let x = VariableWrapper::from_variable_f64(Variable::new(data), None);
     let x_id = variables.add(Box::new(x));
 
     let f = functions.get_mut(square1_id).unwrap();
@@ -337,10 +337,10 @@ fn step18_1() {
     let add2_id = functions.add_function(Box::new(add2));
 
     let data = Tensor::new_from_num_vec(vec![1.0], vec![]);
-    let x0 = VariableWrapper::from_variable_f64(Variable::new(data.clone()));
+    let x0 = VariableWrapper::from_variable_f64(Variable::new(data.clone()), None);
     let x0_id = variables.add(Box::new(x0));
 
-    let x1 = VariableWrapper::from_variable_f64(Variable::new(data));
+    let x1 = VariableWrapper::from_variable_f64(Variable::new(data), None);
     let x1_id = variables.add(Box::new(x1));
 
     let f = functions.get_mut(add1_id).unwrap();
@@ -396,7 +396,7 @@ fn step18_2() {
     functions.add_function(Box::new(square));
 
     let data = Tensor::new_from_num_vec(vec![2.0], vec![]);
-    let x = VariableWrapper::from_variable_f64(Variable::new(data.clone()));
+    let x = VariableWrapper::from_variable_f64(Variable::new(data.clone()), None);
     let x_id = variables.add(Box::new(x));
 
     let f = functions.get_mut(x_id).unwrap();
@@ -408,4 +408,22 @@ fn step18_2() {
     };
     assert_eq!(y, &Tensor::new_from_num_vec(vec![4.0], vec![]));
     println!("y: {:?}", y);
+}
+
+#[test]
+fn step19() {
+    use rust_dezero::{
+        Tensor,
+        variable::{Variable, VariableWrapper},
+    };
+
+    let x = VariableWrapper::from_variable_f64(Variable::new(Tensor::new_from_num_vec(vec![2.0], vec![])), None);
+    let x_name = x.get_name();
+    assert_eq!(x_name, "");
+    println!("x name: {:?}", x_name);
+
+    let x = VariableWrapper::from_variable_f64(Variable::new(Tensor::new_from_num_vec(vec![2.0], vec![])), Some("x"));
+    let x_name = x.get_name();
+    assert_eq!(x_name, "x");
+    println!("x name: {:?}", x_name);
 }
