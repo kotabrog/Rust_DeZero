@@ -427,3 +427,62 @@ fn step19() {
     assert_eq!(x_name, "x");
     println!("x name: {:?}", x_name);
 }
+
+#[test]
+fn step20() {
+    use rust_dezero::{
+        Tensor,
+        variable::{VariableTable, Variable, VariableWrapper, VariableType},
+        function::{FunctionTable, sample::{Add, Mul}},
+    };
+
+    let mut variables = VariableTable::new();
+    let mut functions = FunctionTable::new();
+
+    let add = Add::new();
+    let mul = Mul::new();
+
+    let add_id = functions.add_function(Box::new(add));
+    let mul_id = functions.add_function(Box::new(mul));
+
+    let data = Tensor::new_from_num_vec(vec![3.0], vec![]);
+    let a = VariableWrapper::from_variable_f64(Variable::new(data), None);
+    let a_id = variables.add(Box::new(a));
+
+    let data = Tensor::new_from_num_vec(vec![2.0], vec![]);
+    let b = VariableWrapper::from_variable_f64(Variable::new(data), None);
+    let b_id = variables.add(Box::new(b));
+
+    let data = Tensor::new_from_num_vec(vec![1.0], vec![]);
+    let c = VariableWrapper::from_variable_f64(Variable::new(data), None);
+    let c_id = variables.add(Box::new(c));
+
+    let f = functions.get_mut(mul_id).unwrap();
+    let y = f.call_mut(vec![a_id, b_id], &mut variables, false);
+
+    let f = functions.get_mut(add_id).unwrap();
+    let y = f.call_mut(vec![y[0], c_id], &mut variables, false);
+
+    variables.backward(y.clone(), &mut functions, false);
+
+    let y = variables.get(y[0]).unwrap().get_variable();
+    let y = match y {
+        VariableType::F64(y) => y.data(),
+    };
+    assert_eq!(y, &Tensor::new_from_num_vec(vec![7.0], vec![]));
+    println!("y: {:?}", y);
+
+    let a = variables.get_mut(a_id).unwrap().get_variable();
+    let a_grad = match a {
+        VariableType::F64(a) => a.grad().unwrap(),
+    };
+    assert_eq!(a_grad, &Tensor::new_from_num_vec(vec![2.0], vec![]));
+    println!("a grad: {:?}", a_grad);
+
+    let b = variables.get_mut(b_id).unwrap().get_variable();
+    let b_grad = match b {
+        VariableType::F64(b) => b.grad().unwrap(),
+    };
+    assert_eq!(b_grad, &Tensor::new_from_num_vec(vec![3.0], vec![]));
+    println!("b grad: {:?}", b_grad);
+}
