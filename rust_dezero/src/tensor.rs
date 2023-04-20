@@ -322,6 +322,18 @@ where
     }
 }
 
+impl<T> std::ops::Neg for &Tensor<T>
+where
+    T: std::ops::Neg<Output = T> + Copy
+{
+    type Output = Tensor<T>;
+
+    fn neg(self) -> Self::Output {
+        let data = self.data.iter().map(|x| -*x).collect();
+        Tensor { data, shape: self.shape.clone() }
+    }
+}
+
 impl<T> std::ops::AddAssign<&Tensor<T>> for Tensor<T>
 where
     T: std::ops::AddAssign + Copy
@@ -756,6 +768,14 @@ mod tests {
     fn neg_normal() {
         let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
         let y = -x;
+        assert_eq!(y.data(), &vec![0.0.into(), (-1.0).into(), (-2.0).into()]);
+        assert_eq!(y.shape(), &vec![3]);
+    }
+
+    #[test]
+    fn neg_reference_normal() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = -&x;
         assert_eq!(y.data(), &vec![0.0.into(), (-1.0).into(), (-2.0).into()]);
         assert_eq!(y.shape(), &vec![3]);
     }
