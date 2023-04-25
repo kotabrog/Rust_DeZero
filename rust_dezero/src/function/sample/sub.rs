@@ -12,6 +12,10 @@ impl Sub {
 }
 
 impl Function for Sub {
+    fn name(&self) -> String {
+        "Sub".to_string()
+    }
+
     fn forward(&self, _info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
         if inputs.len() != 2 {
             panic!("Sub error: inputs.len() != 2");

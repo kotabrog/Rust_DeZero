@@ -1,3 +1,6 @@
+use std::fs::File;
+use std::io::prelude::*;
+use std::process::Command;
 use std::collections::{HashMap, HashSet, BinaryHeap};
 use crate::Tensor;
 use crate::function::FunctionTable;
@@ -86,6 +89,11 @@ impl VariableWrapper {
     /// Get the generation
     pub fn get_generation(&self) -> usize {
         self.generation
+    }
+
+    /// Get dot string
+    pub fn to_dot_string(&self) -> String {
+        format!("var_{} [label=\"{}\", color=orange, style=filled]\n", self.id, self.name)
     }
 }
 
@@ -337,7 +345,7 @@ impl VariableTable {
 
     /// Add a function to the function queue
     fn add_function(&self, functions: &mut FunctionTable,
-        function_ids: &mut FunctionGenerationPriorityQueue, id: usize) {
+            function_ids: &mut FunctionGenerationPriorityQueue, id: usize) {
         let y = self.get(id).expect("VariableTable::backward: variable not found");
         let f_id = y.get_creator();
         let f_id = match f_id {
@@ -384,6 +392,91 @@ impl VariableTable {
             }
         }
     }
+
+    /// Add a function to the function queue for dot graph
+    fn add_function_for_dot_graph(&self, function_ids: &mut Vec<usize>, function_ids_set: &mut HashSet<usize>, id: usize) {
+        let y = self.get(id).expect("VariableTable::get_dot_graph: variable not found");
+        let f_id = y.get_creator();
+        let f_id = match f_id {
+            Some(f_id) => f_id,
+            None => return,
+        };
+        function_ids.push(f_id);
+        function_ids_set.insert(f_id);
+    }
+
+    /// Add a variable to the variable queue for dot graph
+    fn add_variable_for_dot_graph(&self, variable_ids_set: &mut HashSet<usize>, text: &mut String, id: usize) {
+        if variable_ids_set.contains(&id) {
+            return;
+        }
+        variable_ids_set.insert(id);
+        let var = self.get(id).expect("VariableTable::get_dot_graph: variable not found");
+        text.push_str(&var.to_dot_string());
+    }
+
+    /// Get a dot graph
+    /// 
+    /// # Arguments
+    /// 
+    /// * `ids` - ID
+    /// * `functions` - Function table
+    /// 
+    /// # Returns
+    /// 
+    /// * `String` - Dot graph
+    pub fn get_dot_graph(&self, ids: Vec<usize>, functions: &FunctionTable) -> String {
+        let mut text = String::new();
+        let mut function_ids = vec![];
+        let mut function_ids_set = HashSet::new();
+        let mut variable_ids_set = HashSet::new();
+
+        for id in &ids {
+            self.add_variable_for_dot_graph(&mut variable_ids_set, &mut text, *id);
+            self.add_function_for_dot_graph(&mut function_ids, &mut function_ids_set, *id);
+        }
+
+        while !function_ids.is_empty() {
+            let f_id = function_ids.pop().unwrap();
+            let f = functions.get(f_id).expect("VariableTable::get_dot_graph: function not found");
+            text.push_str(&f.to_dot_string());
+            let input_ids = f.get_input();
+            if let Some(input_ids) = input_ids {
+                for id in input_ids {
+                    self.add_variable_for_dot_graph(&mut variable_ids_set, &mut text, *id);
+                    self.add_function_for_dot_graph(&mut function_ids, &mut function_ids_set, *id);
+                }
+            }
+        }
+        format!("digraph g {{\n{}}}", text)
+    }
+
+    /// Plot a dot graph
+    /// 
+    /// # Arguments
+    /// 
+    /// * `ids` - ID
+    /// * `functions` - Function table
+    /// * `path` - path without extension
+    /// * `to_png` - If true, convert to png
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if failed to create file or failed to write file or failed to execute dot
+    pub fn plot_dot_graph(&self, ids: Vec<usize>, functions: &FunctionTable, path: &str, to_png: bool) {
+        let dot_path = format!("{}.dot", path);
+        {
+            let text = self.get_dot_graph(ids, functions);
+            let mut file = File::create(&dot_path).expect("VariableTable::plot_dot_graph: failed to create file");
+            file.write_all(text.as_bytes()).expect("VariableTable::plot_dot_graph: failed to write file");
+        }
+        if to_png {
+            Command::new("dot")
+                .args([dot_path.as_str(), "-T", "png", "-o", format!("{}.png", path).as_str()])
+                .status()
+                .expect("VariableTable::plot_dot_graph: failed to execute dot");
+        }
+    }
 }
 
 #[cfg(test)]
@@ -418,5 +511,18 @@ mod tests {
         x.set_grad(tensor.clone());
         assert_eq!(*x.grad().unwrap(), tensor);
         assert_eq!(*x.grad_shape().unwrap(), vec![3]);
+    }
+
+    #[test]
+    fn to_dot_string_normal() {
+        let mut table = VariableTable::new();
+
+        let tensor = Tensor::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]);
+        let x = Variable::new(tensor);
+        let x = VariableWrapper::from_variable_f64(x, Some("name"));
+        let id = table.add(Box::new(x));
+        let x = table.get(id).unwrap();
+        let dot = x.to_dot_string();
+        assert_eq!(dot, "var_0 [label=\"name\", color=orange, style=filled]\n");
     }
 }

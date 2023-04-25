@@ -12,6 +12,10 @@ impl Neg {
 }
 
 impl Function for Neg {
+    fn name(&self) -> String {
+        "Neg".to_string()
+    }
+
     fn forward(&self, _info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
         if inputs.len() != 1 {
             panic!("Neg error: inputs.len() != 1");

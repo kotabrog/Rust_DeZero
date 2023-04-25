@@ -12,6 +12,10 @@ impl Exp {
 }
 
 impl Function for Exp {
+    fn name(&self) -> String {
+        "Exp".to_string()
+    }
+
     fn forward(&self, _info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
         if inputs.len() != 1 {
             panic!("Exp error: inputs.len() != 1");

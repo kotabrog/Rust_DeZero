@@ -12,6 +12,10 @@ impl Div {
 }
 
 impl Function for Div {
+    fn name(&self) -> String {
+        "Div".to_string()
+    }
+
     fn forward(&self, _info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
         if inputs.len() != 2 {
             panic!("Div error: inputs.len() != 2");

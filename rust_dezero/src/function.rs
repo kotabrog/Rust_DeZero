@@ -128,6 +128,23 @@ impl FunctionWrapper {
         &mut self.function
     }
 
+    /// Get the dot string
+    pub fn to_dot_string(&self) -> String {
+        let mut dot_string = String::new();
+        dot_string.push_str(&format!("func_{} [label=\"{}\", color=lightblue, style=filled, shape=box]\n", self.info.id, self.function.name()));
+        if let Some(inputs) = self.info.inputs.as_ref() {
+            for input in inputs.iter() {
+                dot_string.push_str(&format!("var_{} -> func_{};\n", input, self.info.id));
+            }
+        }
+        if let Some(outputs) = self.info.outputs.as_ref() {
+            for output in outputs.iter() {
+                dot_string.push_str(&format!("func_{} -> var_{};\n", self.info.id, output));
+            }
+        }
+        dot_string
+    }
+
     /// Call the function
     /// 
     /// # Arguments
@@ -244,6 +261,33 @@ impl FunctionTable {
 /// * `forward` - Forward propagation
 /// * `backward` - Backward propagation
 pub trait Function {
+    fn name(&self) -> String;
     fn forward(&self, info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize>;
     fn backward(&self, info: &FunctionInfo, variables: &mut VariableTable) -> Vec<usize>;
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Tensor;
+    use crate::variable::{Variable, VariableTable, VariableWrapper};
+    use crate::function::sample::Add;
+
+    use super::*;
+
+    #[test]
+    fn to_dot_string_normal() {
+        let mut variables = VariableTable::new();
+        let mut functions = FunctionTable::new();
+        let x = Variable::new(Tensor::new_from_num_vec(vec![1.0], vec![1]));
+        let y = Variable::new(Tensor::new_from_num_vec(vec![2.0], vec![1]));
+        let x_id = variables.add(Box::new(VariableWrapper::from_variable_f64(x, Some("x"))));
+        let y_id = variables.add(Box::new(VariableWrapper::from_variable_f64(y, Some("y"))));
+        let add = Add::new();
+        let add_id = functions.add_function(Box::new(add));
+        let add = functions.get_mut(add_id).unwrap();
+        let _ = add.call_mut(vec![x_id, y_id], &mut variables, false);
+        let dot_string = add.to_dot_string();
+        assert_eq!(dot_string,
+            "func_0 [label=\"Add\", color=lightblue, style=filled, shape=box]\nvar_0 -> func_0;\nvar_1 -> func_0;\nfunc_0 -> var_2;\n");
+    }
 }

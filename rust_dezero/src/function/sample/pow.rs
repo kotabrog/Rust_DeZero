@@ -19,6 +19,10 @@ impl<T> Pow<T> {
 }
 
 impl Function for Pow<f64> {
+    fn name(&self) -> String {
+        "Pow".to_string()
+    }
+
     fn forward(&self, _info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
         if inputs.len() != 1 {
             panic!("Pow error: inputs.len() != 1");

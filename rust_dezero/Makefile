@@ -9,3 +9,6 @@ test_integrate_step:
 
 doc:
 	cargo doc --open
+
+dot:
+	dot output/sample.dot -T png -o output/sample.png

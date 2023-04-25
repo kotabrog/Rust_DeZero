@@ -486,3 +486,41 @@ fn step20() {
     assert_eq!(b_grad, &Tensor::new_from_num_vec(vec![3.0], vec![]));
     println!("b grad: {:?}", b_grad);
 }
+
+#[test]
+fn step26() {
+    use rust_dezero::{
+        Tensor,
+        variable::{VariableTable, Variable, VariableWrapper},
+        function::{FunctionTable, sample::{Add, Mul}},
+    };
+
+    let mut variables = VariableTable::new();
+    let mut functions = FunctionTable::new();
+
+    let add = Add::new();
+    let mul = Mul::new();
+
+    let add_id = functions.add_function(Box::new(add));
+    let mul_id = functions.add_function(Box::new(mul));
+
+    let data = Tensor::new_from_num_vec(vec![3.0], vec![]);
+    let a = VariableWrapper::from_variable_f64(Variable::new(data), Some("a"));
+    let a_id = variables.add(Box::new(a));
+
+    let data = Tensor::new_from_num_vec(vec![2.0], vec![]);
+    let b = VariableWrapper::from_variable_f64(Variable::new(data), Some("b"));
+    let b_id = variables.add(Box::new(b));
+
+    let data = Tensor::new_from_num_vec(vec![1.0], vec![]);
+    let c = VariableWrapper::from_variable_f64(Variable::new(data), Some("c"));
+    let c_id = variables.add(Box::new(c));
+
+    let f = functions.get_mut(mul_id).unwrap();
+    let y = f.call_mut(vec![a_id, b_id], &mut variables, false);
+
+    let f = functions.get_mut(add_id).unwrap();
+    let y = f.call_mut(vec![y[0], c_id], &mut variables, false);
+
+    variables.plot_dot_graph(y, &functions, "output/sample", true);
+}

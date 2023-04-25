@@ -12,6 +12,10 @@ impl Mul {
 }
 
 impl Function for Mul {
+    fn name(&self) -> String {
+        "Mul".to_string()
+    }
+
     fn forward(&self, _info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
         if inputs.len() != 2 {
             panic!("Mul error: inputs.len() != 2");

@@ -12,6 +12,10 @@ impl Add {
 }
 
 impl Function for Add {
+    fn name(&self) -> String {
+        "Add".to_string()
+    }
+
     fn forward(&self, _info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
         if inputs.len() != 2 {
             panic!("Add error: inputs.len() != 2");

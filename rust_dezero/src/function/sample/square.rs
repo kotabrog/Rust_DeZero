@@ -12,6 +12,10 @@ impl Square {
 }
 
 impl Function for Square {
+    fn name(&self) -> String {
+        "Square".to_string()
+    }
+
     fn forward(&self, _info: &FunctionInfo, inputs: &Vec<usize>, variables: &mut VariableTable) -> Vec<usize> {
         if inputs.len() != 1 {
             panic!("Square error: inputs.len() != 1");
