@@ -14,6 +14,14 @@ impl Scaler<f64> {
     pub fn exp(&self) -> Self {
         Self { data: self.data.exp() }
     }
+
+    pub fn sin(&self) -> Self {
+        Self { data: self.data.sin() }
+    }
+
+    pub fn cos(&self) -> Self {
+        Self { data: self.data.cos() }
+    }
 }
 
 #[cfg(test)]
@@ -36,5 +44,17 @@ mod tests {
     fn exp_normal() {
         let x = Scaler::<f64>::new(2.0);
         assert_eq!(x.exp(), Scaler::<f64>::new((2.0 as f64).exp()));
+    }
+
+    #[test]
+    fn sin_normal() {
+        let x = Scaler::<f64>::new(2.0);
+        assert_eq!(x.sin(), Scaler::<f64>::new((2.0 as f64).sin()));
+    }
+
+    #[test]
+    fn cos_normal() {
+        let x = Scaler::<f64>::new(2.0);
+        assert_eq!(x.cos(), Scaler::<f64>::new((2.0 as f64).cos()));
     }
 }

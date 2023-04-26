@@ -524,3 +524,42 @@ fn step26() {
 
     variables.plot_dot_graph(y, &functions, "output/sample", true);
 }
+
+#[test]
+fn step27() {
+    use rust_dezero::{
+        Tensor,
+        variable::{VariableTable, Variable, VariableWrapper, VariableType},
+        function::{FunctionTable, sample::Sin},
+    };
+
+    let mut variables = VariableTable::new();
+    let mut functions = FunctionTable::new();
+
+    let sin = Sin::new();
+
+    let sin_id = functions.add_function(Box::new(sin));
+
+    let data = Tensor::new_from_num_vec(vec![std::f64::consts::FRAC_PI_4], vec![]);
+    let x = VariableWrapper::from_variable_f64(Variable::new(data), Some("x"));
+    let x_id = variables.add(Box::new(x));
+
+    let f = functions.get_mut(sin_id).unwrap();
+    let y = f.call_mut(vec![x_id], &mut variables, false);
+
+    variables.backward(y.clone(), &mut functions, false);
+
+    let y = variables.get(y[0]).unwrap().get_variable();
+    let y = match y {
+        VariableType::F64(y) => y.data(),
+    };
+    assert_eq!(y, &Tensor::new_from_num_vec(vec![0.7071067811865475], vec![]));
+    println!("y: {:?}", y);
+
+    let x = variables.get_mut(x_id).unwrap().get_variable();
+    let x_grad = match x {
+        VariableType::F64(x) => x.grad().unwrap(),
+    };
+    assert_eq!(x_grad, &Tensor::new_from_num_vec(vec![0.7071067811865476], vec![]));
+    println!("x grad: {:?}", x_grad);
+}
