@@ -1,16 +1,18 @@
 extern crate rust_dezero;
 
-// #[test]
-// fn step1() {
-//     use rust_dezero::Tensor;
-//     use rust_dezero::variable::Variable;
+#[test]
+fn step1() {
+    use rust_dezero::Tensor;
+    use rust_dezero::variable::{VariableContents, VariableTable};
 
-//     let data = Tensor::new_from_num_vec(vec![1.0], vec![]);
-//     let mut x = Variable::new(data);
-//     println!("x: {:?}", x);
-//     x.set_data(Tensor::new_from_num_vec(vec![2.0], vec![]));
-//     println!("x: {:?}", x);
-// }
+    let mut table = VariableTable::new();
+    let data = Tensor::new_from_num_vec(vec![1.0], vec![]);
+    let id = table.generate_variable_from_f64_tensor(data);
+    let x = table.get_mut_variable(id).unwrap();
+    println!("x: {:?}", x);
+    *x.get_mut_data() = VariableContents::F64(Box::new(Tensor::new_from_num_vec(vec![2.0], vec![])));
+    println!("x: {:?}", x);
+}
 
 // unrecoverable
 // #[test]
