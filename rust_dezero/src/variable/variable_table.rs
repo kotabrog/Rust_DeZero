@@ -19,12 +19,12 @@ impl VariableTable {
         id
     }
 
-    pub fn generate_variable_from_variable_contents(&mut self, data: VariableContents) -> usize {
-        self.insert(Variable::new(data, self.id_max))
+    pub fn generate_variable_from_variable_contents(&mut self, data: VariableContents, name: &str) -> usize {
+        self.insert(Variable::new(data, self.id_max, name))
     }
 
-    pub fn generate_variable_from_f64_tensor(&mut self, tensor: Tensor<f64>) -> usize {
-        self.generate_variable_from_variable_contents(VariableContents::F64(Box::new(tensor)))
+    pub fn generate_variable_from_f64_tensor(&mut self, tensor: Tensor<f64>, name: &str) -> usize {
+        self.generate_variable_from_variable_contents(VariableContents::F64(Box::new(tensor)), name)
     }
 
     pub fn get_variable(&self, id: usize) -> Option<&Variable> {
@@ -43,9 +43,13 @@ mod tests {
     #[test]
     fn generate_variable_from_f64_tensor_normal() {
         let mut table = VariableTable::new();
-        let id = table.generate_variable_from_f64_tensor(Tensor::new_from_num_vec(vec![1., 2., 3.], vec![3]));
+        let tensor = Tensor::new_from_num_vec(vec![1., 2., 3.], vec![3]);
+        let id = table.generate_variable_from_f64_tensor(tensor.clone(), "x");
         let variable = table.get_variable(id).unwrap();
+        let data = variable.to_f64_tensor().unwrap();
+        assert_eq!(data, &tensor);
         assert_eq!(variable.shape(), &vec![3]);
         assert_eq!(variable.data_type(), "f64");
+        assert_eq!(variable.get_name(), "x");
     }
 }
