@@ -35,11 +35,14 @@ pub struct Variable {
     data: VariableContents,
     id: usize,
     name: String,
+    creator: Option<usize>,
+    generation: usize,
+    grad_id: Option<usize>,
 }
 
 impl Variable {
     pub fn new(data: VariableContents, id: usize, name: &str) -> Self {
-        Self { data, id, name: name.to_string() }
+        Self { data, id, name: name.to_string(), creator: None, generation: 0, grad_id: None }
     }
 
     pub fn get_data(&self) -> &VariableContents {
@@ -58,6 +61,27 @@ impl Variable {
         &self.name
     }
 
+    pub fn get_creator(&self) -> Option<usize> {
+        self.creator
+    }
+
+    pub fn set_creator(&mut self, creator: usize, generation: usize) {
+        self.creator = Some(creator);
+        self.generation = generation;
+    }
+
+    pub fn get_generation(&self) -> usize {
+        self.generation
+    }
+
+    pub fn get_grad_id(&self) -> Option<usize> {
+        self.grad_id
+    }
+
+    pub fn set_grad_id(&mut self, grad_id: usize) {
+        self.grad_id = Some(grad_id);
+    }
+
     pub fn shape(&self) -> &Vec<usize> {
         self.data.shape()
     }
@@ -68,6 +92,10 @@ impl Variable {
 
     pub fn to_f64_tensor(&self) -> Option<&Tensor<f64>> {
         self.data.to_f64_tensor()
+    }
+
+    pub fn clear_grad(&mut self) {
+        self.grad_id = None;
     }
 }
 

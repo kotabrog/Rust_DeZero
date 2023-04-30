@@ -19,6 +19,14 @@ impl VariableTable {
         id
     }
 
+    pub fn get(&self, id: usize) -> Option<&Variable> {
+        self.table.get(&id).map(|v| v.as_ref())
+    }
+
+    pub fn get_mut(&mut self, id: usize) -> Option<&mut Variable> {
+        self.table.get_mut(&id).map(|v| v.as_mut())
+    }
+
     pub fn generate_variable_from_variable_contents(&mut self, data: VariableContents, name: &str) -> usize {
         self.insert(Variable::new(data, self.id_max, name))
     }
@@ -33,6 +41,10 @@ impl VariableTable {
 
     pub fn get_mut_variable(&mut self, id: usize) -> Option<&mut Variable> {
         self.table.get_mut(&id).map(|v| v.as_mut())
+    }
+
+    pub fn get_variable_contents_f64(&self, id: usize) -> Option<&Tensor<f64>> {
+        self.table.get(&id).map(|v| v.to_f64_tensor()).flatten()
     }
 }
 

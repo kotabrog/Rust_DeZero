@@ -9,22 +9,34 @@ fn step1() {
     let data = Tensor::new_from_num_vec(vec![1.0], vec![]);
     let id = table.generate_variable_from_f64_tensor(data, "x");
     let x = table.get_mut_variable(id).unwrap();
+    assert_eq!(x.get_data().to_f64_tensor().unwrap(), &Tensor::new_from_num_vec(vec![1.0], vec![]));
     println!("x: {:?}", x);
     *x.get_mut_data() = VariableContents::F64(Box::new(Tensor::new_from_num_vec(vec![2.0], vec![])));
+    assert_eq!(x.get_data().to_f64_tensor().unwrap(), &Tensor::new_from_num_vec(vec![2.0], vec![]));
     println!("x: {:?}", x);
 }
 
-// unrecoverable
-// #[test]
-// fn step2() {
-//     use rust_dezero::{Variable, Tensor, Function, function::sample::Square};
+#[test]
+fn step2() {
+    use rust_dezero::{
+        Tensor,
+        variable::VariableTable,
+        function::{FunctionTable, operator::Square},
+    };
 
-//     let data = Tensor::new_from_num_vec(vec![10.0], vec![]);
-//     let x = Variable::new(data);
-//     let mut f = Square::new();
-//     let y = f.call_mut(&x);
-//     println!("y: {:?}", y);
-// }
+    let mut variable_table = VariableTable::new();
+    let mut function_table = FunctionTable::new();
+
+    let data = vec![10.0];
+    let square_id = function_table.generate_function_from_function_contents(Box::new(Square::new()));
+    let x_id = variable_table.generate_variable_from_f64_tensor(
+        Tensor::new_from_num_vec(data.clone(), vec![]), "x");
+    let y_id = function_table.forward(square_id, vec![x_id], &mut variable_table, false);
+
+    let y = variable_table.get_variable_contents_f64(y_id[0]).unwrap();
+    assert_eq!(y.data(), Tensor::new_from_num_vec(vec![100.0], vec![]).data());
+    println!("y: {:?}", y);
+}
 
 // unrecoverable
 // #[test]
