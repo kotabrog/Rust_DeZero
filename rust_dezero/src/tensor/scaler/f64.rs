@@ -11,14 +11,17 @@ impl Scaler<f64> {
         Self { data: self.data.powf(n) }
     }
 
+    /// Returns exponential of the number
     pub fn exp(&self) -> Self {
         Self { data: self.data.exp() }
     }
 
+    /// Returns sin of the number
     pub fn sin(&self) -> Self {
         Self { data: self.data.sin() }
     }
 
+    /// Returns cos of the number
     pub fn cos(&self) -> Self {
         Self { data: self.data.cos() }
     }

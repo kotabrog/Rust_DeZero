@@ -11,6 +11,7 @@ impl Scaler<f32> {
         Self { data: self.data.powf(n) }
     }
 
+    /// Returns exponential of the number
     pub fn exp(&self) -> Self {
         Self { data: self.data.exp() }
     }

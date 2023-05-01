@@ -5,6 +5,14 @@ pub use function_table::FunctionTable;
 
 use crate::variable::VariableTable;
 
+/// Function information
+/// 
+/// # Fields
+/// 
+/// * `id` - Function ID
+/// * `inputs` - Input variable IDs
+/// * `outputs` - Output variable IDs
+/// * `generation` - Generation of this function
 #[derive(Debug, Clone)]
 pub struct FunctionInfo {
     pub id: usize,
@@ -14,45 +22,85 @@ pub struct FunctionInfo {
 }
 
 impl FunctionInfo {
+    /// Create a new FunctionInfo instance.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `id` - Function ID
     pub fn new(id: usize) -> Self {
         Self { id, inputs: None, outputs: None, generation: 0 }
     }
 }
 
+/// Function
+/// 
+/// # Fields
+/// 
+/// * `info` - Function information
+/// * `function` - Function contents
 pub struct Function {
     info: FunctionInfo,
     function: Box<dyn FunctionContents>
 }
 
 impl Function {
+    /// Create a new Function instance.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `id` - Function ID
+    /// * `function` - Function contents
     pub fn new(id: usize, function: Box<dyn FunctionContents>) -> Self {
         Self { info: FunctionInfo::new(id), function }
     }
 
+    /// Get the function information.
     pub fn get_info(&self) -> &FunctionInfo {
         &self.info
     }
 
+    /// Get function ID.
     pub fn get_id(&self) -> usize {
         self.info.id
     }
 
+    /// Get the function inputs.
     pub fn get_inputs(&self) -> Option<&Vec<usize>> {
         self.info.inputs.as_ref()
     }
 
+    /// Get the function outputs.
     pub fn get_outputs(&self) -> Option<&Vec<usize>> {
         self.info.outputs.as_ref()
     }
 
+    /// Set the function outputs.
     pub fn set_outputs(&mut self, outputs: Vec<usize>) {
         self.info.outputs = Some(outputs);
     }
 
+    /// Get the function generation.
     pub fn get_generation(&self) -> usize {
         self.info.generation
     }
 
+    /// forward
+    /// 
+    /// # Arguments
+    /// 
+    /// * `inputs` - Input variable IDs
+    /// * `variable_table` - Variable table
+    /// * `no_grad` - Whether to calculate gradients
+    /// 
+    /// # Returns
+    /// 
+    /// * `outputs` - Output variable IDs
+    /// 
+    /// # Panics
+    /// 
+    /// * `Invalid variable id` - If the variable ID is invalid
+    /// * `Inputs are empty` - If the inputs are empty
+    /// * `Generation overflow` - If the generation overflows
     pub fn forward(&mut self, inputs: Vec<usize>, variable_table: &mut VariableTable, no_grad: bool) -> Vec<usize> {
         let outputs = self.function.forward(&self.info, &inputs, variable_table);
         if !no_grad {
@@ -72,6 +120,7 @@ impl Function {
         outputs
     }
 
+    /// Get the backward function.
     pub fn get_backward(&self) -> fn(usize, &mut FunctionTable, &mut VariableTable) -> Vec<usize> {
         self.function.get_backward()
     }

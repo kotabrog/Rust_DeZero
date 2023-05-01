@@ -39,7 +39,7 @@ impl FunctionContents for Neg {
 
     fn get_backward(&self) -> fn(usize, &mut FunctionTable, &mut VariableTable) -> Vec<usize> {
         |function_id, function_table, variable_table| {
-            let function = function_table.get_function(function_id).expect("Invalid function id");
+            let function = function_table.get(function_id).expect("Invalid function id");
             let inputs = function.get_inputs().expect("Invalid inputs");
             let outputs = function.get_outputs().expect("Invalid outputs");
             Neg::input_check(inputs);
