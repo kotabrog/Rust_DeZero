@@ -71,10 +71,14 @@ impl Function {
         }
         outputs
     }
+
+    pub fn get_backward(&self) -> fn(usize, &mut FunctionTable, &mut VariableTable) -> Vec<usize> {
+        self.function.get_backward()
+    }
 }
 
 pub trait FunctionContents {
     fn name(&self) -> &str;
     fn forward(&self, info: &FunctionInfo, inputs: &Vec<usize>, variable_table: &mut VariableTable) -> Vec<usize>;
-    fn backward(&self, info: &FunctionInfo, variable_table: &mut VariableTable) -> Vec<usize>;
+    fn get_backward(&self) -> fn(usize, &mut FunctionTable, &mut VariableTable) -> Vec<usize>;
 }

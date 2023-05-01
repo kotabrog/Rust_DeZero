@@ -43,4 +43,10 @@ impl FunctionTable {
         let function = self.get_mut_function(id).expect("Invalid function id");
         function.forward(inputs, variable_table, no_grad)
     }
+
+    pub fn backward(&mut self, id: usize, variable_table: &mut VariableTable) -> Vec<usize> {
+        let function = self.get_function(id).expect("Invalid function id");
+        let backward = function.get_backward();
+        backward(id, self, variable_table)
+    }
 }

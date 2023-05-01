@@ -8,7 +8,7 @@ fn step1() {
     let mut table = VariableTable::new();
     let data = Tensor::new_from_num_vec(vec![1.0], vec![]);
     let id = table.generate_variable_from_f64_tensor(data, "x");
-    let x = table.get_mut_variable(id).unwrap();
+    let x = table.get_mut(id).unwrap();
     assert_eq!(x.get_data().to_f64_tensor().unwrap(), &Tensor::new_from_num_vec(vec![1.0], vec![]));
     println!("x: {:?}", x);
     *x.get_mut_data() = VariableContents::F64(Box::new(Tensor::new_from_num_vec(vec![2.0], vec![])));
