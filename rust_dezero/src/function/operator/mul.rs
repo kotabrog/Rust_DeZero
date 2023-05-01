@@ -108,4 +108,56 @@ mod tests {
         assert_eq!(grad0, &Tensor::new_from_num_vec(vec![4.0, 5.0, 6.0], vec![3]));
         assert_eq!(grad1, &Tensor::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]));
     }
+
+    #[test]
+    fn backward_backward_x_2() {
+        let mut variable_table = VariableTable::new();
+        let mut function_table = FunctionTable::new();
+
+        let data = vec![1.0, 2.0, 3.0];
+        let mul_id = function_table.generate_function_from_function_contents(Box::new(Mul::new()));
+        let id = variable_table.generate_variable_from_f64_tensor(
+            Tensor::new_from_num_vec(data.clone(), vec![3]), "x");
+
+        let output_ids = function_table.forward(mul_id, vec![id, id], &mut variable_table, false);
+
+        variable_table.backward(output_ids, &mut function_table, false);
+
+        let grad0_id = variable_table.get_variable_grad_id(id).unwrap();
+        variable_table.clear_grad(id);
+
+        variable_table.backward(vec![grad0_id], &mut function_table, false);
+
+        let grad = variable_table.get_variable_grad_contents_f64(id).unwrap();
+        assert_eq!(grad, &Tensor::new_from_num_vec(vec![2.0, 2.0, 2.0], vec![3]));
+    }
+
+    /// Test for backward of backward
+    /// This test is expected to panic
+    /// because it doesn't get through to x (probably)
+    #[test]
+    #[should_panic]
+    fn backward_backward_x_y() {
+        let mut variable_table = VariableTable::new();
+        let mut function_table = FunctionTable::new();
+
+        let data0 = vec![1.0, 2.0, 3.0];
+        let data1 = vec![4.0, 5.0, 6.0];
+        let mul_id = function_table.generate_function_from_function_contents(Box::new(Mul::new()));
+        let id0 = variable_table.generate_variable_from_f64_tensor(
+            Tensor::new_from_num_vec(data0.clone(), vec![3]), "x");
+        let id1 = variable_table.generate_variable_from_f64_tensor(
+            Tensor::new_from_num_vec(data1.clone(), vec![3]), "y");
+
+        let output_ids = function_table.forward(mul_id, vec![id0, id1], &mut variable_table, false);
+
+        variable_table.backward(output_ids, &mut function_table, false);
+
+        let grad0_id = variable_table.get_variable_grad_id(id0).unwrap();
+        variable_table.clear_grad(id0);
+
+        variable_table.backward(vec![grad0_id], &mut function_table, false);
+
+        variable_table.get_variable_grad_contents_f64(id0).unwrap();
+    }
 }

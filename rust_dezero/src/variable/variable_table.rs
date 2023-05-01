@@ -5,6 +5,7 @@ use function_generation_priority_queue::FunctionGenerationPriorityQueue;
 use super::{Variable, VariableContents};
 use crate::{Tensor, function::{FunctionTable, operator::Add}};
 
+#[derive(Debug)]
 pub struct VariableTable {
     table: HashMap<usize, Box<Variable>>,
     id_max: usize,
@@ -88,9 +89,13 @@ impl VariableTable {
         self.set_grad(variable_id, new_grad_id);
     }
 
+    pub fn clear_grad(&mut self, id: usize) {
+        self.get_mut(id).expect("Invalid variable id").clear_grad();
+    }
+
     pub fn clear_grads(&mut self, ids: &Vec<usize>) {
         for &id in ids {
-            self.get_mut(id).expect("Invalid variable id").clear_grad();
+            self.clear_grad(id);
         }
     }
 
