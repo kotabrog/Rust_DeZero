@@ -358,7 +358,6 @@ fn step19() {
     assert_eq!(x.get_name(), "x");
 }
 
-
 #[test]
 fn step20() {
     use rust_dezero::{
@@ -400,43 +399,39 @@ fn step20() {
     assert_eq!(b_grad.data()[0].data(), &3.0);
 }
 
-// #[test]
-// fn step26() {
-//     use rust_dezero::{
-//         Tensor,
-//         variable::{VariableTable, Variable, VariableWrapper},
-//         function::{FunctionTable, sample::{Add, Mul}},
-//     };
+#[test]
+fn step26() {
+    use std::fs::create_dir;
+    use rust_dezero::{
+        Tensor,
+        variable::VariableTable,
+        function::{FunctionTable, operator::{Add, Mul}},
+    };
 
-//     let mut variables = VariableTable::new();
-//     let mut functions = FunctionTable::new();
+    let mut variable_table = VariableTable::new();
+    let mut function_table = FunctionTable::new();
 
-//     let add = Add::new();
-//     let mul = Mul::new();
+    let data0 = vec![3.0];
+    let data1 = vec![2.0];
+    let data2 = vec![1.0];
+    let mul_id = function_table.generate_function_from_function_contents(Box::new(Mul::new()));
+    let add_id = function_table.generate_function_from_function_contents(Box::new(Add::new()));
+    let a_id = variable_table.generate_variable_from_f64_tensor(
+        Tensor::new_from_num_vec(data0.clone(), vec![]), "a");
+    let b_id = variable_table.generate_variable_from_f64_tensor(
+        Tensor::new_from_num_vec(data1.clone(), vec![]), "b");
+    let c_id = variable_table.generate_variable_from_f64_tensor(
+        Tensor::new_from_num_vec(data2.clone(), vec![]), "c");
 
-//     let add_id = functions.add_function(Box::new(add));
-//     let mul_id = functions.add_function(Box::new(mul));
+    let y_id = function_table.forward(mul_id, vec![a_id, b_id], &mut variable_table, false)[0];
+    let y_id = function_table.forward(add_id, vec![y_id, c_id], &mut variable_table, false);
 
-//     let data = Tensor::new_from_num_vec(vec![3.0], vec![]);
-//     let a = VariableWrapper::from_variable_f64(Variable::new(data), Some("a"));
-//     let a_id = variables.add(Box::new(a));
-
-//     let data = Tensor::new_from_num_vec(vec![2.0], vec![]);
-//     let b = VariableWrapper::from_variable_f64(Variable::new(data), Some("b"));
-//     let b_id = variables.add(Box::new(b));
-
-//     let data = Tensor::new_from_num_vec(vec![1.0], vec![]);
-//     let c = VariableWrapper::from_variable_f64(Variable::new(data), Some("c"));
-//     let c_id = variables.add(Box::new(c));
-
-//     let f = functions.get_mut(mul_id).unwrap();
-//     let y = f.call_mut(vec![a_id, b_id], &mut variables, false);
-
-//     let f = functions.get_mut(add_id).unwrap();
-//     let y = f.call_mut(vec![y[0], c_id], &mut variables, false);
-
-//     variables.plot_dot_graph(y, &functions, "output/sample", true);
-// }
+    match create_dir("output") {
+        Ok(_) => println!("create output directory"),
+        Err(_) => {},
+    }
+    variable_table.plot_dot_graph(y_id, &function_table, "output/sample", true);
+}
 
 // #[test]
 // fn step27() {

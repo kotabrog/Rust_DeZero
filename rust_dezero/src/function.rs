@@ -124,6 +124,23 @@ impl Function {
     pub fn get_backward(&self) -> fn(usize, &mut FunctionTable, &mut VariableTable) -> Vec<usize> {
         self.function.get_backward()
     }
+
+    /// Get the dot string
+    pub fn to_dot_string(&self) -> String {
+        let mut dot_string = String::new();
+        dot_string.push_str(&format!("func_{} [label=\"{}\", color=lightblue, style=filled, shape=box]\n", self.info.id, self.function.name()));
+        if let Some(inputs) = self.info.inputs.as_ref() {
+            for input in inputs.iter() {
+                dot_string.push_str(&format!("var_{} -> func_{};\n", input, self.info.id));
+            }
+        }
+        if let Some(outputs) = self.info.outputs.as_ref() {
+            for output in outputs.iter() {
+                dot_string.push_str(&format!("func_{} -> var_{};\n", self.info.id, output));
+            }
+        }
+        dot_string
+    }
 }
 
 pub trait FunctionContents {

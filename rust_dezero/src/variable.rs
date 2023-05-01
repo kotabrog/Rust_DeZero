@@ -135,6 +135,11 @@ impl Variable {
     pub fn clear_grad(&mut self) {
         self.grad_id = None;
     }
+
+    /// Get dot string
+    pub fn to_dot_string(&self) -> String {
+        format!("var_{} [label=\"{}\", color=orange, style=filled]\n", self.id, self.name)
+    }
 }
 
 #[cfg(test)]
