@@ -7,6 +7,7 @@ pub mod div;
 pub mod sub;
 pub mod pow;
 pub mod sin;
+pub mod cos;
 
 pub use square::Square;
 pub use mul::Mul;
@@ -17,3 +18,4 @@ pub use div::Div;
 pub use sub::Sub;
 pub use pow::Pow;
 pub use sin::Sin;
+pub use cos::Cos;

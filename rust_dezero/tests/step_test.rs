@@ -433,41 +433,84 @@ fn step26() {
     variable_table.plot_dot_graph(y_id, &function_table, "output/sample", true);
 }
 
+#[test]
+fn step27() {
+    use rust_dezero::{
+        Tensor,
+        variable::VariableTable,
+        function::{FunctionTable, operator::Sin},
+    };
+
+    let mut variable_table = VariableTable::new();
+    let mut function_table = FunctionTable::new();
+
+    let data = vec![std::f64::consts::FRAC_PI_4];
+    let sin_id = function_table.generate_function_from_function_contents(Box::new(Sin::new()));
+    let x_id = variable_table.generate_variable_from_f64_tensor(
+        Tensor::new_from_num_vec(data.clone(), vec![]), "x");
+
+    let y_id = function_table.forward(sin_id, vec![x_id], &mut variable_table, false)[0];
+
+    let y = variable_table.get_variable_contents_f64(y_id).unwrap();
+    println!("y: {:?}", y);
+    assert_eq!(*y.data()[0].data(), data[0].sin());
+
+    variable_table.backward(vec![y_id], &mut function_table, false);
+
+    let x_grad = variable_table.get_variable_grad_contents_f64(x_id).unwrap();
+    println!("x_grad: {:?}", x_grad);
+    assert_eq!(x_grad.data()[0].data(), &data[0].cos());
+}
+
 // #[test]
-// fn step27() {
+// fn step33() {
 //     use rust_dezero::{
 //         Tensor,
-//         variable::{VariableTable, Variable, VariableWrapper, VariableType},
-//         function::{FunctionTable, sample::Sin},
+//         variable::VariableTable,
+//         function::{FunctionTable, operator::{Mul, Sub, Pow}},
 //     };
 
-//     let mut variables = VariableTable::new();
-//     let mut functions = FunctionTable::new();
+//     fn f(tensor: Tensor<f64>) -> (VariableTable, FunctionTable, usize, usize) {
+//         let mut variable_table = VariableTable::new();
+//         let mut function_table = FunctionTable::new();
 
-//     let sin = Sin::new();
+//         let x_id = variable_table.generate_variable_from_f64_tensor(tensor, "x");
+//         let const_id = variable_table.generate_variable_from_f64_tensor(
+//             Tensor::new_from_num_vec(vec![2.0], vec![]), "const");
 
-//     let sin_id = functions.add_function(Box::new(sin));
+//         let f_id = function_table.generate_function_from_function_contents(Box::new(Pow::new(4.0)));
+//         let temp0_id = function_table.forward(f_id, vec![x_id], &mut variable_table, false)[0];
 
-//     let data = Tensor::new_from_num_vec(vec![std::f64::consts::FRAC_PI_4], vec![]);
-//     let x = VariableWrapper::from_variable_f64(Variable::new(data), Some("x"));
-//     let x_id = variables.add(Box::new(x));
+//         let f_id = function_table.generate_function_from_function_contents(Box::new(Pow::new(2.0)));
+//         let temp1_id = function_table.forward(f_id, vec![x_id], &mut variable_table, false)[0];
 
-//     let f = functions.get_mut(sin_id).unwrap();
-//     let y = f.call_mut(vec![x_id], &mut variables, false);
+//         let f_id = function_table.generate_function_from_function_contents(Box::new(Mul::new()));
+//         let temp1_id = function_table.forward(f_id, vec![const_id, temp1_id], &mut variable_table, false)[0];
 
-//     variables.backward(y.clone(), &mut functions, false);
+//         let f_id = function_table.generate_function_from_function_contents(Box::new(Sub::new()));
+//         let y_id = function_table.forward(f_id, vec![temp0_id, temp1_id], &mut variable_table, false)[0];
 
-//     let y = variables.get(y[0]).unwrap().get_variable();
-//     let y = match y {
-//         VariableType::F64(y) => y.data(),
-//     };
-//     assert_eq!(y, &Tensor::new_from_num_vec(vec![0.7071067811865475], vec![]));
-//     println!("y: {:?}", y);
+//         (variable_table, function_table, x_id, y_id)
+//     }
 
-//     let x = variables.get_mut(x_id).unwrap().get_variable();
-//     let x_grad = match x {
-//         VariableType::F64(x) => x.grad().unwrap(),
-//     };
-//     assert_eq!(x_grad, &Tensor::new_from_num_vec(vec![0.7071067811865476], vec![]));
-//     println!("x grad: {:?}", x_grad);
+//     let mut x_data = Tensor::new_from_num_vec(vec![2.0], vec![]);
+//     let iters = 10;
+
+//     for i in 0..iters {
+//         let (mut variable_table, mut function_table, x_id, y_id) = f(x_data.clone());
+//         let y_data = variable_table.get_variable_contents_f64(y_id).unwrap().clone();
+
+//         variable_table.backward(vec![y_id], &mut function_table, false);
+
+//         let gx = variable_table.get_variable_grad_contents_f64(x_id).unwrap().clone();
+
+//         let gx_id = variable_table.get_variable_grad_id(x_id).unwrap();
+//         variable_table.clear_grad(x_id);
+//         variable_table.backward(vec![gx_id], &mut function_table, false);
+
+//         let gx2 = variable_table.get_variable_grad_contents_f64(x_id).unwrap().clone();
+
+//         x_data -= &(&gx / &gx2);
+//         println!("iter: {}, x: {:?}, y: {:?}", i, x_data, y_data);
+//     }
 // }
