@@ -161,6 +161,13 @@ where
         Self::check_shape(&self.data, &shape);
         Self { data: self.data.clone(), shape }
     }
+
+    /// Transpose the Tensor
+    pub fn transpose(&self) -> Self {
+        let mut shape = self.shape.clone();
+        shape.reverse();
+        Self::new(self.data.clone(), shape)
+    }
 }
 
 impl<T> Tensor<T>
@@ -537,6 +544,45 @@ mod tests {
         let x = x.reshape([2, 2]);
         assert_eq!(x.data(), &vec![0.0.into(), 1.0.into(), 2.0.into(), 3.0.into()]);
         assert_eq!(x.shape(), &vec![2, 2]);
+    }
+
+    #[test]
+    fn reshape_zero_dim() {
+        let x = Tensor::new_from_num_vec([1.0], []);
+        let x = x.reshape([1, 1]);
+        assert_eq!(x.data(), &vec![1.0.into()]);
+        assert_eq!(x.shape(), &vec![1, 1]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn reshape_error_mismatch_shape() {
+        let x = Tensor::new_from_num_vec([0.0, 1.0, 2.0, 3.0], [4,]);
+        let _ = x.reshape([2, 3]);
+    }
+
+    #[test]
+    fn transpose_normal() {
+        let x = Tensor::new_from_num_vec([0.0, 1.0, 2.0, 3.0, 4.0, 5.0], [3, 2]);
+        let x = x.transpose();
+        assert_eq!(x.data(), &vec![0.0.into(), 1.0.into(), 2.0.into(), 3.0.into(), 4.0.into(), 5.0.into()]);
+        assert_eq!(x.shape(), &vec![2, 3]);
+    }
+
+    #[test]
+    fn transpose_zero_dim() {
+        let x = Tensor::new_from_num_vec([1.0], []);
+        let x = x.transpose();
+        assert_eq!(x.data(), &vec![1.0.into()]);
+        assert_eq!(x.shape(), &vec![]);
+    }
+
+    #[test]
+    fn transpose_1d() {
+        let x = Tensor::new_from_num_vec([0.0, 1.0, 2.0], [3,]);
+        let x = x.transpose();
+        assert_eq!(x.data(), &vec![0.0.into(), 1.0.into(), 2.0.into()]);
+        assert_eq!(x.shape(), &vec![3]);
     }
 
     #[test]
