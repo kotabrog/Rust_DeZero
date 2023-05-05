@@ -35,10 +35,7 @@ impl<T> Tensor<T>
             assert_eq!(data.len(), 1, "Shape mismatch");
             return;
         }
-        let mut size = 1;
-        for s in shape {
-            size *= s;
-        }
+        let size = shape.iter().product();
         assert_eq!(data.len(), size, "Shape mismatch");
     }
 
@@ -148,6 +145,21 @@ where
     pub fn new_from_num_vec<U: IntoIterator<Item = T>, V: AsRef<[usize]>>(data: U, shape: V) -> Self {
         let data: Vec<Scaler<T>> = data.into_iter().map(Scaler::from).collect();
         Tensor::new(data, shape)
+    }
+
+    /// Reshape the Tensor
+    /// 
+    /// # Arguments
+    /// 
+    /// * `shape` - Tensor shape
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if the shape is not correct.
+    pub fn reshape<U: AsRef<[usize]>>(&self, shape: U) -> Self {
+        let shape = shape.as_ref().to_owned();
+        Self::check_shape(&self.data, &shape);
+        Self { data: self.data.clone(), shape }
     }
 }
 
@@ -517,6 +529,14 @@ mod tests {
     #[should_panic]
     fn new_from_num_vec_error_mismatch_shape() {
         let _ = Tensor::new_from_num_vec([0.0, 1.0, 2.0], [2,]);
+    }
+
+    #[test]
+    fn reshape_normal() {
+        let x = Tensor::new_from_num_vec([0.0, 1.0, 2.0, 3.0], [4,]);
+        let x = x.reshape([2, 2]);
+        assert_eq!(x.data(), &vec![0.0.into(), 1.0.into(), 2.0.into(), 3.0.into()]);
+        assert_eq!(x.shape(), &vec![2, 2]);
     }
 
     #[test]

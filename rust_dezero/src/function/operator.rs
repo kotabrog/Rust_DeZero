@@ -9,6 +9,7 @@ pub mod pow;
 pub mod sin;
 pub mod cos;
 pub mod tanh;
+pub mod reshape;
 
 pub use square::Square;
 pub use mul::Mul;
@@ -21,3 +22,4 @@ pub use pow::Pow;
 pub use sin::Sin;
 pub use cos::Cos;
 pub use tanh::Tanh;
+pub use reshape::Reshape;
