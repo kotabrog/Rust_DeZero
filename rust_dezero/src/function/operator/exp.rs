@@ -1,3 +1,4 @@
+use std::any::Any;
 use super::Mul;
 use super::super::{FunctionContents, FunctionTable};
 use crate::variable::VariableTable;
@@ -24,6 +25,10 @@ impl Exp {
 }
 
 impl FunctionContents for Exp {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
     fn name(&self) -> &str {
         "Exp"
     }

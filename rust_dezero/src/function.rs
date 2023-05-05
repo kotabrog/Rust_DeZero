@@ -3,6 +3,7 @@ pub mod operator;
 
 pub use function_table::FunctionTable;
 
+use std::any::Any;
 use crate::variable::VariableTable;
 
 /// Function information
@@ -84,6 +85,19 @@ impl Function {
         self.info.generation
     }
 
+    /// Get the function contents.
+    /// 
+    /// # Type Parameters
+    /// 
+    /// * `T` - Function contents type
+    /// 
+    /// # Returns
+    /// 
+    /// * `function_contents` - If the function contents type is correct then Some(function_contents) is returned, otherwise None is returned
+    pub fn get_function_contents<T: FunctionContents + 'static>(&self) -> Option<& T> {
+        self.function.as_any().downcast_ref::<T>()
+    }
+
     /// forward
     /// 
     /// # Arguments
@@ -144,6 +158,7 @@ impl Function {
 }
 
 pub trait FunctionContents {
+    fn as_any(&self) -> &dyn Any;
     fn name(&self) -> &str;
     fn forward(&self, info: &FunctionInfo, inputs: &Vec<usize>, variable_table: &mut VariableTable) -> Vec<usize>;
     fn get_backward(&self) -> fn(usize, &mut FunctionTable, &mut VariableTable) -> Vec<usize>;

@@ -1,3 +1,4 @@
+use std::any::Any;
 use super::{Mul, Sub};
 use super::super::{FunctionContents, FunctionTable};
 use crate::Tensor;
@@ -25,6 +26,10 @@ impl Tanh {
 }
 
 impl FunctionContents for Tanh {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
     fn name(&self) -> &str {
         "Tanh"
     }

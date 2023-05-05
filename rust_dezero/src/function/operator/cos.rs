@@ -1,3 +1,4 @@
+use std::any::Any;
 use super::{Sin, Mul, Neg};
 use super::super::{FunctionContents, FunctionTable};
 use crate::variable::VariableTable;
@@ -24,6 +25,10 @@ impl Cos {
 }
 
 impl FunctionContents for Cos {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
     fn name(&self) -> &str {
         "Cos"
     }
@@ -89,10 +94,10 @@ mod tests {
         let mut function_table = FunctionTable::new();
 
         let data = vec![1.0, 2.0, 3.0];
-        let sin_id = function_table.generate_function_from_function_contents(Box::new(Cos::new()));
+        let cos_id = function_table.generate_function_from_function_contents(Box::new(Cos::new()));
         let x_id = variable_table.generate_variable_from_f64_tensor(
             Tensor::new_from_num_vec(data.clone(), vec![3]), "x");
-        let y_ids = function_table.forward(sin_id, vec![x_id], &mut variable_table, false);
+        let y_ids = function_table.forward(cos_id, vec![x_id], &mut variable_table, false);
 
         variable_table.backward(y_ids, &mut function_table, false);
 

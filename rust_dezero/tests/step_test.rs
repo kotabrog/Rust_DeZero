@@ -463,6 +463,59 @@ fn step27() {
 }
 
 #[test]
+fn step33() {
+    use rust_dezero::{
+        Tensor,
+        variable::VariableTable,
+        function::{FunctionTable, operator::{Mul, Sub, Pow}},
+    };
+
+    fn f(tensor: Tensor<f64>) -> (VariableTable, FunctionTable, usize, usize) {
+        let mut variable_table = VariableTable::new();
+        let mut function_table = FunctionTable::new();
+
+        let x_id = variable_table.generate_variable_from_f64_tensor(tensor, "x");
+        let const_id = variable_table.generate_variable_from_f64_tensor(
+            Tensor::new_from_num_vec(vec![2.0], vec![]), "const");
+
+        let f_id = function_table.generate_function_from_function_contents(Box::new(Pow::new(4.0)));
+        let temp0_id = function_table.forward(f_id, vec![x_id], &mut variable_table, false)[0];
+
+        let f_id = function_table.generate_function_from_function_contents(Box::new(Pow::new(2.0)));
+        let temp1_id = function_table.forward(f_id, vec![x_id], &mut variable_table, false)[0];
+
+        let f_id = function_table.generate_function_from_function_contents(Box::new(Mul::new()));
+        let temp1_id = function_table.forward(f_id, vec![const_id, temp1_id], &mut variable_table, false)[0];
+
+        let f_id = function_table.generate_function_from_function_contents(Box::new(Sub::new()));
+        let y_id = function_table.forward(f_id, vec![temp0_id, temp1_id], &mut variable_table, false)[0];
+
+        (variable_table, function_table, x_id, y_id)
+    }
+
+    let mut x_data = Tensor::new_from_num_vec(vec![2.0], vec![]);
+    let iters = 10;
+
+    for i in 0..iters {
+        let (mut variable_table, mut function_table, x_id, y_id) = f(x_data.clone());
+        let y_data = variable_table.get_variable_contents_f64(y_id).unwrap().clone();
+
+        variable_table.backward(vec![y_id], &mut function_table, false);
+
+        let gx = variable_table.get_variable_grad_contents_f64(x_id).unwrap().clone();
+
+        let gx_id = variable_table.get_variable_grad_id(x_id).unwrap();
+        variable_table.clear_grad(x_id);
+        variable_table.backward(vec![gx_id], &mut function_table, false);
+
+        let gx2 = variable_table.get_variable_grad_contents_f64(x_id).unwrap().clone();
+
+        x_data -= &(&gx / &gx2);
+        println!("iter: {}, x: {:?}, y: {:?}", i, x_data, y_data);
+    }
+}
+
+#[test]
 fn step35() {
     use std::fs::create_dir;
     use rust_dezero::{
@@ -500,56 +553,3 @@ fn step35() {
     }
     variable_table.plot_dot_graph(vec![gx_id], &function_table, "output/step35", true);
 }
-
-// #[test]
-// fn step33() {
-//     use rust_dezero::{
-//         Tensor,
-//         variable::VariableTable,
-//         function::{FunctionTable, operator::{Mul, Sub, Pow}},
-//     };
-
-//     fn f(tensor: Tensor<f64>) -> (VariableTable, FunctionTable, usize, usize) {
-//         let mut variable_table = VariableTable::new();
-//         let mut function_table = FunctionTable::new();
-
-//         let x_id = variable_table.generate_variable_from_f64_tensor(tensor, "x");
-//         let const_id = variable_table.generate_variable_from_f64_tensor(
-//             Tensor::new_from_num_vec(vec![2.0], vec![]), "const");
-
-//         let f_id = function_table.generate_function_from_function_contents(Box::new(Pow::new(4.0)));
-//         let temp0_id = function_table.forward(f_id, vec![x_id], &mut variable_table, false)[0];
-
-//         let f_id = function_table.generate_function_from_function_contents(Box::new(Pow::new(2.0)));
-//         let temp1_id = function_table.forward(f_id, vec![x_id], &mut variable_table, false)[0];
-
-//         let f_id = function_table.generate_function_from_function_contents(Box::new(Mul::new()));
-//         let temp1_id = function_table.forward(f_id, vec![const_id, temp1_id], &mut variable_table, false)[0];
-
-//         let f_id = function_table.generate_function_from_function_contents(Box::new(Sub::new()));
-//         let y_id = function_table.forward(f_id, vec![temp0_id, temp1_id], &mut variable_table, false)[0];
-
-//         (variable_table, function_table, x_id, y_id)
-//     }
-
-//     let mut x_data = Tensor::new_from_num_vec(vec![2.0], vec![]);
-//     let iters = 10;
-
-//     for i in 0..iters {
-//         let (mut variable_table, mut function_table, x_id, y_id) = f(x_data.clone());
-//         let y_data = variable_table.get_variable_contents_f64(y_id).unwrap().clone();
-
-//         variable_table.backward(vec![y_id], &mut function_table, false);
-
-//         let gx = variable_table.get_variable_grad_contents_f64(x_id).unwrap().clone();
-
-//         let gx_id = variable_table.get_variable_grad_id(x_id).unwrap();
-//         variable_table.clear_grad(x_id);
-//         variable_table.backward(vec![gx_id], &mut function_table, false);
-
-//         let gx2 = variable_table.get_variable_grad_contents_f64(x_id).unwrap().clone();
-
-//         x_data -= &(&gx / &gx2);
-//         println!("iter: {}, x: {:?}, y: {:?}", i, x_data, y_data);
-//     }
-// }

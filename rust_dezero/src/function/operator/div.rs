@@ -1,3 +1,4 @@
+use std::any::Any;
 use super::{Mul, Square, Neg};
 use super::super::{FunctionContents, FunctionTable};
 use crate::variable::VariableTable;
@@ -24,6 +25,10 @@ impl Div {
 }
 
 impl FunctionContents for Div {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
     fn name(&self) -> &str {
         "Div"
     }
