@@ -85,6 +85,11 @@ impl Variable {
         &self.name
     }
 
+    /// Set the name of the Variable.
+    pub fn set_name(&mut self, name: &str) {
+        self.name = name.to_string();
+    }
+
     /// Get the creator of the Variable.
     pub fn get_creator(&self) -> Option<usize> {
         self.creator

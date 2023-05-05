@@ -128,6 +128,17 @@ impl VariableTable {
             .map(|grad_id| self.get_variable_contents_f64(grad_id)).flatten()
     }
 
+    /// Set the name of the specified variable id.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `id` - Variable ID
+    /// * `name` - Variable name
+    pub fn set_variable_name(&mut self, id: usize, name: &str) {
+        let variable = self.get_mut(id).expect("Invalid variable id");
+        variable.set_name(name);
+    }
+
     /// Set the grad id of the specified variable id.
     /// 
     /// # Arguments

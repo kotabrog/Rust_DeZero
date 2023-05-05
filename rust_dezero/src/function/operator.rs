@@ -20,3 +20,4 @@ pub use sub::Sub;
 pub use pow::Pow;
 pub use sin::Sin;
 pub use cos::Cos;
+pub use tanh::Tanh;

@@ -430,7 +430,7 @@ fn step26() {
         Ok(_) => println!("create output directory"),
         Err(_) => {},
     }
-    variable_table.plot_dot_graph(y_id, &function_table, "output/sample", true);
+    variable_table.plot_dot_graph(y_id, &function_table, "output/step26", true);
 }
 
 #[test]
@@ -460,6 +460,45 @@ fn step27() {
     let x_grad = variable_table.get_variable_grad_contents_f64(x_id).unwrap();
     println!("x_grad: {:?}", x_grad);
     assert_eq!(x_grad.data()[0].data(), &data[0].cos());
+}
+
+#[test]
+fn step35() {
+    use std::fs::create_dir;
+    use rust_dezero::{
+        Tensor,
+        variable::VariableTable,
+        function::{FunctionTable, operator::Tanh},
+    };
+    let iters = 0;
+
+    let mut variable_table = VariableTable::new();
+    let mut function_table = FunctionTable::new();
+
+    let data = vec![1.0];
+    let tanh_id = function_table.generate_function_from_function_contents(Box::new(Tanh::new()));
+    let x_id = variable_table.generate_variable_from_f64_tensor(
+        Tensor::new_from_num_vec(data.clone(), vec![]), "x");
+
+    let y_id = function_table.forward(tanh_id, vec![x_id], &mut variable_table, false)[0];
+    variable_table.set_variable_name(y_id, "y");
+
+    variable_table.backward(vec![y_id], &mut function_table, false);
+
+    for _ in 0..iters {
+        let gx_id = variable_table.get_variable_grad_id(x_id).unwrap();
+        variable_table.clear_grad(x_id);
+        variable_table.backward(vec![gx_id], &mut function_table, false);
+    }
+
+    let gx_id = variable_table.get_variable_grad_id(x_id).unwrap();
+    variable_table.set_variable_name(gx_id, format!("gx{}", iters + 1).as_str());
+
+    match create_dir("output") {
+        Ok(_) => println!("create output directory"),
+        Err(_) => {},
+    }
+    variable_table.plot_dot_graph(vec![gx_id], &function_table, "output/step35", true);
 }
 
 // #[test]

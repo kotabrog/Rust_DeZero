@@ -74,6 +74,27 @@ impl Tensor<f64> {
             shape: tensor.shape.clone(),
         }
     }
+
+    /// Returns a tensor with a value and shape from the arguments
+    pub fn full(value: f64, shape: Vec<usize>) -> Self {
+        Self {
+            data: vec![value.into(); shape.iter().product()],
+            shape,
+        }
+    }
+
+    /// Returns a tensor with a value from the argument and the same shape as tensor
+    /// 
+    /// # Arguments
+    /// 
+    /// * `tensor` - The tensor to be used as a reference for the shape
+    /// * `value` - The value to be used for the tensor
+    pub fn full_like(tensor: &Self, value: f64) -> Self {
+        Self {
+            data: vec![value.into(); tensor.data.len()],
+            shape: tensor.shape.clone(),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -124,5 +145,16 @@ mod tests {
     fn ones_like_normal() {
         let x = Tensor::<f64>::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]);
         assert_eq!(Tensor::ones_like(&x), Tensor::<f64>::new_from_num_vec(vec![1.0, 1.0, 1.0], vec![3]));
+    }
+
+    #[test]
+    fn full_normal() {
+        assert_eq!(Tensor::<f64>::full(1.0, vec![3]), Tensor::<f64>::new_from_num_vec(vec![1.0, 1.0, 1.0], vec![3]));
+    }
+
+    #[test]
+    fn full_like_normal() {
+        let x = Tensor::<f64>::new_from_num_vec(vec![1.0, 2.0, 3.0], vec![3]);
+        assert_eq!(Tensor::full_like(&x, 1.0), Tensor::<f64>::new_from_num_vec(vec![1.0, 1.0, 1.0], vec![3]));
     }
 }
