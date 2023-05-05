@@ -56,6 +56,17 @@ impl Tensor<f64> {
         }
     }
 
+    /// Returns the tanh of each element
+    pub fn tanh(&self) -> Self {
+        Self {
+            data: self.data
+                .iter()
+                .map(|x| x.tanh())
+                .collect(),
+            shape: self.shape.clone(),
+        }
+    }
+
     /// Returns a tensor with a value of 1 and the same shape as tensor
     pub fn ones_like(tensor: &Self) -> Self {
         Self {
@@ -100,6 +111,13 @@ mod tests {
         let data = vec![1.0, 2.0, 3.0];
         let x = Tensor::<f64>::new_from_num_vec(data.clone(), vec![3]);
         assert_eq!(x.cos(), Tensor::<f64>::new_from_num_vec(data.iter().map(|x| x.cos()), vec![3]));
+    }
+
+    #[test]
+    fn tanh_normal() {
+        let data = vec![1.0, 2.0, 3.0];
+        let x = Tensor::<f64>::new_from_num_vec(data.clone(), vec![3]);
+        assert_eq!(x.tanh(), Tensor::<f64>::new_from_num_vec(data.iter().map(|x| x.tanh()), vec![3]));
     }
 
     #[test]

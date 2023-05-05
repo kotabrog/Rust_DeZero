@@ -25,6 +25,11 @@ impl Scaler<f64> {
     pub fn cos(&self) -> Self {
         Self { data: self.data.cos() }
     }
+
+    /// Returns tanh of the number
+    pub fn tanh(&self) -> Self {
+        Self { data: self.data.tanh() }
+    }
 }
 
 #[cfg(test)]
@@ -59,5 +64,11 @@ mod tests {
     fn cos_normal() {
         let x = Scaler::<f64>::new(2.0);
         assert_eq!(x.cos(), Scaler::<f64>::new((2.0 as f64).cos()));
+    }
+
+    #[test]
+    fn tanh_normal() {
+        let x = Scaler::<f64>::new(2.0);
+        assert_eq!(x.tanh(), Scaler::<f64>::new((2.0 as f64).tanh()));
     }
 }

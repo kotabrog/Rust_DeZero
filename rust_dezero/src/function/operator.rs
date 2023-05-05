@@ -8,6 +8,7 @@ pub mod sub;
 pub mod pow;
 pub mod sin;
 pub mod cos;
+pub mod tanh;
 
 pub use square::Square;
 pub use mul::Mul;
