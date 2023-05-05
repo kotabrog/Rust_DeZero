@@ -553,3 +553,37 @@ fn step35() {
     }
     variable_table.plot_dot_graph(vec![gx_id], &function_table, "output/step35", true);
 }
+
+#[test]
+fn step36() {
+    use rust_dezero::{
+        Tensor,
+        variable::VariableTable,
+        function::{FunctionTable, operator::{Pow, Add}},
+    };
+    let mut variable_table = VariableTable::new();
+    let mut function_table = FunctionTable::new();
+
+    let data = vec![2.0];
+    let x_id = variable_table.generate_variable_from_f64_tensor(
+        Tensor::new_from_num_vec(data.clone(), vec![]), "x");
+
+    let pow_id = function_table.generate_function_from_function_contents(Box::new(Pow::new(2.0)));
+    let y_id = function_table.forward(pow_id, vec![x_id], &mut variable_table, false)[0];
+
+    variable_table.backward(vec![y_id], &mut function_table, false);
+
+    let gx_id = variable_table.get_variable_grad_id(x_id).unwrap();
+    variable_table.clear_grad(x_id);
+
+    let pow_id = function_table.generate_function_from_function_contents(Box::new(Pow::new(3.0)));
+    let z_id = function_table.forward(pow_id, vec![gx_id], &mut variable_table, false)[0];
+    let add_id = function_table.generate_function_from_function_contents(Box::new(Add::new()));
+    let z_id = function_table.forward(add_id, vec![z_id, y_id], &mut variable_table, false)[0];
+
+    variable_table.backward(vec![z_id], &mut function_table, false);
+
+    let gx = variable_table.get_variable_grad_contents_f64(x_id).unwrap();
+    println!("gx: {:?}", gx);
+    assert_eq!(gx.data()[0].data(), &100.0);
+}
