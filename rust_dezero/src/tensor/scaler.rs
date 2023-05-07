@@ -48,6 +48,17 @@ where
     }
 }
 
+impl<T> std::ops::Add for &Scaler<T>
+where
+    T: std::ops::Add<Output = T> + Copy
+{
+    type Output = Scaler<T>;
+
+    fn add(self, other: Self) -> Self::Output {
+        Self::Output { data: self.data + other.data }
+    }
+}
+
 impl<T> std::ops::Sub for Scaler<T>
 where
     T: std::ops::Sub<Output = T>
@@ -56,6 +67,17 @@ where
 
     fn sub(self, other: Self) -> Self {
         Self { data: self.data - other.data }
+    }
+}
+
+impl<T> std::ops::Sub for &Scaler<T>
+where
+    T: std::ops::Sub<Output = T> + Copy
+{
+    type Output = Scaler<T>;
+
+    fn sub(self, other: Self) -> Self::Output {
+        Self::Output { data: self.data - other.data }
     }
 }
 
@@ -70,6 +92,17 @@ where
     }
 }
 
+impl<T> std::ops::Mul for &Scaler<T>
+where
+    T: std::ops::Mul<Output = T> + Copy
+{
+    type Output = Scaler<T>;
+
+    fn mul(self, other: Self) -> Self::Output {
+        Self::Output { data: self.data * other.data }
+    }
+}
+
 impl<T> std::ops::Div for Scaler<T>
 where
     T: std::ops::Div<Output = T>
@@ -81,6 +114,17 @@ where
     }
 }
 
+impl<T> std::ops::Div for &Scaler<T>
+where
+    T: std::ops::Div<Output = T> + Copy
+{
+    type Output = Scaler<T>;
+
+    fn div(self, other: Self) -> Self::Output {
+        Self::Output { data: self.data / other.data }
+    }
+}
+
 impl<T> std::ops::Neg for Scaler<T>
 where
     T: std::ops::Neg<Output = T>
@@ -89,6 +133,17 @@ where
 
     fn neg(self) -> Self {
         Self { data: -self.data }
+    }
+}
+
+impl<T> std::ops::Neg for &Scaler<T>
+where
+    T: std::ops::Neg<Output = T> + Copy
+{
+    type Output = Scaler<T>;
+
+    fn neg(self) -> Self::Output {
+        Self::Output { data: -self.data }
     }
 }
 
@@ -155,6 +210,13 @@ mod tests {
     }
 
     #[test]
+    fn add_reference_normal() {
+        let x = Scaler::<f32>::new(1.0);
+        let y = Scaler::<f32>::new(2.0);
+        assert_eq!(&x + &y, Scaler::<f32>::new(3.0));
+    }
+
+    #[test]
     fn sub_normal() {
         let x = Scaler::<f32>::new(1.0);
         let y = Scaler::<f32>::new(2.0);
@@ -162,10 +224,24 @@ mod tests {
     }
 
     #[test]
+    fn sub_reference_normal() {
+        let x = Scaler::<f32>::new(1.0);
+        let y = Scaler::<f32>::new(2.0);
+        assert_eq!(&x - &y, Scaler::<f32>::new(-1.0));
+    }
+
+    #[test]
     fn mul_normal() {
         let x = Scaler::<f32>::new(1.0);
         let y = Scaler::<f32>::new(2.0);
         assert_eq!(x * y, Scaler::<f32>::new(2.0));
+    }
+
+    #[test]
+    fn mul_reference_normal() {
+        let x = Scaler::<f32>::new(1.0);
+        let y = Scaler::<f32>::new(2.0);
+        assert_eq!(&x * &y, Scaler::<f32>::new(2.0));
     }
 
     #[test]
@@ -183,9 +259,22 @@ mod tests {
     }
 
     #[test]
+    fn div_reference_normal() {
+        let x = Scaler::<f32>::new(1.0);
+        let y = Scaler::<f32>::new(2.0);
+        assert_eq!(&x / &y, Scaler::<f32>::new(0.5));
+    }
+
+    #[test]
     fn neg_normal() {
         let x = Scaler::<f32>::new(1.0);
         assert_eq!(-x, Scaler::<f32>::new(-1.0));
+    }
+
+    #[test]
+    fn neg_reference_normal() {
+        let x = Scaler::<f32>::new(1.0);
+        assert_eq!(-&x, Scaler::<f32>::new(-1.0));
     }
 
     #[test]
