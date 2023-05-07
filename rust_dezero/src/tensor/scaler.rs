@@ -156,11 +156,29 @@ where
     }
 }
 
+impl<T> std::ops::AddAssign<&Self> for Scaler<T>
+where
+    T: std::ops::AddAssign + Copy
+{
+    fn add_assign(&mut self, other: &Self) {
+        self.data += other.data;
+    }
+}
+
 impl<T> std::ops::SubAssign for Scaler<T>
 where
     T: std::ops::SubAssign
 {
     fn sub_assign(&mut self, other: Self) {
+        self.data -= other.data;
+    }
+}
+
+impl<T> std::ops::SubAssign<&Self> for Scaler<T>
+where
+    T: std::ops::SubAssign + Copy
+{
+    fn sub_assign(&mut self, other: &Self) {
         self.data -= other.data;
     }
 }
@@ -174,12 +192,42 @@ where
     }
 }
 
+impl<T> std::ops::MulAssign<&Self> for Scaler<T>
+where
+    T: std::ops::MulAssign + Copy
+{
+    fn mul_assign(&mut self, other: &Self) {
+        self.data *= other.data;
+    }
+}
+
 impl<T> std::ops::DivAssign for Scaler<T>
 where
     T: std::ops::DivAssign
 {
     fn div_assign(&mut self, other: Self) {
         self.data /= other.data;
+    }
+}
+
+impl<T> std::ops::DivAssign<&Self> for Scaler<T>
+where
+    T: std::ops::DivAssign + Copy
+{
+    fn div_assign(&mut self, other: &Self) {
+        self.data /= other.data;
+    }
+}
+
+impl<'a, T> std::iter::Sum<&'a Scaler<T>> for Scaler<T>
+where
+    T: std::ops::Add<Output = T> + Copy + Default
+{
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a Self>
+    {
+        iter.fold(Self::new(T::default()), |acc, x| &acc + x)
     }
 }
 
@@ -286,10 +334,26 @@ mod tests {
     }
 
     #[test]
+    fn add_assign_reference_normal() {
+        let mut x = Scaler::<f32>::new(1.0);
+        let y = Scaler::<f32>::new(2.0);
+        x += &y;
+        assert_eq!(x, Scaler::<f32>::new(3.0));
+    }
+
+    #[test]
     fn sub_assign_normal() {
         let mut x = Scaler::<f32>::new(1.0);
         let y = Scaler::<f32>::new(2.0);
         x -= y;
+        assert_eq!(x, Scaler::<f32>::new(-1.0));
+    }
+
+    #[test]
+    fn sub_assign_reference_normal() {
+        let mut x = Scaler::<f32>::new(1.0);
+        let y = Scaler::<f32>::new(2.0);
+        x -= &y;
         assert_eq!(x, Scaler::<f32>::new(-1.0));
     }
 
@@ -302,10 +366,35 @@ mod tests {
     }
 
     #[test]
+    fn mul_assign_reference_normal() {
+        let mut x = Scaler::<f32>::new(1.0);
+        let y = Scaler::<f32>::new(2.0);
+        x *= &y;
+        assert_eq!(x, Scaler::<f32>::new(2.0));
+    }
+
+    #[test]
     fn div_assign_normal() {
         let mut x = Scaler::<f32>::new(1.0);
         let y = Scaler::<f32>::new(2.0);
         x /= y;
         assert_eq!(x, Scaler::<f32>::new(0.5));
+    }
+
+    #[test]
+    fn div_assign_reference_normal() {
+        let mut x = Scaler::<f32>::new(1.0);
+        let y = Scaler::<f32>::new(2.0);
+        x /= &y;
+        assert_eq!(x, Scaler::<f32>::new(0.5));
+    }
+
+    #[test]
+    fn sum_normal() {
+        let x = Scaler::<f32>::new(1.0);
+        let y = Scaler::<f32>::new(2.0);
+        let z = Scaler::<f32>::new(3.0);
+        let v = vec![x, y, z];
+        assert_eq!(v.iter().sum::<Scaler<f32>>(), Scaler::<f32>::new(6.0));
     }
 }

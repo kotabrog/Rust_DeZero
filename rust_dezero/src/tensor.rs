@@ -193,6 +193,68 @@ where
     }
 }
 
+impl<T> Tensor<T>
+where
+    T: std::ops::Add<Output = T> + Copy + Default + std::ops::AddAssign
+{
+    /// Sum all the values in the Tensor
+    pub fn sum_all(&self) -> Scaler<T> {
+        self.data.iter().sum()
+    }
+
+    /// Make the shape for the sum function
+    fn make_sum_new_shape(&self, axis: &[usize], keepdims: bool) -> Vec<usize> {
+        let mut new_shape = Vec::new();
+        for i in 0..self.ndim() {
+            if axis.contains(&i) {
+                if keepdims {
+                    new_shape.push(1);
+                }
+            } else {
+                new_shape.push(self.shape[i]);
+            }
+        }
+        new_shape
+    }
+
+    /// Sum the values in the Tensor along the given axis
+    /// 
+    /// # Arguments
+    /// 
+    /// * `axis` - Axis to sum along
+    /// * `keepdims` - Keep the dimensions
+    /// 
+    /// # Returns
+    /// 
+    /// A new Tensor with the summed values
+    pub fn sum<U: AsRef<[usize]>>(&self, axis: U, keepdims: bool) -> Self {
+        let axis = axis.as_ref();
+        let new_shape = self.make_sum_new_shape(axis, true);
+        let mut data = vec![Scaler::from(T::default()); new_shape.iter().product()];
+        for (mut i, value) in self.data().iter().enumerate() {
+            let mut indexes = Vec::new();
+            for j in (0..self.ndim()).rev() {
+                indexes.push(i % self.shape[j]);
+                i /= self.shape[j];
+            }
+            let indexes = indexes.iter().rev().cloned().collect::<Vec<_>>();
+            let mut index = 0;
+            let mut size = 1;
+            for j in (0..self.ndim()).rev() {
+                if axis.contains(&j) {
+                    continue;
+                }
+                index += indexes[j] * size;
+                size *= new_shape[j];
+            }
+            data[index] += value;
+        }
+
+        let new_shape = self.make_sum_new_shape(axis, keepdims);
+        Self::new(data, new_shape)
+    }
+}
+
 impl<T> std::ops::Add for Tensor<T>
 where
     T: std::ops::Add<Output = T> + Clone
@@ -692,6 +754,54 @@ mod tests {
     #[should_panic]
     fn arrange_error_over_shape() {
         let _ = Tensor::<f32>::arrange([usize::MAX, 1]);
+    }
+
+    #[test]
+    fn sum_all_normal() {
+        let x = Tensor::<f32>::arrange([2, 3, 1, 2]);
+        assert_eq!(x.sum_all().data(), &66.0);
+    }
+
+    #[test]
+    fn sum_normal() {
+        let x = Tensor::<f32>::arrange([2, 3]);
+        assert_eq!(x.sum([0], false), Tensor::new([3.0.into(), 5.0.into(), 7.0.into()], [3,]));
+    }
+
+    #[test]
+    fn sum_axis_1() {
+        let x = Tensor::<f32>::arrange([2, 3]);
+        assert_eq!(x.sum([1], false), Tensor::new([3.0.into(), 12.0.into()], [2,]));
+    }
+
+    #[test]
+    fn sum_3_dim_2_axis() {
+        let x = Tensor::<f32>::arrange([2, 3, 4]);
+        assert_eq!(x.sum([1, 2], false), Tensor::new([66.0.into(), 210.0.into()], [2,]));
+    }
+
+    #[test]
+    fn sum_keepdim() {
+        let x = Tensor::<f32>::arrange([2, 3, 4]);
+        assert_eq!(x.sum([1, 2], true), Tensor::new([66.0.into(), 210.0.into()], [2, 1, 1]));
+    }
+
+    #[test]
+    fn sum_empty_axis() {
+        let x = Tensor::<f32>::arrange([2, 3, 4]);
+        assert_eq!(x.sum([], false), x);
+    }
+
+    #[test]
+    fn sum_full_axis() {
+        let x = Tensor::<f32>::arrange([2, 3, 4]);
+        assert_eq!(x.sum([0, 1, 2], false), Tensor::new([276.0.into()], []));
+    }
+
+    #[test]
+    fn sum_unrelated_axis() {
+        let x = Tensor::<f32>::arrange([2, 3, 4]);
+        assert_eq!(x.sum([1, 2, 3], false), Tensor::new([66.0.into(), 210.0.into()], [2,]));
     }
 
     #[test]
