@@ -11,6 +11,9 @@ pub mod cos;
 pub mod tanh;
 pub mod reshape;
 pub mod transpose;
+pub mod sum;
+pub mod broadcast_to;
+pub mod sum_to;
 
 pub use square::Square;
 pub use mul::Mul;
@@ -25,3 +28,6 @@ pub use cos::Cos;
 pub use tanh::Tanh;
 pub use reshape::Reshape;
 pub use transpose::Transpose;
+pub use sum::Sum;
+pub use broadcast_to::BroadcastTo;
+pub use sum_to::SumTo;

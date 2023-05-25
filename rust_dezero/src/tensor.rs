@@ -168,6 +168,44 @@ where
         shape.reverse();
         Self::new(self.data.clone(), shape)
     }
+
+    /// Broadcast the Tensor
+    /// 
+    /// # Arguments
+    /// 
+    /// * `shape` - Tensor shape
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if the shape is not correct.
+    pub fn broadcast_to(&self, shape: &[usize]) -> Self {
+        let mut self_shape = self.shape().clone();
+        let mut data = self.data.clone();
+        assert!(self_shape.len() <= shape.len(), "shape len is too small");
+        while self_shape.len() < shape.len() {
+            self_shape.insert(0, 1);
+        }
+        let mut size = 1;
+        for i in (0..self_shape.len()).rev() {
+            if shape[i] == 1 || shape[i] == self_shape[i] {
+                size *= shape[i];
+                continue;
+            }
+            assert!(shape[i] != 0, "shape is 0");
+            assert_eq!(self_shape[i], 1, "self shape is not 1");
+            let mut new_data = Vec::new();
+            let mut index = 0;
+            while index < data.len() {
+                for _ in 0..shape[i] {
+                    new_data.extend(data[index..index + size].iter().map(|x| x.clone()))
+                }
+                index += size;
+            }
+            size *= shape[i];
+            data = new_data;
+        }
+        Self::new(data, shape)
+    }
 }
 
 impl<T> Tensor<T>
@@ -202,8 +240,18 @@ where
         self.data.iter().sum()
     }
 
+    fn make_sum_axis(&self, axis: &[usize]) -> Vec<usize> {
+        match axis.len() {
+            0 => (0..self.ndim()).collect(),
+            _ => axis.to_vec(),
+        }
+    }
+
     /// Make the shape for the sum function
-    fn make_sum_new_shape(&self, axis: &[usize], keepdims: bool) -> Vec<usize> {
+    fn make_sum_new_shape(&self, axis: &Vec<usize>, keepdims: bool) -> Vec<usize> {
+        if axis.len() == 0 {
+            return (0..self.ndim()).collect()
+        }
         let mut new_shape = Vec::new();
         for i in 0..self.ndim() {
             if axis.contains(&i) {
@@ -228,8 +276,8 @@ where
     /// 
     /// A new Tensor with the summed values
     pub fn sum<U: AsRef<[usize]>>(&self, axis: U, keepdims: bool) -> Self {
-        let axis = axis.as_ref();
-        let new_shape = self.make_sum_new_shape(axis, true);
+        let axis = self.make_sum_axis(axis.as_ref());
+        let new_shape = self.make_sum_new_shape(&axis, true);
         let mut data = vec![Scaler::from(T::default()); new_shape.iter().product()];
         for (mut i, value) in self.data().iter().enumerate() {
             let mut indexes = Vec::new();
@@ -250,8 +298,36 @@ where
             data[index] += value;
         }
 
-        let new_shape = self.make_sum_new_shape(axis, keepdims);
+        let new_shape = self.make_sum_new_shape(&axis, keepdims);
         Self::new(data, new_shape)
+    }
+
+    /// Sum the values for the given shape
+    /// 
+    /// # Arguments
+    /// 
+    /// * `shape` - Shape to sum to
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if the shape is not correct.
+    pub fn sum_to(&self, shape: &[usize]) -> Self {
+        assert!(shape.len() <= self.ndim(), "shape len is too big");
+        let mut axis = Vec::new();
+        let index = self.ndim() - shape.len();
+        for i in 0..index {
+            axis.push(i);
+        }
+        for i in 0..shape.len() {
+            if shape[i] == 1 {
+                axis.push(i + index);
+            } else {
+                assert_eq!(shape[i], self.shape[i + index], "shape mismatch");
+            }
+        }
+        let mut tensor = self.sum(axis, true);
+        tensor.shape = shape.to_vec();
+        tensor
     }
 }
 
@@ -744,7 +820,7 @@ mod tests {
     }
 
     #[test]
-    fn arrange_zero_shape() {
+    fn arrange_error_zero_shape() {
         let x = Tensor::<f32>::arrange([1, 0]);
         assert_eq!(x.data(), &vec![]);
         assert_eq!(x.shape(), &vec![1, 0]);
@@ -754,6 +830,64 @@ mod tests {
     #[should_panic]
     fn arrange_error_over_shape() {
         let _ = Tensor::<f32>::arrange([usize::MAX, 1]);
+    }
+
+    #[test]
+    fn broadcast_to_normal() {
+        let x = Tensor::<f32>::arrange([2, 1]);
+        assert_eq!(x.broadcast_to(&[2, 3]), Tensor::new([0.0.into(), 0.0.into(), 0.0.into(), 1.0.into(), 1.0.into(), 1.0.into()], [2, 3]));
+    }
+
+    #[test]
+    fn broadcast_to_3d() {
+        let x = Tensor::<f32>::arrange([2, 1, 2]);
+        assert_eq!(x.broadcast_to(&[2, 2, 2]), Tensor::new([0.0.into(), 1.0.into(), 0.0.into(), 1.0.into(), 2.0.into(), 3.0.into(), 2.0.into(), 3.0.into()], [2, 2, 2]));
+    }
+
+    #[test]
+    fn broadcast_to_add_left() {
+        let x = Tensor::<f32>::arrange([2,]);
+        assert_eq!(x.broadcast_to(&[3, 2]), Tensor::new([0.0.into(), 1.0.into(), 0.0.into(), 1.0.into(), 0.0.into(), 1.0.into()], [3, 2]));
+    }
+
+    #[test]
+    fn broadcast_to_scaler() {
+        let x = Tensor::<f32>::new([0.0.into()], []);
+        assert_eq!(x.broadcast_to(&[2, 3]), Tensor::new([0.0.into(), 0.0.into(), 0.0.into(), 0.0.into(), 0.0.into(), 0.0.into()], [2, 3]));
+    }
+
+    #[test]
+    fn broadcast_to_0d() {
+        let x = Tensor::<f32>::new([0.0.into()], []);
+        assert_eq!(x.broadcast_to(&[]), Tensor::new([0.0.into()], []));
+    }
+
+    #[test]
+    #[should_panic]
+    fn broadcast_to_error_mismatch_ndim() {
+        let x = Tensor::<f32>::arrange([2, 1]);
+        let _ = x.broadcast_to(&[2]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn broadcast_to_error_mismatch_shape() {
+        let x = Tensor::<f32>::arrange([2, 1]);
+        let _ = x.broadcast_to(&[4, 2]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn broadcast_to_error_mismatch_shape_left() {
+        let x = Tensor::<f32>::arrange([3,]);
+        let _ = x.broadcast_to(&[3, 2]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn broadcast_to_error_shape_0() {
+        let x = Tensor::<f32>::arrange([1,]);
+        let _ = x.broadcast_to(&[0, 1]);
     }
 
     #[test]
@@ -789,7 +923,7 @@ mod tests {
     #[test]
     fn sum_empty_axis() {
         let x = Tensor::<f32>::arrange([2, 3, 4]);
-        assert_eq!(x.sum([], false), x);
+        assert_eq!(x.sum([], false), Tensor::new([276.0.into()], []));
     }
 
     #[test]
@@ -802,6 +936,57 @@ mod tests {
     fn sum_unrelated_axis() {
         let x = Tensor::<f32>::arrange([2, 3, 4]);
         assert_eq!(x.sum([1, 2, 3], false), Tensor::new([66.0.into(), 210.0.into()], [2,]));
+    }
+
+    #[test]
+    fn sum_to_normal() {
+        let x = Tensor::<f32>::arrange([2, 3]);
+        assert_eq!(x.sum_to(&[2, 1]), Tensor::new([3.0.into(), 12.0.into()], [2, 1]));
+    }
+
+    #[test]
+    fn sum_to_3d() {
+        let x = Tensor::<f32>::arrange([2, 2, 2]);
+        assert_eq!(x.sum_to(&[2, 1, 2]), Tensor::new([2.0.into(), 4.0.into(), 10.0.into(), 12.0.into()], [2, 1, 2]));
+    }
+
+    #[test]
+    fn sum_to_add_left() {
+        let x = Tensor::<f32>::arrange([3, 2]);
+        assert_eq!(x.sum_to(&[2,]), Tensor::new([6.0.into(), 9.0.into()], [2,]));
+    }
+
+    #[test]
+    fn sum_to_scaler() {
+        let x = Tensor::<f32>::arrange([2, 3]);
+        assert_eq!(x.sum_to(&[]), Tensor::new([15.0.into()], []));
+    }
+
+    #[test]
+    fn sum_to_0d() {
+        let x = Tensor::<f32>::new([0.0.into()], []);
+        assert_eq!(x.sum_to(&[]), Tensor::new([0.0.into()], []));
+    }
+
+    #[test]
+    #[should_panic]
+    fn sum_to_error_mismatch_ndim() {
+        let x = Tensor::<f32>::arrange([2]);
+        let _ = x.sum_to(&[2, 1]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn sum_to_error_mismatch_shape() {
+        let x = Tensor::<f32>::arrange([4, 2]);
+        let _ = x.sum_to(&[2, 1]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn sum_to_error_mismatch_shape_left() {
+        let x = Tensor::<f32>::arrange([3, 2]);
+        let _ = x.sum_to(&[3,]);
     }
 
     #[test]
