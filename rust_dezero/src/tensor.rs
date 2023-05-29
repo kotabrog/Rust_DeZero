@@ -331,6 +331,40 @@ where
     }
 }
 
+impl<T> Tensor<T>
+where
+    T: std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Copy + Default + std::ops::AddAssign
+{
+    /// Multiply matrixes
+    /// 
+    /// # Arguments
+    /// 
+    /// * `other` - Other matrix to multiply
+    /// 
+    /// # Panics
+    /// 
+    /// * Panics if the ndim is not 2
+    /// * Panics if self.shape[1] != other.shape[0]
+    /// * Panics if any shape is 0
+    pub fn mutmul(&self, other: &Self) -> Self {
+        assert_eq!(self.ndim(), 2, "ndim is not 2");
+        assert_eq!(other.ndim(), 2, "ndim is not 2");
+        assert_eq!(self.shape[1], other.shape[0], "Shape mismatch");
+        assert!(self.shape[0] != 0, "Shape is 0");
+        assert!(self.shape[1] != 0, "Shape is 0");
+        assert!(other.shape[1] != 0, "Shape is 0");
+        let mut data = vec![Scaler::from(T::default()); self.shape[0] * other.shape[1]];
+        for i in 0..self.shape[0] {
+            for j in 0..other.shape[1] {
+                for k in 0..self.shape[1] {
+                    data[i * other.shape[1] + j] += self.data[i * self.shape[1] + k] * other.data[k * other.shape[1] + j];
+                }
+            }
+        }
+        Self::new(data, vec![self.shape[0], other.shape[1]])
+    }
+}
+
 impl<T> std::ops::Add for Tensor<T>
 where
     T: std::ops::Add<Output = T> + Clone
@@ -987,6 +1021,56 @@ mod tests {
     fn sum_to_error_mismatch_shape_left() {
         let x = Tensor::<f32>::arrange([3, 2]);
         let _ = x.sum_to(&[3,]);
+    }
+
+    #[test]
+    fn mutmul_normal() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3, 1]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [1, 3]);
+        let z = x.mutmul(&y);
+        assert_eq!(z.data(), &vec![0.0.into(), 0.0.into(), 0.0.into(), 3.0.into(), 4.0.into(), 5.0.into(), 6.0.into(), 8.0.into(), 10.0.into()]);
+        assert_eq!(z.shape(), &vec![3, 3]);
+    }
+
+    #[test]
+    fn mutmul_non_one() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into(), 3.0.into(), 4.0.into(), 5.0.into()], [3, 2]);
+        let y = Tensor::new([0.0.into(), 1.0.into(), 2.0.into(), 3.0.into()], [2, 2]);
+        let z = x.mutmul(&y);
+        assert_eq!(z.data(), &vec![2.0.into(), 3.0.into(), 6.0.into(), 11.0.into(), 10.0.into(), 19.0.into()]);
+        assert_eq!(z.shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn mutmul_error_shape_zero() {
+        let x = Tensor::<f64>::new([], [3, 0]);
+        let y = Tensor::new([], [0, 2]);
+        let _ = x.mutmul(&y);
+    }
+
+    #[test]
+    #[should_panic]
+    fn mutmul_error_mismatch_shape() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3, 1]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [2, 3]);
+        let _ = x.mutmul(&y);
+    }
+
+    #[test]
+    #[should_panic]
+    fn mutmul_error_mismatch_ndim_left() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [1, 3]);
+        let _ = x.mutmul(&y);
+    }
+
+    #[test]
+    #[should_panic]
+    fn mutmul_error_mismatch_ndim_right() {
+        let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3, 1]);
+        let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
+        let _ = x.mutmul(&y);
     }
 
     #[test]
