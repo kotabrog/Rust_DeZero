@@ -166,7 +166,25 @@ where
     pub fn transpose(&self) -> Self {
         let mut shape = self.shape.clone();
         shape.reverse();
-        Self::new(self.data.clone(), shape)
+        let mut new_tensor = Self::new(self.data.clone(), shape);
+
+        let mut index = vec![0; self.ndim()];
+        for _ in 0..self.data.len() {
+            let value = self.at(&index);
+            let mut new_index = index.clone();
+            new_index.reverse();
+            *new_tensor.at_mut(&new_index) = value.clone();
+
+            for j in 0..self.ndim() {
+                index[j] += 1;
+                if index[j] < self.shape[j] {
+                    break;
+                }
+                index[j] = 0;
+            }
+        }
+
+        new_tensor
     }
 
     /// Broadcast the Tensor
@@ -346,7 +364,7 @@ where
     /// * Panics if the ndim is not 2
     /// * Panics if self.shape[1] != other.shape[0]
     /// * Panics if any shape is 0
-    pub fn mutmul(&self, other: &Self) -> Self {
+    pub fn matmul(&self, other: &Self) -> Self {
         assert_eq!(self.ndim(), 2, "ndim is not 2");
         assert_eq!(other.ndim(), 2, "ndim is not 2");
         assert_eq!(self.shape[1], other.shape[0], "Shape mismatch");
@@ -737,7 +755,7 @@ mod tests {
     fn transpose_normal() {
         let x = Tensor::new_from_num_vec([0.0, 1.0, 2.0, 3.0, 4.0, 5.0], [3, 2]);
         let x = x.transpose();
-        assert_eq!(x.data(), &vec![0.0.into(), 1.0.into(), 2.0.into(), 3.0.into(), 4.0.into(), 5.0.into()]);
+        assert_eq!(x.data(), &vec![0.0.into(), 2.0.into(), 4.0.into(), 1.0.into(), 3.0.into(), 5.0.into()]);
         assert_eq!(x.shape(), &vec![2, 3]);
     }
 
@@ -1024,53 +1042,53 @@ mod tests {
     }
 
     #[test]
-    fn mutmul_normal() {
+    fn matmul_normal() {
         let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3, 1]);
         let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [1, 3]);
-        let z = x.mutmul(&y);
+        let z = x.matmul(&y);
         assert_eq!(z.data(), &vec![0.0.into(), 0.0.into(), 0.0.into(), 3.0.into(), 4.0.into(), 5.0.into(), 6.0.into(), 8.0.into(), 10.0.into()]);
         assert_eq!(z.shape(), &vec![3, 3]);
     }
 
     #[test]
-    fn mutmul_non_one() {
+    fn matmul_non_one() {
         let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into(), 3.0.into(), 4.0.into(), 5.0.into()], [3, 2]);
         let y = Tensor::new([0.0.into(), 1.0.into(), 2.0.into(), 3.0.into()], [2, 2]);
-        let z = x.mutmul(&y);
+        let z = x.matmul(&y);
         assert_eq!(z.data(), &vec![2.0.into(), 3.0.into(), 6.0.into(), 11.0.into(), 10.0.into(), 19.0.into()]);
         assert_eq!(z.shape(), &vec![3, 2]);
     }
 
     #[test]
     #[should_panic]
-    fn mutmul_error_shape_zero() {
+    fn matmul_error_shape_zero() {
         let x = Tensor::<f64>::new([], [3, 0]);
         let y = Tensor::new([], [0, 2]);
-        let _ = x.mutmul(&y);
+        let _ = x.matmul(&y);
     }
 
     #[test]
     #[should_panic]
-    fn mutmul_error_mismatch_shape() {
+    fn matmul_error_mismatch_shape() {
         let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3, 1]);
         let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [2, 3]);
-        let _ = x.mutmul(&y);
+        let _ = x.matmul(&y);
     }
 
     #[test]
     #[should_panic]
-    fn mutmul_error_mismatch_ndim_left() {
+    fn matmul_error_mismatch_ndim_left() {
         let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3,]);
         let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [1, 3]);
-        let _ = x.mutmul(&y);
+        let _ = x.matmul(&y);
     }
 
     #[test]
     #[should_panic]
-    fn mutmul_error_mismatch_ndim_right() {
+    fn matmul_error_mismatch_ndim_right() {
         let x = Tensor::new([0.0.into(), 1.0.into(), 2.0.into()], [3, 1]);
         let y = Tensor::new([3.0.into(), 4.0.into(), 5.0.into()], [3,]);
-        let _ = x.mutmul(&y);
+        let _ = x.matmul(&y);
     }
 
     #[test]

@@ -80,7 +80,7 @@ mod tests {
         let y_id = function_table.forward(transpose_id, vec![x_id], &mut variable_table, false);
 
         let y = variable_table.get_variable_contents_f64(y_id[0]).unwrap();
-        assert_eq!(y, &Tensor::new_from_num_vec(data, vec![3, 2]));
+        assert_eq!(y, &Tensor::new_from_num_vec(vec![1.0, 4.0, 2.0, 5.0, 3.0, 6.0], vec![3, 2]));
     }
 
     #[test]
