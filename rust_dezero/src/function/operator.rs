@@ -15,6 +15,7 @@ pub mod sum;
 pub mod broadcast_to;
 pub mod sum_to;
 pub mod matmul;
+pub mod mean_squared_error;
 
 pub use square::Square;
 pub use mul::Mul;
@@ -33,3 +34,4 @@ pub use sum::Sum;
 pub use broadcast_to::BroadcastTo;
 pub use sum_to::SumTo;
 pub use matmul::MatMul;
+pub use mean_squared_error::MeanSquaredError;

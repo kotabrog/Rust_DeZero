@@ -587,3 +587,128 @@ fn step36() {
     println!("gx: {:?}", gx);
     assert_eq!(gx.data()[0].data(), &100.0);
 }
+
+#[test]
+fn step42() {
+    use std::fs::create_dir;
+    use plotters::prelude::*;
+    use rust_dezero::{
+        Tensor,
+        variable::VariableTable,
+        tensor::random::TensorRng,
+        function::{FunctionTable, operator::{
+            MeanSquaredError, Add, BroadcastTo, MatMul,
+        }},
+    };
+
+    fn predict(x: &Tensor<f64>, w: &Tensor<f64>, b: &Tensor<f64>)
+            -> (VariableTable, FunctionTable, usize, usize, usize) {
+        let mut variable_table = VariableTable::new();
+        let mut function_table = FunctionTable::new();
+
+        let x_id = variable_table.generate_variable_from_f64_tensor(x.clone(), "x");
+        let w_id = variable_table.generate_variable_from_f64_tensor(w.clone(), "");
+        let b_id = variable_table.generate_variable_from_f64_tensor(b.clone(), "");
+        let x_shape = variable_table
+            .get(x_id).expect("Invalid variable id")
+            .shape().clone();
+        let matmul_id = function_table.generate_function_from_function_contents(Box::new(MatMul::new()));
+        let temp_id0 = function_table.forward(matmul_id, vec![x_id, w_id], &mut variable_table, false)[0];
+        let broadcast_to_id = function_table.generate_function_from_function_contents(Box::new(BroadcastTo::new(vec![x_shape[0], 1])));
+        let temp_id1 = function_table.forward(broadcast_to_id, vec![b_id], &mut variable_table, false)[0];
+        let add_id = function_table.generate_function_from_function_contents(Box::new(Add::new()));
+        let ret_id = function_table.forward(add_id, vec![temp_id0, temp_id1], &mut variable_table, false)[0];
+        (variable_table, function_table, ret_id, w_id, b_id)
+    }
+    let mut rng = TensorRng::new();
+
+    let x = rng.gen::<f64, _>(&[100, 1]);
+    let y = (
+            x.scalar_mul(2.0.into())
+        ).scalar_add(5.0.into())
+        + rng.gen::<f64, _>(&[100, 1]);
+
+    let mut w = Tensor::new_from_num_vec(vec![0.0], vec![1, 1]);
+    let mut b = Tensor::new_from_num_vec(vec![0.0], vec![]);
+
+    let lr = 0.1;
+    let iters = 100;
+
+    for i in 0..iters {
+        let (mut variable_table, mut function_table, pred_id, w_id, b_id)
+            = predict(&x, &w, &b);
+
+        let y_id = variable_table.generate_variable_from_f64_tensor(y.clone(), "y");
+
+        let mse_id = function_table.generate_function_from_function_contents(Box::new(MeanSquaredError::new()));
+        let loss_id = function_table.forward(mse_id, vec![y_id, pred_id], &mut variable_table, false)[0];
+
+        variable_table.clear_grads(&vec![w_id, b_id]);
+        variable_table.backward(vec![loss_id], &mut function_table, false);
+
+        let w_grad = variable_table
+            .get_variable_grad_contents_f64(w_id).expect("Invalid variable id");
+        let b_grad = variable_table
+            .get_variable_grad_contents_f64(b_id).expect("Invalid variable id");
+
+        w = w - w_grad.scalar_mul(lr.into());
+        b = b - b_grad.scalar_mul(lr.into());
+
+        let loss = variable_table
+            .get_variable_contents_f64(loss_id).expect("Invalid variable id");
+
+        if i % 10 == 0 {
+            println!("iter {} w: {:?}, b: {:?}, loss: {:?}", i, w, b, loss)
+        }
+    }
+
+    match create_dir("output") {
+        Ok(_) => println!("create output directory"),
+        Err(_) => {},
+    }
+
+    fn plot(data: &[(f64, f64)], file_name: &str, w: f64, b: f64)
+            -> Result<(), Box<dyn std::error::Error>> {
+        let root = BitMapBackend::new(file_name, (640, 480)).into_drawing_area();
+        root.fill(&WHITE)?;
+
+        let x_max = data.iter().map(|&(x, _)| x).fold(f64::NEG_INFINITY, f64::max);
+        let x_min = data.iter().map(|&(x, _)| x).fold(f64::INFINITY, f64::min);
+        let y_max = data.iter().map(|&(_, y)| y).fold(f64::NEG_INFINITY, f64::max);
+        let y_min = data.iter().map(|&(_, y)| y).fold(f64::INFINITY, f64::min);
+
+        let x_margin = (x_max - x_min) * 0.05;
+        let y_margin = (y_max - y_min) * 0.05;
+    
+        let mut chart = ChartBuilder::on(&root)
+            .margin(10)
+            .x_label_area_size(30)
+            .y_label_area_size(30)
+            .build_cartesian_2d(
+                (x_min - x_margin)..(x_max + x_margin),
+                (y_min - y_margin)..(y_max + y_margin)
+            )?;
+
+        chart.configure_mesh().draw()?;
+    
+        let shape_style = ShapeStyle::from(&BLUE).filled();
+        chart.draw_series(data.iter().map(|&(x, y)| Circle::new((x, y), 5, shape_style)))?;
+
+        let line_points: Vec<(f64, f64)> = (0..=100)
+            .map(|x| x as f64 / 100.0 * (x_max - x_min) + x_min)  // Convert to f64 and scale to [0, 1]
+            .map(|x| (x, w * x + b))  // Compute y for each x
+            .collect();
+        chart.draw_series(LineSeries::new(line_points, &RED))?;
+
+        root.present()?;
+
+        Ok(())
+    }
+
+    let x_data = x.data().iter().map(|x| *x.data()).collect::<Vec<f64>>();
+    let y_data = y.data().iter().map(|y| *y.data()).collect::<Vec<f64>>();
+    let data = x_data.iter().zip(y_data.iter()).map(|(x, y)| (*x, *y)).collect::<Vec<(f64, f64)>>();
+    let w_data = *w.at(&[0, 0]).data();
+    let b_data = *b.at(&[]).data();
+    plot(&data, "output/linear_regression.png", w_data, b_data).expect("Failed to plot");
+}

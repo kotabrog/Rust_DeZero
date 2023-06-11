@@ -25,6 +25,13 @@ impl VariableContents {
         }
     }
 
+    /// Returns the size of the Tensor.
+    pub fn size(&self) -> usize {
+        match self {
+            VariableContents::F64(data) => data.size(),
+        }
+    }
+
     /// Returns a reference to the Tensor<f64> if this is a VariableContents::F64 variant, otherwise None.
     pub fn to_f64_tensor(&self) -> Option<&Tensor<f64>> {
         match self {
@@ -124,6 +131,11 @@ impl Variable {
     /// Get the shape of the Variable.
     pub fn shape(&self) -> &Vec<usize> {
         self.data.shape()
+    }
+
+    /// Get the size of the Variable.
+    pub fn size(&self) -> usize {
+        self.data.size()
     }
 
     /// Get the data type of the Variable.

@@ -1,5 +1,6 @@
 mod scaler;
 mod specialize;
+pub mod random;
 
 use crate::num::FromUsize;
 
@@ -52,6 +53,11 @@ impl<T> Tensor<T>
     /// Get the number of dimensions
     pub fn ndim(&self) -> usize {
         self.shape.len()
+    }
+
+    /// Get the size of the Tensor
+    pub fn size(&self) -> usize {
+        self.data.len()
     }
 
     /// Get the data type
