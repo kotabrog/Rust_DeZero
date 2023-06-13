@@ -695,8 +695,8 @@ fn step42() {
         chart.draw_series(data.iter().map(|&(x, y)| Circle::new((x, y), 5, shape_style)))?;
 
         let line_points: Vec<(f64, f64)> = (0..=100)
-            .map(|x| x as f64 / 100.0 * (x_max - x_min) + x_min)  // Convert to f64 and scale to [0, 1]
-            .map(|x| (x, w * x + b))  // Compute y for each x
+            .map(|x| x as f64 / 100.0 * (x_max - x_min) + x_min)
+            .map(|x| (x, w * x + b))
             .collect();
         chart.draw_series(LineSeries::new(line_points, &RED))?;
 
@@ -711,4 +711,141 @@ fn step42() {
     let w_data = *w.at(&[0, 0]).data();
     let b_data = *b.at(&[]).data();
     plot(&data, "output/linear_regression.png", w_data, b_data).expect("Failed to plot");
+}
+
+#[test]
+fn step43() {
+    use std::fs::create_dir;
+    use plotters::prelude::*;
+    use rust_dezero::{
+        Tensor,
+        variable::VariableTable,
+        tensor::random::TensorRng,
+        function::{FunctionTable, operator::{
+            MeanSquaredError,
+        }, function::{linear, sigmoid}},
+    };
+
+    fn predict(x: &Tensor<f64>, w1: &Tensor<f64>, b1: &Tensor<f64>, w2: &Tensor<f64>, b2: &Tensor<f64>)
+            -> (VariableTable, FunctionTable, usize, usize, usize, usize, usize) {
+        let mut variable_table = VariableTable::new();
+        let mut function_table = FunctionTable::new();
+
+        let x_id = variable_table.generate_variable_from_f64_tensor(x.clone(), "x");
+        let w1_id = variable_table.generate_variable_from_f64_tensor(w1.clone(), "");
+        let b1_id = variable_table.generate_variable_from_f64_tensor(b1.clone(), "");
+        let w2_id = variable_table.generate_variable_from_f64_tensor(w2.clone(), "");
+        let b2_id = variable_table.generate_variable_from_f64_tensor(b2.clone(), "");
+        let y_id =
+            linear(x_id, w1_id, Some(b1_id), &mut variable_table, &mut function_table);
+        let y_id = sigmoid(y_id, &mut variable_table, &mut function_table);
+        let y_id =
+            linear(y_id, w2_id, Some(b2_id), &mut variable_table, &mut function_table);
+        (variable_table, function_table, y_id, w1_id, b1_id, w2_id, b2_id)
+    }
+
+    let mut rng = TensorRng::new();
+
+    let x = rng.gen::<f64, _>(&[100, 1]);
+    let y = x.scalar_mul(2.0.into())
+        .scalar_mul(std::f64::consts::PI.into())
+        .sin()
+        + rng.gen::<f64, _>(&[100, 1]);
+
+    let (input_num, h_num, output_num) = (1, 10, 1);
+    let mut w1 = rng.gen::<f64, _>(&[input_num, h_num]);
+    let mut b1 = Tensor::full(0.0, vec![h_num]);
+    let mut w2 = rng.gen::<f64, _>(&[h_num, output_num]);
+    let mut b2 = Tensor::full(0.0, vec![output_num]);
+
+    let lr = 0.2;
+    let iters = 100;
+    // let iters = 10000;
+
+    for i in 0..iters {
+        let (mut variable_table, mut function_table, pred_id, w1_id, b1_id, w2_id, b2_id)
+            = predict(&x, &w1, &b1, &w2, &b2);
+
+        let y_id = variable_table.generate_variable_from_f64_tensor(y.clone(), "y");
+
+        let mse_id = function_table.generate_function_from_function_contents(Box::new(MeanSquaredError::new()));
+        let loss_id = function_table.forward(mse_id, vec![y_id, pred_id], &mut variable_table, false)[0];
+
+        variable_table.backward(vec![loss_id], &mut function_table, false);
+
+        let w1_grad = variable_table
+            .get_variable_grad_contents_f64(w1_id).expect("Invalid variable id");
+        let b1_grad = variable_table
+            .get_variable_grad_contents_f64(b1_id).expect("Invalid variable id");
+        let w2_grad = variable_table
+            .get_variable_grad_contents_f64(w2_id).expect("Invalid variable id");
+        let b2_grad = variable_table
+            .get_variable_grad_contents_f64(b2_id).expect("Invalid variable id");
+
+        w1 = w1 - w1_grad.scalar_mul(lr.into());
+        b1 = b1 - b1_grad.scalar_mul(lr.into());
+        w2 = w2 - w2_grad.scalar_mul(lr.into());
+        b2 = b2 - b2_grad.scalar_mul(lr.into());
+
+        let loss = variable_table
+            .get_variable_contents_f64(loss_id).expect("Invalid variable id");
+
+        if i % (iters / 10) == 0 {
+            println!("iter {}\nw1: {:?}\nb1: {:?}\nw2: {:?}\nb2: {:?}\nloss: {:?}", i, w1, b1, w2, b2, loss)
+        }
+    }
+
+    match create_dir("output") {
+        Ok(_) => println!("create output directory"),
+        Err(_) => {},
+    }
+
+    fn plot(data: &[(f64, f64)], file_name: &str, line_points: Vec<(f64, f64)>)
+            -> Result<(), Box<dyn std::error::Error>> {
+        let root = BitMapBackend::new(file_name, (640, 480)).into_drawing_area();
+        root.fill(&WHITE)?;
+
+        let x_max = data.iter().map(|&(x, _)| x).fold(f64::NEG_INFINITY, f64::max);
+        let x_min = data.iter().map(|&(x, _)| x).fold(f64::INFINITY, f64::min);
+        let y_max = data.iter().map(|&(_, y)| y).fold(f64::NEG_INFINITY, f64::max);
+        let y_min = data.iter().map(|&(_, y)| y).fold(f64::INFINITY, f64::min);
+
+        let x_margin = (x_max - x_min) * 0.05;
+        let y_margin = (y_max - y_min) * 0.05;
+    
+        let mut chart = ChartBuilder::on(&root)
+            .margin(10)
+            .x_label_area_size(30)
+            .y_label_area_size(30)
+            .build_cartesian_2d(
+                (x_min - x_margin)..(x_max + x_margin),
+                (y_min - y_margin)..(y_max + y_margin)
+            )?;
+
+        chart.configure_mesh().draw()?;
+    
+        let shape_style = ShapeStyle::from(&BLUE).filled();
+        chart.draw_series(data.iter().map(|&(x, y)| Circle::new((x, y), 5, shape_style)))?;
+
+        chart.draw_series(LineSeries::new(line_points, &RED))?;
+
+        root.present()?;
+
+        Ok(())
+    }
+
+    let x_data = x.data().iter().map(|x| *x.data()).collect::<Vec<f64>>();
+    let y_data = y.data().iter().map(|y| *y.data()).collect::<Vec<f64>>();
+    let data = x_data.iter().zip(y_data.iter()).map(|(x, y)| (*x, *y)).collect::<Vec<(f64, f64)>>();
+    let line_points_x = Tensor::new_from_num_vec(
+        (0..=100).map(|x| x as f64 / 100.0), vec![101, 1]);
+    let (variable_table, _, y_id, _, _, _, _) = predict(&line_points_x, &w1, &b1, &w2, &b2);
+    let line_points_y = variable_table.get_variable_contents_f64(y_id).expect("Invalid variable id");
+    let line_points_x = line_points_x
+        .data().iter().map(|x| *x.data()).collect::<Vec<f64>>();
+    let line_points_y = line_points_y
+        .data().iter().map(|x| *x.data()).collect::<Vec<f64>>();
+    let line_points = line_points_x.into_iter()
+        .zip(line_points_y.into_iter()).collect();
+    plot(&data, "output/neural_network.png", line_points).expect("Failed to plot");
 }

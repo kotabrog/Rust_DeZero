@@ -1,5 +1,6 @@
 pub mod function_table;
 pub mod operator;
+pub mod function;
 
 pub use function_table::FunctionTable;
 
