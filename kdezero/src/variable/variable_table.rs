@@ -4,9 +4,10 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::process::Command;
 use std::collections::{HashMap, HashSet};
+use ktensor::tensor::Tensor;
 use function_generation_priority_queue::FunctionGenerationPriorityQueue;
 use super::{Variable, VariableContents};
-use crate::{Tensor, function::{FunctionTable, operator::Add}};
+use crate::function::{FunctionTable, operator::Add};
 
 /// Variable table
 /// 

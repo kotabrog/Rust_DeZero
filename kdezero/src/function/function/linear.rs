@@ -22,7 +22,7 @@ pub fn linear(x_id: usize, w_id: usize, b_id: Option<usize>,
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Tensor;
+    use ktensor::Tensor;
 
     #[test]
     fn forward_normal() {

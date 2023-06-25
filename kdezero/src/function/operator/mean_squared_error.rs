@@ -2,7 +2,7 @@ use std::any::Any;
 use super::{Sub, BroadcastTo, Mul, Neg};
 use super::super::{FunctionContents, FunctionTable};
 use crate::variable::VariableTable;
-use crate::Tensor;
+use ktensor::Tensor;
 
 #[derive(Debug, Clone)]
 pub struct MeanSquaredError {}
@@ -88,7 +88,8 @@ impl FunctionContents for MeanSquaredError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Tensor, variable::VariableTable, function::FunctionTable};
+    use ktensor::Tensor;
+    use crate::{variable::VariableTable, function::FunctionTable};
 
     #[test]
     fn forward_normal() {

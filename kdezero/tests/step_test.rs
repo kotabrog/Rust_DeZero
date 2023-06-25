@@ -2,7 +2,7 @@ extern crate kdezero;
 
 #[test]
 fn step1() {
-    use kdezero::Tensor;
+    use ktensor::Tensor;
     use kdezero::variable::{VariableContents, VariableTable};
 
     let mut table = VariableTable::new();
@@ -18,8 +18,8 @@ fn step1() {
 
 #[test]
 fn step2() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Square},
     };
@@ -40,8 +40,8 @@ fn step2() {
 
 #[test]
 fn step3() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Square, Exp}},
     };
@@ -67,11 +67,10 @@ fn step3() {
 
 #[test]
 fn step4() {
+    use ktensor::{Tensor, utility::{numerical_diff, assert_approx_eq}};
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Square, Exp}},
-        utility::{numerical_diff, assert_approx_eq},
     };
 
     let mut variable_table = VariableTable::new();
@@ -102,11 +101,10 @@ fn step4() {
 
 #[test]
 fn step7() {
+    use ktensor::{Tensor, utility::{numerical_diff, assert_approx_eq}};
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Square, Exp}},
-        utility::{numerical_diff, assert_approx_eq},
     };
 
     let mut variable_table = VariableTable::new();
@@ -140,8 +138,8 @@ fn step7() {
 
 #[test]
 fn step11() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Add},
     };
@@ -166,8 +164,8 @@ fn step11() {
 
 #[test]
 fn step13() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Add, Square}},
     };
@@ -205,8 +203,8 @@ fn step13() {
 
 #[test]
 fn step14() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Add},
     };
@@ -243,8 +241,8 @@ fn step14() {
 
 #[test]
 fn step16() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Add, Square}},
     };
@@ -278,8 +276,8 @@ fn step16() {
 
 #[test]
 fn step18_1() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Add},
     };
@@ -319,8 +317,8 @@ fn step18_1() {
 
 #[test]
 fn step18_2() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Square},
     };
@@ -342,8 +340,8 @@ fn step18_2() {
 
 #[test]
 fn step19() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
     };
 
@@ -360,8 +358,8 @@ fn step19() {
 
 #[test]
 fn step20() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Add, Mul}},
     };
@@ -402,8 +400,8 @@ fn step20() {
 #[test]
 fn step26() {
     use std::fs::create_dir;
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Add, Mul}},
     };
@@ -435,8 +433,8 @@ fn step26() {
 
 #[test]
 fn step27() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Sin},
     };
@@ -464,8 +462,8 @@ fn step27() {
 
 #[test]
 fn step33() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Mul, Sub, Pow}},
     };
@@ -518,8 +516,8 @@ fn step33() {
 #[test]
 fn step35() {
     use std::fs::create_dir;
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Tanh},
     };
@@ -556,8 +554,8 @@ fn step35() {
 
 #[test]
 fn step36() {
+    use ktensor::Tensor;
     use kdezero::{
-        Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Pow, Add}},
     };
@@ -592,10 +590,9 @@ fn step36() {
 fn step42() {
     use std::fs::create_dir;
     use plotters::prelude::*;
+    use ktensor::{Tensor, tensor::random::TensorRng};
     use kdezero::{
-        Tensor,
         variable::VariableTable,
-        tensor::random::TensorRng,
         function::{FunctionTable, operator::{
             MeanSquaredError, Add, BroadcastTo, MatMul,
         }},
@@ -717,10 +714,9 @@ fn step42() {
 fn step43() {
     use std::fs::create_dir;
     use plotters::prelude::*;
+    use ktensor::{Tensor, tensor::random::TensorRng};
     use kdezero::{
-        Tensor,
         variable::VariableTable,
-        tensor::random::TensorRng,
         function::{FunctionTable, operator::{
             MeanSquaredError,
         }, function::{linear, sigmoid}},

@@ -368,13 +368,17 @@ dependencies = [
 name = "kdezero"
 version = "0.1.0"
 dependencies = [
+ "ktensor",
  "plotters",
- "rand",
 ]
 
 [[package]]
 name = "ktensor"
 version = "0.1.0"
+dependencies = [
+ "plotters",
+ "rand",
+]
 
 [[package]]
 name = "lazy_static"

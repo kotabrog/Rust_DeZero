@@ -1,6 +1,6 @@
 use super::super::{FunctionTable, operator::{Div, Add, Neg, Exp}};
 use crate::variable::VariableTable;
-use crate::Tensor;
+use ktensor::Tensor;
 
 pub fn sigmoid(x_id: usize, variable_table: &mut VariableTable, function_table: &mut FunctionTable) -> usize {
     let neg_id = function_table.generate_function_from_function_contents(Box::new(Neg::new()));
@@ -22,7 +22,7 @@ pub fn sigmoid(x_id: usize, variable_table: &mut VariableTable, function_table: 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utility::assert_approx_eq;
+    use ktensor::utility::assert_approx_eq;
 
     #[test]
     fn forward_normal() {

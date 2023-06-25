@@ -2,7 +2,7 @@ pub mod variable_table;
 
 pub use variable_table::VariableTable;
 
-use crate::tensor::Tensor;
+use ktensor::tensor::Tensor;
 
 /// Wrapper of Tensor
 #[derive(Debug, Clone)]

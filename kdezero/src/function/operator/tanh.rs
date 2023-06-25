@@ -1,7 +1,7 @@
 use std::any::Any;
 use super::{Mul, Sub};
 use super::super::{FunctionContents, FunctionTable};
-use crate::Tensor;
+use ktensor::Tensor;
 use crate::variable::VariableTable;
 
 #[derive(Debug, Clone)]
@@ -77,7 +77,8 @@ impl FunctionContents for Tanh {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Tensor, variable::VariableTable, function::FunctionTable};
+    use ktensor::Tensor;
+    use crate::{variable::VariableTable, function::FunctionTable};
 
     #[test]
     fn forward_normal() {

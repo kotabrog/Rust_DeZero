@@ -70,7 +70,8 @@ impl FunctionContents for SumTo {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Tensor, variable::VariableTable, function::FunctionTable};
+    use ktensor::Tensor;
+    use crate::{variable::VariableTable, function::FunctionTable};
 
     #[test]
     fn forward_normal() {

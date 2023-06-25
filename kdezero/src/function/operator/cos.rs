@@ -71,7 +71,8 @@ impl FunctionContents for Cos {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Tensor, variable::VariableTable, function::FunctionTable};
+    use ktensor::tensor::Tensor;
+    use crate::{variable::VariableTable, function::FunctionTable};
 
     #[test]
     fn forward_normal() {
