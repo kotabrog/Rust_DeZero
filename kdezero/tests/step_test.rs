@@ -1,9 +1,9 @@
-extern crate rust_dezero;
+extern crate kdezero;
 
 #[test]
 fn step1() {
-    use rust_dezero::Tensor;
-    use rust_dezero::variable::{VariableContents, VariableTable};
+    use kdezero::Tensor;
+    use kdezero::variable::{VariableContents, VariableTable};
 
     let mut table = VariableTable::new();
     let data = Tensor::new_from_num_vec(vec![1.0], vec![]);
@@ -18,7 +18,7 @@ fn step1() {
 
 #[test]
 fn step2() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Square},
@@ -40,7 +40,7 @@ fn step2() {
 
 #[test]
 fn step3() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Square, Exp}},
@@ -67,7 +67,7 @@ fn step3() {
 
 #[test]
 fn step4() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Square, Exp}},
@@ -102,7 +102,7 @@ fn step4() {
 
 #[test]
 fn step7() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Square, Exp}},
@@ -140,7 +140,7 @@ fn step7() {
 
 #[test]
 fn step11() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Add},
@@ -166,7 +166,7 @@ fn step11() {
 
 #[test]
 fn step13() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Add, Square}},
@@ -205,7 +205,7 @@ fn step13() {
 
 #[test]
 fn step14() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Add},
@@ -243,7 +243,7 @@ fn step14() {
 
 #[test]
 fn step16() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Add, Square}},
@@ -278,7 +278,7 @@ fn step16() {
 
 #[test]
 fn step18_1() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Add},
@@ -319,7 +319,7 @@ fn step18_1() {
 
 #[test]
 fn step18_2() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Square},
@@ -342,7 +342,7 @@ fn step18_2() {
 
 #[test]
 fn step19() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
     };
@@ -360,7 +360,7 @@ fn step19() {
 
 #[test]
 fn step20() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Add, Mul}},
@@ -402,7 +402,7 @@ fn step20() {
 #[test]
 fn step26() {
     use std::fs::create_dir;
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Add, Mul}},
@@ -435,7 +435,7 @@ fn step26() {
 
 #[test]
 fn step27() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Sin},
@@ -464,7 +464,7 @@ fn step27() {
 
 #[test]
 fn step33() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Mul, Sub, Pow}},
@@ -518,7 +518,7 @@ fn step33() {
 #[test]
 fn step35() {
     use std::fs::create_dir;
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::Tanh},
@@ -556,7 +556,7 @@ fn step35() {
 
 #[test]
 fn step36() {
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         function::{FunctionTable, operator::{Pow, Add}},
@@ -592,7 +592,7 @@ fn step36() {
 fn step42() {
     use std::fs::create_dir;
     use plotters::prelude::*;
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         tensor::random::TensorRng,
@@ -717,7 +717,7 @@ fn step42() {
 fn step43() {
     use std::fs::create_dir;
     use plotters::prelude::*;
-    use rust_dezero::{
+    use kdezero::{
         Tensor,
         variable::VariableTable,
         tensor::random::TensorRng,

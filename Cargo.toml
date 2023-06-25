@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "ktensor",
+    "kdezero",
+]

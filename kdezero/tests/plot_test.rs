@@ -40,7 +40,7 @@ fn scatter_plot_test() {
 
 #[test]
 fn toy_dataset_plot() {
-    use rust_dezero::tensor::random::TensorRng;
+    use kdezero::tensor::random::TensorRng;
 
     match create_dir("output") {
         Ok(_) => println!("create output directory"),
