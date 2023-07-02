@@ -1,28 +1,27 @@
 use num_traits::NumOps;
 
+#[derive(Debug, Clone)]
 pub struct Scalar<T>
-where
-    T: NumOps
 {
-    data: T,
+    value: T,
 }
 
 impl<T> Scalar<T>
-where
-    T: NumOps
 {
-    pub fn new(data: T) -> Self {
-        Self { data }
+    pub fn new(value: T) -> Self {
+        Self { value }
     }
 
-    pub fn data(&self) -> &T {
-        &self.data
+    pub fn value(&self) -> &T {
+        &self.value
     }
 
-    pub fn data_type(&self) -> &str {
+    pub fn value_type(&self) -> &str {
         std::any::type_name::<T>()
     }
 }
+
+impl<T: Copy> Copy for Scalar<T> {}
 
 #[cfg(test)]
 mod tests {
@@ -45,19 +44,51 @@ mod tests {
         let f32_scalar = Scalar::new(1f32);
         let f64_scalar = Scalar::new(1f64);
 
-        assert_eq!(usize_scalar.data_type(), "usize");
-        assert_eq!(isize_scalar.data_type(), "isize");
-        assert_eq!(u8_scalar.data_type(), "u8");
-        assert_eq!(u16_scalar.data_type(), "u16");
-        assert_eq!(u32_scalar.data_type(), "u32");
-        assert_eq!(u64_scalar.data_type(), "u64");
-        assert_eq!(u128_scalar.data_type(), "u128");
-        assert_eq!(i8_scalar.data_type(), "i8");
-        assert_eq!(i16_scalar.data_type(), "i16");
-        assert_eq!(i32_scalar.data_type(), "i32");
-        assert_eq!(i64_scalar.data_type(), "i64");
-        assert_eq!(i128_scalar.data_type(), "i128");
-        assert_eq!(f32_scalar.data_type(), "f32");
-        assert_eq!(f64_scalar.data_type(), "f64");
+        assert_eq!(usize_scalar.value_type(), "usize");
+        assert_eq!(isize_scalar.value_type(), "isize");
+        assert_eq!(u8_scalar.value_type(), "u8");
+        assert_eq!(u16_scalar.value_type(), "u16");
+        assert_eq!(u32_scalar.value_type(), "u32");
+        assert_eq!(u64_scalar.value_type(), "u64");
+        assert_eq!(u128_scalar.value_type(), "u128");
+        assert_eq!(i8_scalar.value_type(), "i8");
+        assert_eq!(i16_scalar.value_type(), "i16");
+        assert_eq!(i32_scalar.value_type(), "i32");
+        assert_eq!(i64_scalar.value_type(), "i64");
+        assert_eq!(i128_scalar.value_type(), "i128");
+        assert_eq!(f32_scalar.value_type(), "f32");
+        assert_eq!(f64_scalar.value_type(), "f64");
+
+        assert_eq!(usize_scalar.value(), &1usize);
+        assert_eq!(isize_scalar.value(), &1isize);
+        assert_eq!(u8_scalar.value(), &1u8);
+        assert_eq!(u16_scalar.value(), &1u16);
+        assert_eq!(u32_scalar.value(), &1u32);
+        assert_eq!(u64_scalar.value(), &1u64);
+        assert_eq!(u128_scalar.value(), &1u128);
+        assert_eq!(i8_scalar.value(), &1i8);
+        assert_eq!(i16_scalar.value(), &1i16);
+        assert_eq!(i32_scalar.value(), &1i32);
+        assert_eq!(i64_scalar.value(), &1i64);
+        assert_eq!(i128_scalar.value(), &1i128);
+        assert_eq!(f32_scalar.value(), &1f32);
+        assert_eq!(f64_scalar.value(), &1f64);
+    }
+
+    #[test]
+    fn scalar_copy() {
+        fn copy_scalar<T>(scalar: Scalar<T>) -> Scalar<T> {
+            scalar
+        }
+        let usize_scalar = Scalar::new(1usize);
+        let usize_scalar_copy = copy_scalar(usize_scalar);
+        assert_eq!(usize_scalar.value(), &1usize);
+        assert_eq!(usize_scalar_copy.value(), &1usize);
+
+        let box_scalar = Scalar::new(Box::new(1usize));
+        let box_scalar_copy = copy_scalar(box_scalar);
+        // The following is an error
+        // assert_eq!(**box_scalar.value(), 1usize);
+        assert_eq!(**box_scalar_copy.value(), 1usize);
     }
 }
