@@ -1,5 +1,10 @@
 use num_traits::NumOps;
 
+/// Scalar is a wrapper of single value
+/// 
+/// # Fields
+/// 
+/// * `value` - The value of the scalar
 #[derive(Debug, Clone)]
 pub struct Scalar<T>
 {
@@ -8,14 +13,17 @@ pub struct Scalar<T>
 
 impl<T> Scalar<T>
 {
+    /// Create a new Scalar
     pub fn new(value: T) -> Self {
         Self { value }
     }
 
+    /// Get the value
     pub fn value(&self) -> &T {
         &self.value
     }
 
+    /// Get the value type
     pub fn value_type(&self) -> &str {
         std::any::type_name::<T>()
     }
