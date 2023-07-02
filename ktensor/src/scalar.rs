@@ -1,11 +1,9 @@
-use num_traits::NumOps;
-
 /// Scalar is a wrapper of single value
 /// 
 /// # Fields
 /// 
 /// * `value` - The value of the scalar
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Scalar<T>
 {
     value: T,
@@ -30,6 +28,13 @@ impl<T> Scalar<T>
 }
 
 impl<T: Copy> Copy for Scalar<T> {}
+
+impl<T> From<T> for Scalar<T>
+{
+    fn from(value: T) -> Self {
+        Self { value }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -98,5 +103,11 @@ mod tests {
         // The following is an error
         // assert_eq!(**box_scalar.value(), 1usize);
         assert_eq!(**box_scalar_copy.value(), 1usize);
+    }
+
+    #[test]
+    fn from_and_into() {
+        let usize_scalar = Scalar::from(1usize);
+        assert_eq!(usize_scalar, 1.into());
     }
 }
