@@ -1,7 +1,7 @@
 // use anyhow::{Context, Result};
 use thiserror::Error;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, PartialEq)]
 pub enum TensorError {
     #[error("SampleError: {0}")]
     #[allow(dead_code)]

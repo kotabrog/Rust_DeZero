@@ -1,4 +1,5 @@
 mod utility;
+mod info;
 
 use anyhow::Result;
 
@@ -54,19 +55,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn new_normal() -> Result<()> {
-        let x = Tensor::new([0.0, 1.0, 2.0], [3,])?;
+    fn new_normal() {
+        let x = Tensor::new([0.0, 1.0, 2.0], [3,]).unwrap();
         assert_eq!(x.get_data(), &vec![0.0, 1.0, 2.0]);
         assert_eq!(x.get_shape(), &vec![3]);
-        Ok(())
     }
 
     #[test]
-    fn new_zero_dim() -> Result<()> {
-        let x = Tensor::new([1.0], [])?;
+    fn new_zero_dim() {
+        let x = Tensor::new([1.0], []).unwrap();
         assert_eq!(x.get_data(), &vec![1.0]);
         assert_eq!(x.get_shape(), &vec![]);
-        Ok(())
     }
 
     #[test]
@@ -76,13 +75,12 @@ mod tests {
     }
 
     #[test]
-    fn new_from_vec() -> Result<()> {
+    fn new_from_vec() {
         let x = Tensor::new(
             vec![0.0, 1.0, 2.0],
             vec![3,]
-        )?;
+        ).unwrap();
         assert_eq!(x.get_data(), &vec![0.0, 1.0, 2.0]);
         assert_eq!(x.get_shape(), &vec![3]);
-        Ok(())
     }
 }

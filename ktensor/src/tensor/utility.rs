@@ -51,12 +51,18 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
     fn check_shape_error_mismatch() {
-        Tensor::check_shape(
+        let x = Tensor::check_shape(
             &vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
             &vec![2, 2]
-        ).unwrap()
+        );
+        match x {
+            Ok(_) => panic!("Should be error"),
+            Err(e) => {
+                let e = e.downcast::<TensorError>().unwrap();
+                assert_eq!(e, TensorError::ShapeError(6, 4))
+            }
+        }
     }
 
     #[test]
