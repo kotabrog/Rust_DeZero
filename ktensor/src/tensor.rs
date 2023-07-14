@@ -1,6 +1,7 @@
 mod utility;
 mod info;
 mod data_access;
+mod shape;
 
 use anyhow::Result;
 
