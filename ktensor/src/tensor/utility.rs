@@ -36,6 +36,45 @@ impl<T> Tensor<T>
         }
         Ok(())
     }
+
+    /// Calculate the data index from the shape index
+    /// 
+    /// # Arguments
+    /// 
+    /// * `index` - The shape index
+    /// 
+    /// # Returns
+    /// 
+    /// * `Result<usize>` - Result of the calculation
+    /// 
+    /// # Note
+    /// 
+    /// If the shape index is not correct, `TensorError::IndexError` is returned
+    pub(crate) fn calc_data_index<U: AsRef<[usize]>>(&self, index: U) -> Result<usize> {
+        let index = index.as_ref();
+        if index.len() != self.ndim() {
+            return Err(TensorError::IndexError(
+                self.get_shape().clone(),
+                index.to_vec()
+            ).into())
+        }
+        for i in 0..self.ndim() {
+            if index[i] >= self.shape[i] {
+                return Err(TensorError::IndexError(
+                    self.get_shape().clone(),
+                    index.to_vec()
+                ).into())
+            }
+        }
+        let mut data_index = 0;
+        for i in 0..self.ndim() {
+            data_index += index[i];
+            if i < self.ndim() - 1 {
+                data_index *= self.shape[i + 1];
+            }
+        }
+        Ok(data_index)
+    }
 }
 
 #[cfg(test)]
@@ -88,5 +127,66 @@ mod tests {
             &vec![],
             &vec![]
         ).unwrap()
+    }
+
+    #[test]
+    fn calc_data_index_normal() {
+        let x = Tensor::new(
+            vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11., 12.],
+            vec![2, 2, 3]
+        ).unwrap();
+        assert_eq!(x.calc_data_index(&[0, 0, 0]).unwrap(), 0);
+        assert_eq!(x.calc_data_index(&[0, 0, 1]).unwrap(), 1);
+        assert_eq!(x.calc_data_index(&[0, 0, 2]).unwrap(), 2);
+        assert_eq!(x.calc_data_index(&[0, 1, 0]).unwrap(), 3);
+        assert_eq!(x.calc_data_index(&[0, 1, 1]).unwrap(), 4);
+        assert_eq!(x.calc_data_index(&[0, 1, 2]).unwrap(), 5);
+        assert_eq!(x.calc_data_index(&[1, 0, 0]).unwrap(), 6);
+        assert_eq!(x.calc_data_index(&[1, 0, 1]).unwrap(), 7);
+        assert_eq!(x.calc_data_index(&[1, 0, 2]).unwrap(), 8);
+        assert_eq!(x.calc_data_index(&[1, 1, 0]).unwrap(), 9);
+        assert_eq!(x.calc_data_index(&[1, 1, 1]).unwrap(), 10);
+        assert_eq!(x.calc_data_index(&[1, 1, 2]).unwrap(), 11);
+    }
+
+    #[test]
+    fn calc_data_index_error_ndim() {
+        let x = Tensor::new(
+            vec![1.0, 2.0, 3.0, 4.0],
+            vec![2, 2]
+        ).unwrap();
+        let x = x.calc_data_index(&[0, 0, 0]);
+        match x {
+            Ok(_) => panic!("Should be error"),
+            Err(e) => {
+                let e = e.downcast::<TensorError>().unwrap();
+                assert_eq!(e, TensorError::IndexError(vec![2, 2], vec![0, 0, 0]))
+            }
+        }
+    }
+
+    #[test]
+    fn calc_data_index_zero_dim() {
+        let x = Tensor::new(
+            vec![1.0],
+            vec![]
+        ).unwrap();
+        assert_eq!(x.calc_data_index(&[]).unwrap(), 0);
+    }
+
+    #[test]
+    fn calc_data_index_error_out_index() {
+        let x = Tensor::new(
+            vec![1.0, 2.0, 3.0, 4.0],
+            vec![2, 2]
+        ).unwrap();
+        let x = x.calc_data_index(&[0, 3]);
+        match x {
+            Ok(_) => panic!("Should be error"),
+            Err(e) => {
+                let e = e.downcast::<TensorError>().unwrap();
+                assert_eq!(e, TensorError::IndexError(vec![2, 2], vec![0, 3]))
+            }
+        }
     }
 }

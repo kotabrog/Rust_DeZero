@@ -8,6 +8,8 @@ pub enum TensorError {
     Sample(String),
     #[error("ShapeError: data: {0}, shape: {1}")]
     ShapeError(usize, usize),
+    #[error("IndexError: shape: {0:?}, index: {1:?}")]
+    IndexError(Vec<usize>, Vec<usize>),
 }
 
 #[cfg(test)]
@@ -42,6 +44,22 @@ mod tests {
             Err(e) => {
                 let e = e.downcast::<TensorError>().context("downcast error")?;
                 assert_eq!(e.to_string(), "ShapeError: data: 1, shape: 2");
+                Ok(())
+            }
+        }
+    }
+
+    fn error_index() -> Result<()> {
+        Err(TensorError::IndexError(vec![1, 2], vec![3, 4]).into())
+    }
+
+    #[test]
+    fn tensor_error_index() -> Result<()> {
+        match error_index() {
+            Ok(_) => panic!("error"),
+            Err(e) => {
+                let e = e.downcast::<TensorError>().context("downcast error")?;
+                assert_eq!(e.to_string(), "IndexError: shape: [1, 2], index: [3, 4]");
                 Ok(())
             }
         }
