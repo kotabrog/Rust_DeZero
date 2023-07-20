@@ -22,16 +22,16 @@ impl<T> Tensor<T>
     /// * If the shape is empty, the data length must be 1
     /// * If the shape is not empty, the product of the shape must be equal to the data length
     /// 
-    /// If the shape is not correct, `TensorError::ShapeError` is returned
+    /// If the shape is not correct, `TensorError::ShapeSizeError` is returned
     pub(crate) fn check_shape(data: &Vec<T>, shape: &Vec<usize>) -> Result<()> {
         if shape.len() == 0 {
             if data.len() != 1 {
-                return Err(TensorError::ShapeError(data.len(), 0).into())
+                return Err(TensorError::ShapeSizeError(data.len(), 0).into())
             }
         } else {
             let size = shape.iter().product();
             if size != data.len() {
-                return Err(TensorError::ShapeError(data.len(), size).into())
+                return Err(TensorError::ShapeSizeError(data.len(), size).into())
             }
         }
         Ok(())
@@ -99,7 +99,7 @@ mod tests {
             Ok(_) => panic!("Should be error"),
             Err(e) => {
                 let e = e.downcast::<TensorError>().unwrap();
-                assert_eq!(e, TensorError::ShapeError(6, 4))
+                assert_eq!(e, TensorError::ShapeSizeError(6, 4))
             }
         }
     }

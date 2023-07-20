@@ -6,8 +6,10 @@ pub enum TensorError {
     #[error("SampleError: {0}")]
     #[allow(dead_code)]
     Sample(String),
-    #[error("ShapeError: data: {0}, shape: {1}")]
-    ShapeError(usize, usize),
+    #[error("ShapeError: data: {0:?}, shape: {1:?}")]
+    ShapeError(Vec<usize>, Vec<usize>),
+    #[error("ShapeSizeError: data: {0}, shape: {1}")]
+    ShapeSizeError(usize, usize),
     #[error("IndexError: shape: {0:?}, index: {1:?}")]
     IndexError(Vec<usize>, Vec<usize>),
 }
@@ -34,7 +36,7 @@ mod tests {
     }
 
     fn error_shape() -> Result<()> {
-        Err(TensorError::ShapeError(1, 2).into())
+        Err(TensorError::ShapeError(vec![1, 2], vec![3, 4]).into())
     }
 
     #[test]
@@ -43,7 +45,23 @@ mod tests {
             Ok(_) => panic!("error"),
             Err(e) => {
                 let e = e.downcast::<TensorError>().context("downcast error")?;
-                assert_eq!(e.to_string(), "ShapeError: data: 1, shape: 2");
+                assert_eq!(e.to_string(), "ShapeError: data: [1, 2], shape: [3, 4]");
+                Ok(())
+            }
+        }
+    }
+
+    fn error_shape_size() -> Result<()> {
+        Err(TensorError::ShapeSizeError(1, 2).into())
+    }
+
+    #[test]
+    fn tensor_error_shape_size() -> Result<()> {
+        match error_shape_size() {
+            Ok(_) => panic!("error"),
+            Err(e) => {
+                let e = e.downcast::<TensorError>().context("downcast error")?;
+                assert_eq!(e.to_string(), "ShapeSizeError: data: 1, shape: 2");
                 Ok(())
             }
         }
