@@ -12,6 +12,8 @@ pub enum TensorError {
     ShapeSizeError(usize, usize),
     #[error("IndexError: shape: {0:?}, index: {1:?}")]
     IndexError(Vec<usize>, Vec<usize>),
+    #[error("CastError: type: {0}")]
+    CastError(String),
 }
 
 #[cfg(test)]
@@ -78,6 +80,22 @@ mod tests {
             Err(e) => {
                 let e = e.downcast::<TensorError>().context("downcast error")?;
                 assert_eq!(e.to_string(), "IndexError: shape: [1, 2], index: [3, 4]");
+                Ok(())
+            }
+        }
+    }
+
+    fn error_cast() -> Result<()> {
+        Err(TensorError::CastError("Vec<i32>".to_string()).into())
+    }
+
+    #[test]
+    fn tensor_error_cast() -> Result<()> {
+        match error_cast() {
+            Ok(_) => panic!("error"),
+            Err(e) => {
+                let e = e.downcast::<TensorError>().context("downcast error")?;
+                assert_eq!(e.to_string(), "CastError: type: Vec<i32>");
                 Ok(())
             }
         }
