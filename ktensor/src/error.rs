@@ -3,9 +3,9 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq)]
 pub enum TensorError {
-    #[error("SampleError: {0}")]
+    #[error("Error: {0}")]
     #[allow(dead_code)]
-    Sample(String),
+    Error(String),
     #[error("ShapeError: data: {0:?}, shape: {1:?}")]
     ShapeError(Vec<usize>, Vec<usize>),
     #[error("ShapeSizeError: data: {0}, shape: {1}")]
@@ -21,17 +21,17 @@ mod tests {
     use anyhow::{Context, Result};
     use super::*;
 
-    fn error_sample() -> Result<()> {
-        Err(TensorError::Sample("SampleError".to_string()).into())
+    fn error() -> Result<()> {
+        Err(TensorError::Error("Error".to_string()).into())
     }
 
     #[test]
-    fn tensor_error_sample() -> Result<()> {
-        match error_sample() {
+    fn tensor_error() -> Result<()> {
+        match error() {
             Ok(_) => panic!("error"),
             Err(e) => {
                 let e = e.downcast::<TensorError>().context("downcast error")?;
-                assert_eq!(e.to_string(), "SampleError: SampleError");
+                assert_eq!(e.to_string(), "Error: Error");
                 Ok(())
             }
         }

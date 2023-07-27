@@ -75,6 +75,30 @@ impl<T> Tensor<T>
         }
         Ok(data_index)
     }
+
+    /// Convert the data index to the shape index
+    /// 
+    /// # Arguments
+    /// 
+    /// * `index` - The data index
+    /// * `shape` - The shape of the tensor
+    /// 
+    /// # Returns
+    /// 
+    /// * `Vec<usize>` - The shape index
+    /// 
+    /// # Note
+    /// 
+    /// The behavior when the index is out of range is not defined.
+    pub(crate) fn data_index_to_indexes(index: usize, shape: &Vec<usize>) -> Vec<usize> {
+        let mut indexes = Vec::new();
+        let mut index = index;
+        for i in (0..shape.len()).rev() {
+            indexes.push(index % shape[i]);
+            index /= shape[i];
+        }
+        indexes.iter().rev().cloned().collect()
+    }
 }
 
 #[cfg(test)]
@@ -188,5 +212,15 @@ mod tests {
                 assert_eq!(e, TensorError::IndexError(vec![2, 2], vec![0, 3]))
             }
         }
+    }
+
+    #[test]
+    fn data_index_to_indexes_normal() {
+        assert_eq!(Tensor::<f64>::data_index_to_indexes(0, &vec![2, 3]), vec![0, 0]);
+        assert_eq!(Tensor::<f64>::data_index_to_indexes(1, &vec![2, 3]), vec![0, 1]);
+        assert_eq!(Tensor::<f64>::data_index_to_indexes(2, &vec![2, 3]), vec![0, 2]);
+        assert_eq!(Tensor::<f64>::data_index_to_indexes(3, &vec![2, 3]), vec![1, 0]);
+        assert_eq!(Tensor::<f64>::data_index_to_indexes(4, &vec![2, 3]), vec![1, 1]);
+        assert_eq!(Tensor::<f64>::data_index_to_indexes(5, &vec![2, 3]), vec![1, 2]);
     }
 }

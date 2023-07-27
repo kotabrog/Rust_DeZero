@@ -3,6 +3,7 @@ mod info;
 mod data_access;
 mod shape;
 mod create;
+mod sum;
 
 use anyhow::Result;
 
