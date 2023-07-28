@@ -7,6 +7,19 @@ impl<T> Tensor<T>
 where
     T: NumCast,
 {
+    /// Create a tensor with the specified shape with evenly spaced values
+    /// 
+    /// # Arguments
+    /// 
+    /// * `shape` - The shape of the tensor
+    /// 
+    /// # Returns
+    /// 
+    /// * `Result<Self>` - Result of the creation
+    /// 
+    /// # Note
+    /// 
+    /// If value cannot be cast to `T`, `TensorError::CastError` is returned
     pub fn arrange<U: Into<Vec<usize>>>(shape: U) -> Result<Self> {
         let shape = shape.into();
         let size: usize = shape.iter().product();

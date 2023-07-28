@@ -1,6 +1,8 @@
 use std::collections::HashSet;
 use num_traits::NumAssign;
+use anyhow::Result;
 use super::Tensor;
+use crate::error::TensorError;
 
 impl<T> Tensor<T>
 where
@@ -71,6 +73,41 @@ where
         }
         let new_shape = make_shape(&self.shape, &axis, keepdims);
         Self { data, shape: new_shape }
+    }
+
+    /// Sum the values for the given shape
+    /// 
+    /// # Arguments
+    /// 
+    /// * `shape` - The shape to sum
+    /// 
+    /// # Returns
+    /// 
+    /// * `Result<Self>` - Result of the sum
+    /// 
+    /// # Note
+    /// 
+    /// If the shape is not correct, following errors are returned:
+    /// 
+    /// * `TensorError::ShapeError` - If the shape is not correct
+    /// * `TensorError::ShapeSizeError` - If the shape size is not correct
+    pub fn sum_to<U: AsRef<[usize]>>(&self, shape: U) -> Result<Self> {
+        let shape = shape.as_ref();
+        if shape.len() > self.ndim() {
+            return Err(TensorError::ShapeSizeError(self.ndim(), shape.len()).into());
+        }
+        let diff = self.ndim() - shape.len();
+        let mut axis = (0..diff).collect::<Vec<_>>();
+        for i in 0..shape.len() {
+            if shape[i] == 1 {
+                axis.push(i + diff);
+            } else if shape[i] != self.shape[i + diff] {
+                return Err(TensorError::ShapeError(self.shape.clone(), shape.to_vec()).into());
+            }
+        }
+        let mut tensor = self.sum(Some(axis), true);
+        tensor.shape = shape.to_vec();
+        Ok(tensor)
     }
 }
 
@@ -167,5 +204,84 @@ mod tests {
         let y = x.sum::<&[usize]>(None, false);
         assert_eq!(y.get_data(), &vec![276.0]);
         assert_eq!(y.get_shape(), &vec![]);
+    }
+
+    #[test]
+    fn sum_to_normal() {
+        let x = Tensor::<f32>::arrange([2, 3]).unwrap();
+        let y = x.sum_to([2, 1]).unwrap();
+        assert_eq!(y.get_data(), &vec![3.0, 12.0]);
+        assert_eq!(y.get_shape(), &vec![2, 1]);
+    }
+
+    #[test]
+    fn sum_to_3d() {
+        let x = Tensor::<f32>::arrange([2, 3, 4]).unwrap();
+        let y = x.sum_to([2, 1, 4]).unwrap();
+        assert_eq!(y.get_data(), &vec![12.0, 15.0, 18.0, 21.0, 48.0, 51.0, 54.0, 57.0]);
+        assert_eq!(y.get_shape(), &vec![2, 1, 4]);
+    }
+
+    #[test]
+    fn sum_to_add_left() {
+        let x = Tensor::<f32>::arrange([3, 2]).unwrap();
+        let y = x.sum_to([2]).unwrap();
+        assert_eq!(y.get_data(), &vec![6.0, 9.0]);
+        assert_eq!(y.get_shape(), &vec![2]);
+    }
+
+    #[test]
+    fn sum_to_scaler() {
+        let x = Tensor::<f32>::arrange([3, 2]).unwrap();
+        let y = x.sum_to([]).unwrap();
+        assert_eq!(y.get_data(), &vec![15.0]);
+        assert_eq!(y.get_shape(), &vec![]);
+    }
+
+    #[test]
+    fn sum_to_0d() {
+        let x = Tensor::<f32>::arrange([]).unwrap();
+        let y = x.sum_to([]).unwrap();
+        assert_eq!(y.get_data(), &vec![0.0]);
+        assert_eq!(y.get_shape(), &vec![]);
+    }
+
+    #[test]
+    fn sum_to_error_mismatch_ndim() {
+        let x = Tensor::<f32>::arrange([3, 2]).unwrap();
+        let y = x.sum_to([2, 1, 4]);
+        match y {
+            Ok(_) => panic!("error"),
+            Err(e) => {
+                let e = e.downcast::<TensorError>().unwrap();
+                assert_eq!(e, TensorError::ShapeSizeError(2, 3));
+            }
+        }
+    }
+
+    #[test]
+    fn sum_to_error_mismatch_shape() {
+        let x = Tensor::<f32>::arrange([3, 2]).unwrap();
+        let y = x.sum_to([2, 1]);
+        match y {
+            Ok(_) => panic!("error"),
+            Err(e) => {
+                let e = e.downcast::<TensorError>().unwrap();
+                assert_eq!(e, TensorError::ShapeError(vec![3, 2], vec![2, 1]));
+            }
+        }
+    }
+
+    #[test]
+    fn suu_to_error_mismatch_shape_left() {
+        let x = Tensor::<f32>::arrange([3, 2]).unwrap();
+        let y = x.sum_to([3]);
+        match y {
+            Ok(_) => panic!("error"),
+            Err(e) => {
+                let e = e.downcast::<TensorError>().unwrap();
+                assert_eq!(e, TensorError::ShapeError(vec![3, 2], vec![3]));
+            }
+        }
     }
 }
