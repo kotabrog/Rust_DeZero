@@ -28,17 +28,48 @@ where
             .collect();
         Self { data, shape: self.shape.clone() }
     }
-}
 
-impl<T> Tensor<T>
-where
-    T: Clone
-{
     fn assign_ops(&mut self, rhs: &Self, f: fn(&mut T, T) -> ()) {
         assert_eq!(self.shape, rhs.shape, "Shape mismatch: left: {:?}, right: {:?}", self.shape, rhs.shape);
         for (x, y) in self.data.iter_mut().zip(rhs.data.iter()) {
             f(x, y.clone());
         }
+    }
+
+    fn scalar_right_ops(self, rhs: T, f: fn(T, T) -> T) -> Self {
+        let data =
+            self.data
+            .into_iter()
+            .map(|x| f(x, rhs.clone()))
+            .collect();
+        Self { data, shape: self.shape }
+    }
+
+    fn scalar_left_ops(self, lhs: T, f: fn(T, T) -> T) -> Self {
+        let data =
+            self.data
+            .into_iter()
+            .map(|x| f(lhs.clone(), x))
+            .collect();
+        Self { data, shape: self.shape }
+    }
+
+    fn scalar_right_ref_ops(&self, rhs: &T, f: fn(T, T) -> T) -> Self {
+        let data =
+            self.data
+            .iter()
+            .map(|x| f(x.clone(), rhs.clone()))
+            .collect();
+        Self { data, shape: self.shape.clone() }
+    }
+
+    fn scalar_left_ref_ops(&self, lhs: &T, f: fn(T, T) -> T) -> Self {
+        let data =
+            self.data
+            .iter()
+            .map(|x| f(lhs.clone(), x.clone()))
+            .collect();
+        Self { data, shape: self.shape.clone() }
     }
 }
 
@@ -218,6 +249,321 @@ where
 {
     fn rem_assign(&mut self, other: &Self) {
         self.assign_ops(other, |x, y| { *x %= y; })
+    }
+}
+
+impl<T> std::ops::Add<T> for Tensor<T>
+where
+    T: std::ops::Add<Output = T> + Clone
+{
+    type Output = Self;
+
+    fn add(self, rhs: T) -> Self::Output {
+        self.scalar_right_ops(rhs, |x, y| x + y)
+    }
+}
+
+macro_rules! def_add_right_tensor {
+    ( $( $type: ty ), + ) => {
+        $(
+            impl std::ops::Add<Tensor<$type>> for $type {
+                type Output = Tensor<$type>;
+
+                fn add(self, rhs: Tensor<$type>) -> Self::Output {
+                    rhs.scalar_left_ops(self, |x, y| x + y)
+                }
+            }
+        )+
+    };
+}
+
+def_add_right_tensor!(usize, isize, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
+
+impl<T> std::ops::Add<T> for &Tensor<T>
+where
+    T: std::ops::Add<Output = T> + Clone
+{
+    type Output = Tensor<T>;
+
+    fn add(self, rhs: T) -> Self::Output {
+        self.scalar_right_ref_ops(&rhs, |x, y| x + y)
+    }
+}
+
+macro_rules! def_add_right_reference_tensor {
+    ( $( $type: ty ), + ) => {
+        $(
+            impl std::ops::Add<&Tensor<$type>> for $type {
+                type Output = Tensor<$type>;
+
+                fn add(self, rhs: &Tensor<$type>) -> Self::Output {
+                    rhs.scalar_left_ref_ops(&self, |x, y| x + y)
+                }
+            }
+        )+
+    };
+}
+
+impl<T> Tensor<T>
+where
+    T: std::ops::Add<Output = T> + Clone
+{
+    pub fn add_scalar_left(&self, lhs: T) -> Self {
+        self.scalar_left_ref_ops(&lhs, |x, y| x + y)
+    }
+}
+
+def_add_right_reference_tensor!(usize, isize, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
+
+impl<T> std::ops::Sub<T> for Tensor<T>
+where
+    T: std::ops::Sub<Output = T> + Clone
+{
+    type Output = Self;
+
+    fn sub(self, rhs: T) -> Self::Output {
+        self.scalar_right_ops(rhs, |x, y| x - y)
+    }
+}
+
+macro_rules! def_sub_right_tensor {
+    ( $( $type: ty ), + ) => {
+        $(
+            impl std::ops::Sub<Tensor<$type>> for $type {
+                type Output = Tensor<$type>;
+
+                fn sub(self, rhs: Tensor<$type>) -> Self::Output {
+                    rhs.scalar_left_ops(self, |x, y| x - y)
+                }
+            }
+        )+
+    };
+}
+
+def_sub_right_tensor!(usize, isize, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
+
+impl<T> std::ops::Sub<T> for &Tensor<T>
+where
+    T: std::ops::Sub<Output = T> + Clone
+{
+    type Output = Tensor<T>;
+
+    fn sub(self, rhs: T) -> Self::Output {
+        self.scalar_right_ref_ops(&rhs, |x, y| x - y)
+    }
+}
+
+macro_rules! def_sub_right_reference_tensor {
+    ( $( $type: ty ), + ) => {
+        $(
+            impl std::ops::Sub<&Tensor<$type>> for $type {
+                type Output = Tensor<$type>;
+
+                fn sub(self, rhs: &Tensor<$type>) -> Self::Output {
+                    rhs.scalar_left_ref_ops(&self, |x, y| x - y)
+                }
+            }
+        )+
+    };
+}
+
+def_sub_right_reference_tensor!(usize, isize, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
+
+impl<T> Tensor<T>
+where
+    T: std::ops::Sub<Output = T> + Clone
+{
+    pub fn sub_scalar_left(&self, lhs: T) -> Self {
+        self.scalar_left_ref_ops(&lhs, |x, y| x - y)
+    }
+}
+
+impl<T> std::ops::Mul<T> for Tensor<T>
+where
+    T: std::ops::Mul<Output = T> + Clone
+{
+    type Output = Self;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        self.scalar_right_ops(rhs, |x, y| x * y)
+    }
+}
+
+macro_rules! def_mul_right_tensor {
+    ( $( $type: ty ), + ) => {
+        $(
+            impl std::ops::Mul<Tensor<$type>> for $type {
+                type Output = Tensor<$type>;
+
+                fn mul(self, rhs: Tensor<$type>) -> Self::Output {
+                    rhs.scalar_left_ops(self, |x, y| x * y)
+                }
+            }
+        )+
+    };
+}
+
+def_mul_right_tensor!(usize, isize, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
+
+impl<T> std::ops::Mul<T> for &Tensor<T>
+where
+    T: std::ops::Mul<Output = T> + Clone
+{
+    type Output = Tensor<T>;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        self.scalar_right_ref_ops(&rhs, |x, y| x * y)
+    }
+}
+
+macro_rules! def_mul_right_reference_tensor {
+    ( $( $type: ty ), + ) => {
+        $(
+            impl std::ops::Mul<&Tensor<$type>> for $type {
+                type Output = Tensor<$type>;
+
+                fn mul(self, rhs: &Tensor<$type>) -> Self::Output {
+                    rhs.scalar_left_ref_ops(&self, |x, y| x * y)
+                }
+            }
+        )+
+    };
+}
+
+def_mul_right_reference_tensor!(usize, isize, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
+
+impl<T> Tensor<T>
+where
+    T: std::ops::Mul<Output = T> + Clone
+{
+    pub fn mul_scalar_left(&self, lhs: T) -> Self {
+        self.scalar_left_ref_ops(&lhs, |x, y| x * y)
+    }
+}
+
+impl<T> std::ops::Div<T> for Tensor<T>
+where
+    T: std::ops::Div<Output = T> + Clone
+{
+    type Output = Self;
+
+    fn div(self, rhs: T) -> Self::Output {
+        self.scalar_right_ops(rhs, |x, y| x / y)
+    }
+}
+
+macro_rules! def_div_right_tensor {
+    ( $( $type: ty ), + ) => {
+        $(
+            impl std::ops::Div<Tensor<$type>> for $type {
+                type Output = Tensor<$type>;
+
+                fn div(self, rhs: Tensor<$type>) -> Self::Output {
+                    rhs.scalar_left_ops(self, |x, y| x / y)
+                }
+            }
+        )+
+    };
+}
+
+def_div_right_tensor!(usize, isize, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
+
+impl<T> std::ops::Div<T> for &Tensor<T>
+where
+    T: std::ops::Div<Output = T> + Clone
+{
+    type Output = Tensor<T>;
+
+    fn div(self, rhs: T) -> Self::Output {
+        self.scalar_right_ref_ops(&rhs, |x, y| x / y)
+    }
+}
+
+macro_rules! def_div_right_reference_tensor {
+    ( $( $type: ty ), + ) => {
+        $(
+            impl std::ops::Div<&Tensor<$type>> for $type {
+                type Output = Tensor<$type>;
+
+                fn div(self, rhs: &Tensor<$type>) -> Self::Output {
+                    rhs.scalar_left_ref_ops(&self, |x, y| x / y)
+                }
+            }
+        )+
+    };
+}
+
+def_div_right_reference_tensor!(usize, isize, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
+
+impl<T> Tensor<T>
+where
+    T: std::ops::Div<Output = T> + Clone
+{
+    pub fn div_scalar_left(&self, lhs: T) -> Self {
+        self.scalar_left_ref_ops(&lhs, |x, y| x / y)
+    }
+}
+
+impl<T> std::ops::Rem<T> for Tensor<T>
+where
+    T: std::ops::Rem<Output = T> + Clone
+{
+    type Output = Self;
+
+    fn rem(self, rhs: T) -> Self::Output {
+        self.scalar_right_ops(rhs, |x, y| x % y)
+    }
+}
+
+macro_rules! def_rem_right_tensor {
+    ( $( $type: ty ), + ) => {
+        $(
+            impl std::ops::Rem<Tensor<$type>> for $type {
+                type Output = Tensor<$type>;
+
+                fn rem(self, rhs: Tensor<$type>) -> Self::Output {
+                    rhs.scalar_left_ops(self, |x, y| x % y)
+                }
+            }
+        )+
+    };
+}
+
+def_rem_right_tensor!(usize, isize, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128);
+
+impl<T> std::ops::Rem<T> for &Tensor<T>
+where
+    T: std::ops::Rem<Output = T> + Clone
+{
+    type Output = Tensor<T>;
+
+    fn rem(self, rhs: T) -> Self::Output {
+        self.scalar_right_ref_ops(&rhs, |x, y| x % y)
+    }
+}
+
+macro_rules! def_rem_right_reference_tensor {
+    ( $( $type: ty ), + ) => {
+        $(
+            impl std::ops::Rem<&Tensor<$type>> for $type {
+                type Output = Tensor<$type>;
+
+                fn rem(self, rhs: &Tensor<$type>) -> Self::Output {
+                    rhs.scalar_left_ref_ops(&self, |x, y| x % y)
+                }
+            }
+        )+
+    };
+}
+
+def_rem_right_reference_tensor!(usize, isize, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128);
+
+impl<T> Tensor<T>
+where
+    T: std::ops::Rem<Output = T> + Clone
+{
+    pub fn rem_scalar_left(&self, lhs: T) -> Self {
+        self.scalar_left_ref_ops(&lhs, |x, y| x % y)
     }
 }
 
@@ -486,5 +832,191 @@ mod tests {
         let mut x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
         let y = Tensor::new([3, 2, 1, 1, 2, 3], [2, 3]).unwrap();
         x %= &y;
+    }
+
+    #[test]
+    fn add_scalar_normal() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        let x = x + 1;
+        assert_eq!(x.get_data(), &vec![1, 2, 3, 4, 5, 6]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn add_scalar_left() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        let x: Tensor<i32> = 1 + x;
+        assert_eq!(x.get_data(), &vec![1, 2, 3, 4, 5, 6]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn add_scalar_reference_normal() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        let x = &x + 1;
+        assert_eq!(x.get_data(), &vec![1, 2, 3, 4, 5, 6]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn add_scalar_reference_left() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        let x: Tensor<i32> = 1 + &x;
+        assert_eq!(x.get_data(), &vec![1, 2, 3, 4, 5, 6]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn add_scalar_left_func() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        let x = x.add_scalar_left(1);
+        assert_eq!(x.get_data(), &vec![1, 2, 3, 4, 5, 6]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn sub_scalar_normal() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        let x = x - 1;
+        assert_eq!(x.get_data(), &vec![-1, 0, 1, 2, 3, 4]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn sub_scalar_left() {
+        let x: Tensor<i32> = 1 - Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        assert_eq!(x.get_data(), &vec![1, 0, -1, -2, -3, -4]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn sub_scalar_reference_normal() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        let x = &x - 1;
+        assert_eq!(x.get_data(), &vec![-1, 0, 1, 2, 3, 4]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn sub_scalar_reference_left() {
+        let x: Tensor<i32> = 1 - &Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        assert_eq!(x.get_data(), &vec![1, 0, -1, -2, -3, -4]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn sub_scalar_left_func() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        let x = x.sub_scalar_left(1);
+        assert_eq!(x.get_data(), &vec![1, 0, -1, -2, -3, -4]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn mul_scalar_normal() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap() * 2;
+        assert_eq!(x.get_data(), &vec![0, 2, 4, 6, 8, 10]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn mul_scalar_left() {
+        let x: Tensor<i32> = 2 * Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        assert_eq!(x.get_data(), &vec![0, 2, 4, 6, 8, 10]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn mul_scalar_reference_normal() {
+        let x = &Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap() * 2;
+        assert_eq!(x.get_data(), &vec![0, 2, 4, 6, 8, 10]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn mul_scalar_reference_left() {
+        let x: Tensor<i32> = 2 * &Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        assert_eq!(x.get_data(), &vec![0, 2, 4, 6, 8, 10]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn mul_scalar_left_func() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        let x = x.mul_scalar_left(2);
+        assert_eq!(x.get_data(), &vec![0, 2, 4, 6, 8, 10]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn div_scalar_normal() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap() / 2;
+        assert_eq!(x.get_data(), &vec![0, 0, 1, 1, 2, 2]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn div_scalar_left() {
+        let x: Tensor<i32> = 2 / Tensor::new([-1, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        assert_eq!(x.get_data(), &vec![-2, 2, 1, 0, 0, 0]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn div_scalar_reference_normal() {
+        let x = &Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap() / 2;
+        assert_eq!(x.get_data(), &vec![0, 0, 1, 1, 2, 2]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn div_scalar_reference_left() {
+        let x: Tensor<i32> = 2 / &Tensor::new([-1, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        assert_eq!(x.get_data(), &vec![-2, 2, 1, 0, 0, 0]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn div_scalar_left_func() {
+        let x = Tensor::new([-1, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        let x = x.div_scalar_left(2);
+        assert_eq!(x.get_data(), &vec![-2, 2, 1, 0, 0, 0]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn rem_scalar_normal() {
+        let x = Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap() % 2;
+        assert_eq!(x.get_data(), &vec![0, 1, 0, 1, 0, 1]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn rem_scalar_left() {
+        let x: Tensor<i32> = 2 % Tensor::new([-1, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        assert_eq!(x.get_data(), &vec![0, 0, 0, 2, 2, 2]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn rem_scalar_reference_normal() {
+        let x = &Tensor::new([0, 1, 2, 3, 4, 5], [3, 2]).unwrap() % 2;
+        assert_eq!(x.get_data(), &vec![0, 1, 0, 1, 0, 1]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn rem_scalar_reference_left() {
+        let x: Tensor<i32> = 2 % &Tensor::new([-1, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        assert_eq!(x.get_data(), &vec![0, 0, 0, 2, 2, 2]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn rem_scalar_left_func() {
+        let x = Tensor::new([-1, 1, 2, 3, 4, 5], [3, 2]).unwrap();
+        let x = x.rem_scalar_left(2);
+        assert_eq!(x.get_data(), &vec![0, 0, 0, 2, 2, 2]);
+        assert_eq!(x.get_shape(), &vec![3, 2]);
     }
 }
