@@ -5,6 +5,7 @@ mod shape;
 mod create;
 mod sum;
 mod ops;
+mod matmul;
 
 use anyhow::Result;
 
