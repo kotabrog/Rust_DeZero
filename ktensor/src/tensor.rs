@@ -6,6 +6,7 @@ mod create;
 mod sum;
 mod ops;
 mod matmul;
+mod math;
 
 use anyhow::Result;
 

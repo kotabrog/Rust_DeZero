@@ -101,6 +101,26 @@ impl<T> Tensor<T>
     }
 }
 
+impl<T> Tensor<T>
+where
+    T: Clone
+{
+    /// Adapt the function to each element of the tensor
+    /// 
+    /// # Arguments
+    /// 
+    /// * `f` - The function to be adapted
+    pub(crate) fn iter_func(&self, f: impl Fn(T) -> T) -> Self {
+        Self {
+            data: self.data
+                .iter()
+                .map(|x| f(x.clone()))
+                .collect(),
+            shape: self.shape.clone(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
