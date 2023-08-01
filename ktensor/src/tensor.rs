@@ -7,8 +7,10 @@ mod sum;
 mod ops;
 mod matmul;
 mod math;
+mod random;
 
 use anyhow::Result;
+pub use random::TensorRng;
 
 /// Tensor
 /// 
