@@ -1,10 +1,8 @@
-// use anyhow::{Context, Result};
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq)]
 pub enum TensorError {
     #[error("Error: {0}")]
-    #[allow(dead_code)]
     Error(String),
     #[error("ShapeError: data: {0:?}, shape: {1:?}")]
     ShapeError(Vec<usize>, Vec<usize>),
