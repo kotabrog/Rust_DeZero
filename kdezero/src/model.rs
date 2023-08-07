@@ -1,28 +1,28 @@
 use std::collections::HashMap;
-use crate::node::Node;
-use crate::variable::Variable;
+use crate::node::graph::Graph;
+use crate::variable::variables::Variables;
 use crate::operator::Operator;
 
 pub struct Model {
-    nodes: HashMap<usize, Node>,
-    variables: HashMap<usize, Variable>,
+    nodes: Graph,
+    variables: Variables,
     operators: HashMap<usize, Operator>,
 }
 
 impl Model {
     pub fn new() -> Self {
         Self {
-            nodes: HashMap::new(),
-            variables: HashMap::new(),
+            nodes: Graph::new(),
+            variables: Variables::new(),
             operators: HashMap::new(),
         }
     }
 
-    pub fn get_nodes(&self) -> &HashMap<usize, Node> {
+    pub fn get_nodes(&self) -> &Graph {
         &self.nodes
     }
 
-    pub fn get_variables(&self) -> &HashMap<usize, Variable> {
+    pub fn get_variables(&self) -> &Variables {
         &self.variables
     }
 

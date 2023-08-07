@@ -1,9 +1,7 @@
 pub mod operators;
+pub mod operator_contents;
 
-use std::collections::HashMap;
-use anyhow::Result;
-use crate::variable::Variable;
-use crate::node::Node;
+use operator_contents::OperatorContents;
 
 pub struct Operator {
     id: usize,
@@ -37,12 +35,4 @@ impl Operator {
     pub fn get_operator(&self) -> &Box<dyn OperatorContents> {
         &self.operator
     }
-}
-
-pub trait OperatorContents {
-    fn forward(
-        &self, node_id: usize,
-        nodes: &HashMap<usize, Node>,
-        variables: &mut HashMap<usize, Variable>,
-    ) -> Result<Vec<usize>>;
 }

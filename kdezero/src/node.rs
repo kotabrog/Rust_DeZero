@@ -1,21 +1,11 @@
 pub mod graph;
+pub mod node_data;
 
-#[derive(Debug, Clone)]
-pub enum NodeData {
-    None,
-    Variable(usize),
-    Operator(usize),
-}
+pub use node_data::NodeData;
+pub use graph::Graph;
 
-impl NodeData {
-    pub fn to_string(&self) -> String {
-        match self {
-            NodeData::None => "None".to_string(),
-            NodeData::Variable(_) => "Variable".to_string(),
-            NodeData::Operator(_) => "Operator".to_string(),
-        }
-    }
-}
+use anyhow::Result;
+use crate::error::KdezeroError;
 
 #[derive(Debug, Clone)]
 pub struct Node {
@@ -66,5 +56,31 @@ impl Node {
     /// Get outputs of the Node.
     pub fn get_outputs(&self) -> &Vec<usize> {
         &self.outputs
+    }
+
+    pub fn check_inputs_len(&self, len: usize) -> Result<()> {
+        if self.inputs.len() != len {
+            return Err(
+                KdezeroError::SizeError(
+                    "inputs".to_string(),
+                    len,
+                    self.inputs.len()
+                ).into()
+            );
+        }
+        Ok(())
+    }
+
+    pub fn check_outputs_len(&self, len: usize) -> Result<()> {
+        if self.outputs.len() != len {
+            return Err(
+                KdezeroError::SizeError(
+                    "outputs".to_string(),
+                    len,
+                    self.outputs.len()
+                ).into()
+            );
+        }
+        Ok(())
     }
 }

@@ -13,6 +13,8 @@ pub enum KdezeroError {
     NotImplementedTypeError(String, String),
     #[error("NotCollectTypeError: {0} is not collect type. Expected {1}")]
     NotCollectTypeError(String, String),
+    #[error("ExistError: {0} is already exist in {1}")]
+    ExistError(String, String),
 }
 
 #[cfg(test)]
