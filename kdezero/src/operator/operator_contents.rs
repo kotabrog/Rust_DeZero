@@ -1,5 +1,7 @@
 pub mod square;
 
+pub use square::Square;
+
 use anyhow::Result;
 use crate::variable::Variables;
 use crate::node::Graph;

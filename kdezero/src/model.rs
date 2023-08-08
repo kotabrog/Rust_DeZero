@@ -1,40 +1,74 @@
-use std::collections::HashMap;
-use crate::node::graph::Graph;
-use crate::variable::variables::Variables;
-use crate::operator::Operator;
+use anyhow::Result;
+use crate::node::{NodeData, Graph};
+use crate::variable::{Variables, VariableData};
+use crate::operator::{Operators, OperatorContents};
 
 pub struct Model {
-    nodes: Graph,
+    graph: Graph,
     variables: Variables,
-    operators: HashMap<usize, Operator>,
+    operators: Operators,
+    sorted_forward_nodes: Vec<usize>,
 }
 
 impl Model {
     pub fn new() -> Self {
         Self {
-            nodes: Graph::new(),
+            graph: Graph::new(),
             variables: Variables::new(),
-            operators: HashMap::new(),
+            operators: Operators::new(),
+            sorted_forward_nodes: Vec::new(),
         }
     }
 
-    pub fn get_nodes(&self) -> &Graph {
-        &self.nodes
+    pub fn get_graph(&self) -> &Graph {
+        &self.graph
     }
 
     pub fn get_variables(&self) -> &Variables {
         &self.variables
     }
 
-    pub fn get_operators(&self) -> &HashMap<usize, Operator> {
+    pub fn get_operators(&self) -> &Operators {
         &self.operators
     }
 
-    // fn add_node(&mut self, node: Node) {
-    //     self.nodes.insert(node.get_id(), node);
-    // }
+    pub fn add_new_node(
+        &mut self, id: usize, name: String,
+        data: NodeData, inputs: Vec<usize>, outputs: Vec<usize>)
+    -> Result<()> {
+        self.graph.add_new_node(id, name, data, inputs, outputs)?;
+        if !self.sorted_forward_nodes.is_empty() {
+            self.sorted_forward_nodes = Vec::new();
+        }
+        Ok(())
+    }
 
-    // fn get_node(&self, id: usize) -> Option<&Node> {
-    //     self.nodes.get(&id)
-    // }
+    pub fn add_new_variable(
+        &mut self, id: usize, node: Option<usize>, data: VariableData)
+    -> Result<()> {
+        self.variables.add_new_variable(id, node, data)
+    }
+
+    pub fn add_new_operator(
+        &mut self, id: usize, node: Option<usize>, params: Vec<usize>, operator: Box<dyn OperatorContents>
+    ) -> Result<()> {
+        self.operators.add_new_operator(id, node, params, operator)
+    }
+
+    pub fn forward(&mut self) -> Result<()> {
+        if self.sorted_forward_nodes.is_empty() {
+            self.sorted_forward_nodes = self.graph.topological_sort()?;
+        }
+        for id in self.sorted_forward_nodes.iter() {
+            let node = self.graph.get_node(*id)?;
+            match node.get_data() {
+                NodeData::Operator(operator_id) => {
+                    let operator = self.operators.get_operator(*operator_id)?;
+                    operator.forward(&self.graph, &mut self.variables)?;
+                },
+                _ => (),
+            }
+        }
+        Ok(())
+    }
 }

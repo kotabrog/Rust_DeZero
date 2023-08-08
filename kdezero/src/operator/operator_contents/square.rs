@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use anyhow::Result;
 use super::OperatorContents;
 use crate::variable::{Variables, VariableData};

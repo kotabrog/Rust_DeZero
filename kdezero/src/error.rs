@@ -15,6 +15,10 @@ pub enum KdezeroError {
     NotCollectTypeError(String, String),
     #[error("ExistError: {0} is already exist in {1}")]
     ExistError(String, String),
+    #[error("NotCollectGraphError: Not collect graph. {0}")]
+    NotCollectGraphError(String),
+    #[error("OperatorError: {0}")]
+    OperatorError(String),
 }
 
 #[cfg(test)]

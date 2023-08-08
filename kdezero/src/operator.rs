@@ -1,7 +1,13 @@
 pub mod operators;
 pub mod operator_contents;
 
-use operator_contents::OperatorContents;
+pub use operator_contents::OperatorContents;
+pub use operators::Operators;
+
+use anyhow::Result;
+use crate::variable::Variables;
+use crate::node::Graph;
+use crate::error::KdezeroError;
 
 pub struct Operator {
     id: usize,
@@ -34,5 +40,19 @@ impl Operator {
 
     pub fn get_operator(&self) -> &Box<dyn OperatorContents> {
         &self.operator
+    }
+
+    pub fn forward(
+        &self, graph: &Graph, variables: &mut Variables,
+    ) -> Result<Vec<usize>> {
+        let node_id = match self.node {
+            Some(node_id) => node_id,
+            None => return Err(
+                KdezeroError::OperatorError(
+                    "node id is not set".to_string()
+                ).into()
+            )
+        };
+        self.operator.forward(node_id, graph, variables)
     }
 }
