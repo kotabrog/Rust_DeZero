@@ -19,6 +19,8 @@ pub enum KdezeroError {
     NotCollectGraphError(String),
     #[error("OperatorError: {0}")]
     OperatorError(String),
+    #[error("DuplicateError: {0} is duplicated in {1}")]
+    DuplicateError(String, String),
 }
 
 #[cfg(test)]

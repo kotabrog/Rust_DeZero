@@ -58,6 +58,18 @@ impl Node {
         &self.outputs
     }
 
+    pub(crate) fn set_inputs(&mut self, inputs: Vec<usize>) {
+        self.inputs = inputs;
+    }
+
+    pub(crate) fn add_input(&mut self, input: usize) {
+        self.inputs.push(input);
+    }
+
+    pub(crate) fn add_output(&mut self, output: usize) {
+        self.outputs.push(output);
+    }
+
     pub fn check_inputs_len(&self, len: usize) -> Result<()> {
         if self.inputs.len() != len {
             return Err(

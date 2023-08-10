@@ -69,3 +69,35 @@ fn step2() {
     println!("input variable: {:?}", input_variable);
     println!("output variable: {:?}", output_variable);
 }
+
+#[test]
+fn step2_2() {
+    use ktensor::Tensor;
+    use kdezero::{
+        variable::VariableData,
+        model::{Model, ModelVariable, ModelOperator},
+    };
+
+    let tensor = Tensor::new(vec![10.0], vec![])
+        .unwrap();
+    let mut model = Model::make_model(
+        vec![ModelVariable::new(
+                "in".to_string(), tensor.into()
+        )],
+        vec![ModelVariable::new(
+                "out".to_string(), VariableData::None
+        )],
+        vec![ModelOperator::new(
+                "op".to_string(), Box::new(kdezero::operator::operator_contents::Square {}),
+                vec!["in".to_string()], vec!["out".to_string()], vec![]
+        )],
+        vec![]
+    ).unwrap();
+    model.forward().unwrap();
+    let input_variable = model.get_variable_from_name("in").unwrap();
+    let output_variable = model.get_variable_from_name("out").unwrap();
+    assert_eq!(output_variable.get_data().to_string(), "F64");
+    assert_eq!(output_variable.get_data(), &Tensor::new(vec![100.0], vec![]).unwrap().into());
+    println!("input variable: {:?}", input_variable);
+    println!("output variable: {:?}", output_variable);
+}

@@ -3,6 +3,7 @@ use std::collections::{HashMap, VecDeque, HashSet};
 use super::{Node, NodeData};
 use crate::error::KdezeroError;
 
+#[derive(Debug, Clone)]
 pub struct Graph {
     nodes: HashMap<usize, Node>,
 }
@@ -22,22 +23,7 @@ impl Graph {
         self.nodes.insert(node.get_id(), node)
     }
 
-    pub fn get_node(&self, id: usize) -> Result<&Node> {
-        match self.nodes.get(&id) {
-            Some(node) => Ok(node),
-            None => Err(
-                KdezeroError::NotFoundError(
-                    id.to_string(),
-                    "Graph".to_string()
-                ).into()
-            ),
-        }
-    }
-
-    pub fn add_new_node(
-        &mut self, id: usize, name: String,
-        data: NodeData, inputs: Vec<usize>, outputs: Vec<usize>
-    ) -> Result<()> {
+    fn check_id_in_nodes(&self, id: usize) -> Result<()> {
         if self.nodes.contains_key(&id) {
             return Err(
                 KdezeroError::ExistError(
@@ -46,8 +32,68 @@ impl Graph {
                 ).into()
             );
         }
+        Ok(())
+    }
+
+    fn check_id_not_in_nodes(&self, id: usize) -> Result<()> {
+        if !self.nodes.contains_key(&id) {
+            return Err(
+                KdezeroError::NotFoundError(
+                    id.to_string(),
+                    "Graph".to_string()
+                ).into()
+            );
+        }
+        Ok(())
+    }
+
+    pub fn get_node(&self, id: usize) -> Result<&Node> {
+        self.check_id_not_in_nodes(id)?;
+        Ok(self.nodes.get(&id).unwrap())
+    }
+
+    pub fn get_node_from_name(&self, name: &str) -> Result<&Node> {
+        for node in self.nodes.values() {
+            if node.get_name() == name {
+                return Ok(node);
+            }
+        }
+        Err(
+            KdezeroError::NotFoundError(
+                name.to_string(),
+                "Graph".to_string()
+            ).into()
+        )
+    }
+
+    pub fn add_new_node(
+        &mut self, id: usize, name: String,
+        data: NodeData, inputs: Vec<usize>, outputs: Vec<usize>
+    ) -> Result<()> {
+        self.check_id_in_nodes(id)?;
         let node = Node::new(id, name, data, inputs, outputs);
         self.nodes.insert(id, node);
+        Ok(())
+    }
+
+    pub(crate) fn set_node_inputs(&mut self, node_id: usize, inputs: Vec<usize>) -> Result<()> {
+        self.check_id_not_in_nodes(node_id)?;
+        let node = self.nodes.get_mut(&node_id).unwrap();
+        node.set_inputs(inputs);
+        Ok(())
+    }
+
+    pub(crate) fn add_node_input(&mut self, node_id: usize, input: usize) -> Result<()> {
+        self.check_id_not_in_nodes(node_id)?;
+        let node = self.nodes.get_mut(&node_id).unwrap();
+        node.add_input(input);
+        Ok(())
+    }
+
+    pub(crate) fn add_node_output(&mut self, node_id: usize, output: usize) -> Result<()> {
+        self.check_id_not_in_nodes(node_id)?;
+        let node = self.nodes.get_mut(&node_id).unwrap();
+        node.add_output(output);
         Ok(())
     }
 
