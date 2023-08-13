@@ -9,6 +9,7 @@ pub struct Variable {
     id: usize,
     node: Option<usize>,
     data: VariableData,
+    grad: Option<usize>,
 }
 
 impl Variable {
@@ -17,6 +18,7 @@ impl Variable {
             id,
             node,
             data,
+            grad: None,
         }
     }
 
@@ -32,7 +34,15 @@ impl Variable {
         &self.data
     }
 
+    pub fn get_grad(&self) -> Option<usize> {
+        self.grad
+    }
+
     pub fn set_data(&mut self, data: VariableData) {
         self.data = data;
+    }
+
+    pub fn set_grad(&mut self, grad: Option<usize>) {
+        self.grad = grad;
     }
 }

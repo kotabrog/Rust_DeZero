@@ -5,12 +5,14 @@ use crate::error::KdezeroError;
 
 pub struct Operators {
     operators: HashMap<usize, Operator>,
+    next_id: usize,
 }
 
 impl Operators {
     pub fn new() -> Self {
         Self {
             operators: HashMap::new(),
+            next_id: 0,
         }
     }
 
@@ -18,8 +20,17 @@ impl Operators {
         &self.operators
     }
 
+    pub fn get_next_id(&self) -> usize {
+        self.next_id
+    }
+
     pub fn add_operator(&mut self, operator: Operator) -> Option<Operator> {
-        self.operators.insert(operator.get_id(), operator)
+        let next_id = operator.get_id().max(self.next_id) + 1;
+        let result = self.operators.insert(operator.get_id(), operator);
+        if result.is_some() {
+            self.next_id = next_id;
+        }
+        result
     }
 
     pub fn get_operator(&self, id: usize) -> Result<&Operator> {
@@ -47,6 +58,7 @@ impl Operators {
         }
         let operator = Operator::new(id, node, params, operator);
         self.operators.insert(id, operator);
+        self.next_id = self.next_id.max(id) + 1;
         Ok(())
     }
 }

@@ -6,17 +6,23 @@ use crate::error::KdezeroError;
 #[derive(Debug, Clone)]
 pub struct Graph {
     nodes: HashMap<usize, Node>,
+    next_id: usize,
 }
 
 impl Graph {
     pub fn new() -> Self {
         Self {
             nodes: HashMap::new(),
+            next_id: 0,
         }
     }
 
     pub fn get_nodes(&self) -> &HashMap<usize, Node> {
         &self.nodes
+    }
+
+    pub fn get_next_id(&self) -> usize {
+        self.next_id
     }
 
     pub fn add_node(&mut self, node: Node) -> Option<Node>{
@@ -73,6 +79,7 @@ impl Graph {
         self.check_id_in_nodes(id)?;
         let node = Node::new(id, name, data, inputs, outputs);
         self.nodes.insert(id, node);
+        self.next_id = self.next_id.max(id) + 1;
         Ok(())
     }
 
@@ -97,11 +104,16 @@ impl Graph {
         Ok(())
     }
 
-    pub fn topological_sort(&self) -> Result<Vec<usize>> {
-        fn get_empty_inputs_node(graph: &Graph) -> VecDeque<usize> {
+    pub fn topological_sort(&self, reverse: bool) -> Result<Vec<usize>> {
+        fn get_empty_inputs_node(graph: &Graph, reverse: bool) -> VecDeque<usize> {
             let mut empty_inputs_node = VecDeque::new();
             for (id, node) in graph.nodes.iter() {
-                if node.get_inputs().is_empty() {
+                let nodes = if reverse {
+                    node.get_outputs()
+                } else {
+                    node.get_inputs()
+                };
+                if nodes.is_empty() {
                     empty_inputs_node.push_back(*id);
                 }
             }
@@ -109,10 +121,15 @@ impl Graph {
         }
 
         fn check_all_inputs_visited(
-            graph: &Graph, node_id: usize, visited: &HashSet<usize>
+            graph: &Graph, node_id: usize, visited: &HashSet<usize>, reverse: bool
         ) -> bool {
             let node = graph.get_node(node_id).unwrap();
-            for input in node.get_inputs() {
+            let nodes = if reverse {
+                node.get_outputs()
+            } else {
+                node.get_inputs()
+            };
+            for input in nodes {
                 if !visited.contains(input) {
                     return false;
                 }
@@ -122,16 +139,21 @@ impl Graph {
 
         let mut sorted_list = Vec::new();
         let mut visited = HashSet::new();
-        let mut queue = get_empty_inputs_node(self);
+        let mut queue = get_empty_inputs_node(self, reverse);
         while !queue.is_empty() {
             let id = queue.pop_front().unwrap();
             if visited.contains(&id) {
                 continue;
             }
-            if check_all_inputs_visited(self, id, &visited) {
+            if check_all_inputs_visited(self, id, &visited, reverse) {
                 sorted_list.push(id);
                 visited.insert(id);
-                queue.extend(self.nodes[&id].get_outputs())
+                let nodes = if reverse {
+                    self.nodes[&id].get_inputs()
+                } else {
+                    self.nodes[&id].get_outputs()
+                };
+                queue.extend(nodes)
             } else {
                 queue.push_back(id);
             }

@@ -8,6 +8,7 @@ use anyhow::Result;
 use crate::variable::Variables;
 use crate::node::Graph;
 use crate::error::KdezeroError;
+use crate::model::Model;
 
 pub struct Operator {
     id: usize,
@@ -54,5 +55,20 @@ impl Operator {
             )
         };
         self.operator.forward(node_id, graph, variables)
+    }
+
+    pub fn backward(
+        &self, graph: &Graph, variables: &mut Variables,
+        grad_model: &mut Model,
+    ) -> Result<Vec<usize>> {
+        let node_id = match self.node {
+            Some(node_id) => node_id,
+            None => return Err(
+                KdezeroError::OperatorError(
+                    "node id is not set".to_string()
+                ).into()
+            )
+        };
+        self.operator.backward(node_id, graph, variables, grad_model)
     }
 }

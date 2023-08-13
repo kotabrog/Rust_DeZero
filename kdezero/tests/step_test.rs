@@ -101,3 +101,44 @@ fn step2_2() {
     println!("input variable: {:?}", input_variable);
     println!("output variable: {:?}", output_variable);
 }
+
+#[test]
+fn step2_3() {
+    use ktensor::Tensor;
+    use kdezero::{
+        variable::VariableData,
+        model::{Model, ModelVariable, ModelOperator},
+    };
+
+    let tensor = Tensor::new(vec![10.0], vec![])
+        .unwrap();
+    let mut model = Model::make_model(
+        vec![ModelVariable::new(
+                "in".to_string(), tensor.into()
+        )],
+        vec![ModelVariable::new(
+                "out".to_string(), VariableData::None
+        )],
+        vec![ModelOperator::new(
+                "op".to_string(), Box::new(kdezero::operator::operator_contents::Square {}),
+                vec!["in".to_string()], vec!["out".to_string()], vec![]
+        )],
+        vec![]
+    ).unwrap();
+    model.forward().unwrap();
+    let input_variable = model.get_variable_from_name("in").unwrap();
+    let output_variable = model.get_variable_from_name("out").unwrap();
+    assert_eq!(output_variable.get_data().to_string(), "F64");
+    assert_eq!(output_variable.get_data(), &Tensor::new(vec![100.0], vec![]).unwrap().into());
+    println!("input variable: {:?}", input_variable);
+    println!("output variable: {:?}", output_variable);
+    model.backward("out").unwrap();
+    let input_grad_variable = model.get_grad_from_variable_name("in").unwrap();
+    let output_grad_variable = model.get_grad_from_variable_name("out").unwrap();
+    assert_eq!(input_grad_variable.get_data().to_string(), "F64");
+    assert_eq!(input_grad_variable.get_data(), &Tensor::new(vec![20.0], vec![]).unwrap().into());
+    assert_eq!(output_grad_variable.get_data().to_string(), "F64");
+    assert_eq!(output_grad_variable.get_data(), &Tensor::new(vec![1.0], vec![]).unwrap().into());
+    println!("input grad variable: {:?}", input_grad_variable);
+    println!("output grad variable: {:?}", output_grad_variable);
+}
