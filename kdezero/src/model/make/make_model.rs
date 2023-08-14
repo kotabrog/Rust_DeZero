@@ -262,8 +262,10 @@ impl Model {
         let mut id_counter = 0;
         let mut variable_nodes: HashMap<String, usize> = HashMap::new();
         model_variables_init(&mut model, inputs, &mut id_counter, &mut variable_nodes)?;
+        model.inputs = (0..id_counter).collect();
         let output_start_id = id_counter;
         model_variables_init(&mut model, outputs, &mut id_counter, &mut variable_nodes)?;
+        model.outputs = (output_start_id..id_counter).collect();
         let output_end_id = id_counter;
         model_variables_init(&mut model, inits, &mut id_counter, &mut variable_nodes)?;
         model_operators_init(
