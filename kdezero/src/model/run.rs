@@ -8,12 +8,13 @@ impl Model {
         if self.sorted_forward_nodes.is_empty() {
             self.sorted_forward_nodes = self.graph.topological_sort(false)?;
         }
-        for id in self.sorted_forward_nodes.iter() {
+        for id in self.sorted_forward_nodes.clone().iter() {
             let node = self.graph.get_node(*id)?;
             match node.get_data() {
                 NodeData::Operator(operator_id) => {
                     let operator = self.operators.get_operator(*operator_id)?;
-                    operator.forward(&self.graph, &mut self.variables)?;
+                    let (node_id, operator) = operator.get_backward_set()?;
+                    operator.forward(node_id, self)?;
                 },
                 _ => (),
             }

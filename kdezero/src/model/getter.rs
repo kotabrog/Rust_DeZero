@@ -30,6 +30,10 @@ impl Model {
         &self.grad_model
     }
 
+    pub(crate) fn get_variables_mut(&mut self) -> &mut Variables {
+        &mut self.variables
+    }
+
     pub(crate) fn get_grad_model_mut(&mut self) -> &mut Box<Model> {
         self.init_grad_model();
         self.grad_model.as_mut().unwrap()

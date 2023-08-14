@@ -1,7 +1,6 @@
 use anyhow::Result;
 use super::OperatorContents;
-use crate::variable::Variables;
-use crate::node::{Graph, NodeData};
+use crate::node::NodeData;
 use crate::model::Model;
 use crate::error::KdezeroError;
 
@@ -11,9 +10,10 @@ pub struct Square {}
 impl OperatorContents for Square {
     fn forward(
             &self, node_id: usize,
-            graph: &Graph,
-            variables: &mut Variables,
+            model: &mut Model,
         ) -> Result<Vec<usize>> {
+        let graph = model.get_graph();
+        let variables = model.get_variables();
         let operator_node = graph.get_node(node_id)?;
         operator_node.check_inputs_len(1)?;
         operator_node.check_outputs_len(1)?;
@@ -26,6 +26,7 @@ impl OperatorContents for Square {
         let output_id = operator_node.get_outputs()[0];
         let output_node = graph.get_node(output_id)?;
         let output_variable_id = output_node.get_variable_id()?;
+        let variables = model.get_variables_mut();
         let output_variable = variables.get_mut_variable(output_variable_id)?;
         output_variable.set_data(output_data);
         Ok(vec![output_id])

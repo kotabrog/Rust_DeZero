@@ -3,8 +3,6 @@ pub mod square;
 pub use square::Square;
 
 use anyhow::Result;
-use crate::variable::Variables;
-use crate::node::Graph;
 use crate::model::Model;
 
 /// Trait to give clone method to operator contents.
@@ -15,8 +13,7 @@ pub trait CloneOperator {
 pub trait OperatorContents: CloneOperator {
     fn forward(
         &self, node_id: usize,
-        graph: &Graph,
-        variables: &mut Variables,
+        model: &mut Model,
     ) -> Result<Vec<usize>>;
 
     fn backward(
@@ -46,6 +43,13 @@ impl OperatorContentsWrapper {
 
     pub fn get_operator(&self) -> &Box<dyn OperatorContents> {
         &self.operator
+    }
+
+    pub fn forward(
+        &self, node_id: usize,
+        model: &mut Model,
+    ) -> Result<Vec<usize>> {
+        self.operator.forward(node_id, model)
     }
 
     pub fn backward(

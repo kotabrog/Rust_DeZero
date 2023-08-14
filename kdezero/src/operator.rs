@@ -5,8 +5,6 @@ pub use operator_contents::{OperatorContents, OperatorContentsWrapper};
 pub use operators::Operators;
 
 use anyhow::Result;
-use crate::variable::Variables;
-use crate::node::Graph;
 use crate::error::KdezeroError;
 
 pub struct Operator {
@@ -53,11 +51,11 @@ impl Operator {
         }
     }
 
-    pub fn forward(
-        &self, graph: &Graph, variables: &mut Variables,
-    ) -> Result<Vec<usize>> {
-        let node_id = self.get_node_id()?;
-        self.operator.forward(node_id, graph, variables)
+    pub fn get_forward_set(&self) -> Result<(usize, OperatorContentsWrapper)> {
+        Ok((
+            self.get_node_id()?,
+            OperatorContentsWrapper::new(self.operator.clone_operator())
+        ))
     }
 
     pub fn get_backward_set(&self) -> Result<(usize, OperatorContentsWrapper)> {
