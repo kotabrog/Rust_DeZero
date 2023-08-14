@@ -17,8 +17,8 @@ impl VariableData {
             VariableData::I64(tensor) =>
                 Ok(VariableData::I64(Box::new(Tensor::ones_like(tensor)))),
             _ => Err(KdezeroError::NotImplementedTypeError(
-                variable_data.to_string(),
-                "Model".to_string()
+                "ones_like".to_string(),
+                variable_data.to_string()
             ).into()),
         }
     }

@@ -79,22 +79,7 @@ impl OperatorContents for Square {
                 grad_data.to_string(),
             ).into());
         }
-        grad_data = match (&input_data, &grad_data) {
-            (VariableData::F32(input), VariableData::F32(grad)) =>
-                VariableData::F32(Box::new(&**input * &**grad)),
-            (VariableData::F64(input), VariableData::F64(grad)) =>
-                VariableData::F64(Box::new(&**input * &**grad)),
-            (VariableData::USIZE(input), VariableData::USIZE(grad)) =>
-                VariableData::USIZE(Box::new(&**input * &**grad)),
-            (VariableData::I32(input), VariableData::I32(grad)) =>
-                VariableData::I32(Box::new(&**input * &**grad)),
-            (VariableData::I64(input), VariableData::I64(grad)) =>
-                VariableData::I64(Box::new(&**input * &**grad)),
-            _ => return Err(KdezeroError::NotImplementedTypeError(
-                input_data.to_string(),
-                "Square backward".to_string()
-            ).into()),
-        };
+        grad_data = input_data.mul(&grad_data)?;
         let grad_variable_id = grad_model.get_variables().get_next_id();
         let grad_node_id = grad_model.get_graph().get_next_id();
         grad_model.add_new_variable(
