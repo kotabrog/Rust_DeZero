@@ -7,6 +7,7 @@ pub use model_variable::ModelVariable;
 pub use model_operator::ModelOperator;
 
 use anyhow::Result;
+use ktensor::Tensor;
 use crate::node::{NodeData, Graph};
 use crate::variable::{Variable, Variables, VariableData};
 use crate::operator::{Operators, OperatorContents};
@@ -133,5 +134,59 @@ impl Model {
 
     pub fn set_outputs(&mut self, outputs: Vec<usize>) {
         self.outputs = outputs;
+    }
+
+    pub(crate) fn set_ones_grad(&mut self, nodes: &Vec<usize>) -> Result<()> {
+        for &node_id in nodes {
+            let node = self.graph.get_node(node_id)?;
+            let variable_id = node.get_data().get_variable_id()?;
+            let variable_data =
+                self.variables.get_variable(variable_id)?.get_data();
+            let grad_data = match variable_data {
+                VariableData::F32(tensor) =>
+                    VariableData::F32(Box::new(Tensor::ones_like(tensor))),
+                VariableData::F64(tensor) =>
+                    VariableData::F64(Box::new(Tensor::ones_like(tensor))),
+                VariableData::USIZE(tensor) =>
+                    VariableData::USIZE(Box::new(Tensor::ones_like(tensor))),
+                VariableData::I32(tensor) =>
+                    VariableData::I32(Box::new(Tensor::ones_like(tensor))),
+                VariableData::I64(tensor) =>
+                    VariableData::I64(Box::new(Tensor::ones_like(tensor))),
+                _ => return Err(KdezeroError::NotImplementedTypeError(
+                    variable_data.to_string(),
+                    "Model".to_string()
+                ).into()),
+            };
+            let grad = self.variables.get_grad(variable_id)?;
+            match grad {
+                Some(_) => (),
+                None => {
+                    self.init_grad_model();
+                    let grad_model = self.grad_model.as_mut().unwrap();
+                    let grad_node_id = grad_model.graph.get_next_id();
+                    let grad_variable_id = grad_model.variables.get_next_id();
+                    grad_model.add_new_node(
+                        grad_node_id, "".to_string(),
+                        NodeData::Variable(grad_variable_id),
+                        Vec::new(), Vec::new()
+                    )?;
+                    grad_model.add_new_variable(
+                        grad_variable_id, Some(grad_node_id), grad_data
+                    )?;
+                    self.set_grad(variable_id, Some(grad_node_id))?;
+                },
+            }
+        }
+        Ok(())
+    }
+
+    pub(crate) fn init_grad_model(&mut self) {
+        match self.grad_model {
+            Some(_) => (),
+            None => {
+                self.grad_model = Some(Box::new(Model::new()));
+            }
+        }
     }
 }

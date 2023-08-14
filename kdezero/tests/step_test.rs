@@ -132,7 +132,7 @@ fn step2_3() {
     assert_eq!(output_variable.get_data(), &Tensor::new(vec![100.0], vec![]).unwrap().into());
     println!("input variable: {:?}", input_variable);
     println!("output variable: {:?}", output_variable);
-    model.backward("out").unwrap();
+    model.backward().unwrap();
     let input_grad_variable = model.get_grad_from_variable_name("in").unwrap();
     let output_grad_variable = model.get_grad_from_variable_name("out").unwrap();
     assert_eq!(input_grad_variable.get_data().to_string(), "F64");
