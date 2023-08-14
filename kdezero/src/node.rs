@@ -53,6 +53,14 @@ impl Node {
         &self.inputs
     }
 
+    pub fn get_variable_id(&self) -> Result<usize> {
+        self.data.get_variable_id()
+    }
+
+    pub fn get_operator_id(&self) -> Result<usize> {
+        self.data.get_operator_id()
+    }
+
     /// Get outputs of the Node.
     pub fn get_outputs(&self) -> &Vec<usize> {
         &self.outputs

@@ -21,6 +21,8 @@ pub enum KdezeroError {
     OperatorError(String),
     #[error("DuplicateError: {0} is duplicated in {1}")]
     DuplicateError(String, String),
+    #[error("OverflowError: {0} is overflow")]
+    OverflowError(String),
 }
 
 #[cfg(test)]
