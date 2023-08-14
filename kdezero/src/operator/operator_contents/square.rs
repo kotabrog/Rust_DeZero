@@ -1,6 +1,6 @@
 use anyhow::Result;
 use super::OperatorContents;
-use crate::variable::{Variables, VariableData};
+use crate::variable::Variables;
 use crate::node::{Graph, NodeData};
 use crate::model::Model;
 use crate::error::KdezeroError;
@@ -52,33 +52,13 @@ impl OperatorContents for Square {
         let output_grad_variable_id = output_grad_node.get_variable_id()?;
         let output_grad_variable = grad_model.get_variables().get_variable(output_grad_variable_id)?;
         let output_grad_data = output_grad_variable.get_data();
-        let mut grad_data = match output_grad_data {
-            VariableData::F32(tensor) =>
-                VariableData::F32(Box::new(*tensor.clone() * 2.0)),
-            VariableData::F64(tensor) =>
-                VariableData::F64(Box::new(*tensor.clone() * 2.0)),
-            VariableData::USIZE(tensor) =>
-                VariableData::USIZE(Box::new(*tensor.clone() * 2)),
-            VariableData::I32(tensor) =>
-                VariableData::I32(Box::new(*tensor.clone() * 2)),
-            VariableData::I64(tensor) =>
-                VariableData::I64(Box::new(*tensor.clone() * 2)),
-            _ => return Err(KdezeroError::NotImplementedTypeError(
-                output_grad_data.to_string(),
-                "Square backward".to_string()
-            ).into()),
-        };
+        let mut grad_data = output_grad_data.scalar_mul(2.0)?;
         let input_id = operator_node.get_inputs()[0];
         let input_node = graph.get_node(input_id)?;
         let input_variable_id = input_node.get_variable_id()?;
         let input_variable = variables.get_variable(input_variable_id)?;
         let input_data = input_variable.get_data();
-        if input_data.to_string() != grad_data.to_string() {
-            return Err(KdezeroError::NotCollectTypeError(
-                input_data.to_string(),
-                grad_data.to_string(),
-            ).into());
-        }
+        input_data.check_type(&grad_data)?;
         grad_data = input_data.mul(&grad_data)?;
         let grad_variable_id = grad_model.get_variables().get_next_id();
         let grad_node_id = grad_model.get_graph().get_next_id();

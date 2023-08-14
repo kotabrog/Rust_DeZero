@@ -50,4 +50,23 @@ impl VariableData {
             ).into()),
         }
     }
+
+    pub fn scalar_mul(&self, value: f64) -> Result<Self> {
+        match self {
+            VariableData::F32(tensor) =>
+                Ok(VariableData::F32(Box::new(&**tensor * (value as f32)))),
+            VariableData::F64(tensor) =>
+                Ok(VariableData::F64(Box::new(&**tensor * value))),
+            VariableData::USIZE(tensor) =>
+                Ok(VariableData::USIZE(Box::new(&**tensor * (value as usize)))),
+            VariableData::I32(tensor) =>
+                Ok(VariableData::I32(Box::new(&**tensor * (value as i32)))),
+            VariableData::I64(tensor) =>
+                Ok(VariableData::I64(Box::new(&**tensor * (value as i64)))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "scalar_mul".to_string(),
+                self.to_string()
+            ).into()),
+        }
+    }
 }
