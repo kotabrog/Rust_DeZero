@@ -27,15 +27,13 @@ impl Model {
         }
         self.set_ones_grad(&self.outputs.clone())?;
         self.init_grad_model();
-        let grad_model = self.grad_model.as_mut().unwrap();
-        for id in self.sorted_backward_nodes.iter() {
+        for id in self.sorted_backward_nodes.clone().iter() {
             let node = self.graph.get_node(*id)?;
             match node.get_data() {
                 NodeData::Operator(operator_id) => {
                     let operator = self.operators.get_operator(*operator_id)?;
-                    operator.backward(
-                        &self.graph, &mut self.variables, grad_model
-                    )?;
+                    let (node_id, operator) = operator.get_backward_set()?;
+                    operator.backward(node_id, self)?;
                 },
                 _ => (),
             }

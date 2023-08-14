@@ -30,6 +30,15 @@ impl Model {
         &self.grad_model
     }
 
+    pub(crate) fn get_grad_model_mut(&mut self) -> &mut Box<Model> {
+        self.init_grad_model();
+        self.grad_model.as_mut().unwrap()
+    }
+
+    pub(crate) fn get_grad_model_unwrap(&self) -> &Box<Model> {
+        self.grad_model.as_ref().unwrap()
+    }
+
     pub fn get_variable_from_name(&self, name: &str) -> Result<&Variable> {
         let node = self.graph.get_node_from_name(name)?;
         let variable_id = node.get_data().get_variable_id()?;
