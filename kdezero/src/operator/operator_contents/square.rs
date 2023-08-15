@@ -14,16 +14,15 @@ impl OperatorContents for Square {
         ) -> Result<Vec<usize>> {
         let graph = model.get_graph();
         let variables = model.get_variables();
-        let operator_node = graph.get_node(node_id)?;
-        operator_node.check_inputs_len(1)?;
-        operator_node.check_outputs_len(1)?;
-        let input_id = operator_node.get_inputs()[0];
+        let (inputs, outputs) =
+            model.check_inputs_outputs_len(node_id, 1, 1)?;
+        let input_id = inputs[0];
+        let output_id = outputs[0];
         let input_node = graph.get_node(input_id)?;
         let input_variable_id = input_node.get_variable_id()?;
         let input_variable = variables.get_variable(input_variable_id)?;
         let variable_data = input_variable.get_data();
         let output_data = variable_data.pow(2)?;
-        let output_id = operator_node.get_outputs()[0];
         let output_node = graph.get_node(output_id)?;
         let output_variable_id = output_node.get_variable_id()?;
         let variables = model.get_variables_mut();
@@ -36,10 +35,10 @@ impl OperatorContents for Square {
             &self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
-        let operator_node = model.get_graph().get_node(node_id)?;
-        operator_node.check_inputs_len(1)?;
-        operator_node.check_outputs_len(1)?;
-        let output_id = operator_node.get_outputs()[0];
+        let (inputs, outputs) =
+            model.check_inputs_outputs_len(node_id, 1, 1)?;
+        let input_id = inputs[0];
+        let output_id = outputs[0];
         let output_node = model.get_graph().get_node(output_id)?;
         let output_variable_id = output_node.get_variable_id()?;
         let output_variable = model.get_variables().get_variable(output_variable_id)?;
@@ -55,7 +54,6 @@ impl OperatorContents for Square {
         let output_grad_variable = grad_model.get_variables().get_variable(output_grad_variable_id)?;
         let output_grad_data = output_grad_variable.get_data();
         let mut grad_data = output_grad_data.scalar_mul(2.0)?;
-        let input_id = operator_node.get_inputs()[0];
         let input_node = model.get_graph().get_node(input_id)?;
         let input_variable_id = input_node.get_variable_id()?;
         let input_variable = model.get_variables().get_variable(input_variable_id)?;

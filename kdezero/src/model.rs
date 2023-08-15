@@ -3,6 +3,7 @@ pub mod model_operator;
 mod make;
 mod run;
 mod getter;
+mod check_state;
 
 pub use model_variable::ModelVariable;
 pub use model_operator::ModelOperator;
