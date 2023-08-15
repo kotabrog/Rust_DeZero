@@ -1,6 +1,6 @@
 use anyhow::Result;
 use super::Model;
-use crate::variable::{Variable, Variables};
+use crate::variable::{Variable, Variables, VariableData};
 use crate::node::Graph;
 use crate::operator::Operators;
 use crate::error::KdezeroError;
@@ -30,9 +30,9 @@ impl Model {
         &self.grad_model
     }
 
-    pub(crate) fn get_variables_mut(&mut self) -> &mut Variables {
-        &mut self.variables
-    }
+    // pub(crate) fn get_variables_mut(&mut self) -> &mut Variables {
+    //     &mut self.variables
+    // }
 
     pub(crate) fn get_grad_model_mut(&mut self) -> &mut Box<Model> {
         self.init_grad_model();
@@ -64,5 +64,12 @@ impl Model {
                     "Model".to_string()
                 )
             )?.variables.get_variable(grad_id)
+    }
+
+    pub(crate) fn get_variable_data_from_node_id(&self, node_id: usize) -> Result<&VariableData> {
+        let variable_id = self.graph.get_node(node_id)?
+            .get_variable_id()?;
+        Ok(self.variables.get_variable(variable_id)?
+            .get_data())
     }
 }

@@ -12,22 +12,13 @@ impl OperatorContents for Square {
             &self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
-        let graph = model.get_graph();
-        let variables = model.get_variables();
         let (inputs, outputs) =
             model.check_inputs_outputs_len(node_id, 1, 1)?;
         let input_id = inputs[0];
         let output_id = outputs[0];
-        let input_node = graph.get_node(input_id)?;
-        let input_variable_id = input_node.get_variable_id()?;
-        let input_variable = variables.get_variable(input_variable_id)?;
-        let variable_data = input_variable.get_data();
+        let variable_data = model.get_variable_data_from_node_id(input_id)?;
         let output_data = variable_data.pow(2)?;
-        let output_node = graph.get_node(output_id)?;
-        let output_variable_id = output_node.get_variable_id()?;
-        let variables = model.get_variables_mut();
-        let output_variable = variables.get_mut_variable(output_variable_id)?;
-        output_variable.set_data(output_data);
+        model.set_variable_data_from_node_id(output_id, output_data)?;
         Ok(vec![output_id])
     }
 
@@ -56,8 +47,7 @@ impl OperatorContents for Square {
         let mut grad_data = output_grad_data.scalar_mul(2.0)?;
         let input_node = model.get_graph().get_node(input_id)?;
         let input_variable_id = input_node.get_variable_id()?;
-        let input_variable = model.get_variables().get_variable(input_variable_id)?;
-        let input_data = input_variable.get_data();
+        let input_data = model.get_variable_data_from_node_id(input_id)?;
         input_data.check_type(&grad_data)?;
         grad_data = input_data.mul(&grad_data)?;
         let grad_variable_id = grad_model.get_variables().get_next_id();
