@@ -55,10 +55,16 @@ impl Model {
     pub(crate) fn set_variable_data_from_node_id(
         &mut self, node_id: usize, data: VariableData
     ) -> Result<()> {
-        let variable_id = self.graph.get_node(node_id)?
-            .get_variable_id()?;
-        self.variables.get_mut_variable(variable_id)?
+        self.get_variable_from_node_id_mut(node_id)?
             .set_data(data);
+        Ok(())
+    }
+
+    pub(crate) fn set_grad_from_node_id(
+        &mut self, node_id: usize, grad: Option<usize>
+    ) -> Result<()> {
+        self.get_variable_from_node_id_mut(node_id)?
+            .set_grad(grad);
         Ok(())
     }
 
