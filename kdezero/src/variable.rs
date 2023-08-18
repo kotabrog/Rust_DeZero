@@ -42,7 +42,7 @@ impl Variable {
         self.data = data;
     }
 
-    pub fn set_grad(&mut self, grad: Option<usize>) {
+    pub(crate) fn set_grad(&mut self, grad: Option<usize>) {
         self.grad = grad;
     }
 
