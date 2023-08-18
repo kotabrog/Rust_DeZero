@@ -4,26 +4,22 @@ use super::Model;
 impl Model {
     pub(crate) fn check_inputs_len(&self, node_id: usize, len: usize) -> Result<()> {
         self.graph
-            .get_node(node_id)?
-            .check_inputs_len(len)
+            .check_inputs_len(node_id, len)
     }
 
     pub(crate) fn check_outputs_len(&self, node_id: usize, len: usize) -> Result<()> {
         self.graph
-            .get_node(node_id)?
-            .check_outputs_len(len)
+            .check_outputs_len(node_id, len)
     }
 
     pub(crate) fn check_inputs_len_at_least(&self, node_id: usize, len: usize) -> Result<()> {
         self.graph
-            .get_node(node_id)?
-            .check_inputs_len_at_least(len)
+            .check_inputs_len_at_least(node_id, len)
     }
 
     pub(crate) fn check_outputs_len_at_least(&self, node_id: usize, len: usize) -> Result<()> {
         self.graph
-            .get_node(node_id)?
-            .check_outputs_len_at_least(len)
+            .check_outputs_len_at_least(node_id, len)
     }
 
     pub(crate) fn check_inputs_outputs_len(

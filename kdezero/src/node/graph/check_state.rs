@@ -26,4 +26,24 @@ impl Graph {
         }
         Ok(())
     }
+
+    pub(crate) fn check_inputs_len(&self, node_id: usize, len: usize) -> Result<()> {
+        self.get_node(node_id)?
+            .check_inputs_len(len)
+    }
+
+    pub(crate) fn check_outputs_len(&self, node_id: usize, len: usize) -> Result<()> {
+        self.get_node(node_id)?
+            .check_outputs_len(len)
+    }
+
+    pub(crate) fn check_inputs_len_at_least(&self, node_id: usize, len: usize) -> Result<()> {
+        self.get_node(node_id)?
+            .check_inputs_len_at_least(len)
+    }
+
+    pub(crate) fn check_outputs_len_at_least(&self, node_id: usize, len: usize) -> Result<()> {
+        self.get_node(node_id)?
+            .check_outputs_len_at_least(len)
+    }
 }

@@ -103,7 +103,7 @@ impl Node {
         }
     }
 
-    pub fn check_inputs_len(&self, len: usize) -> Result<()> {
+    pub(crate) fn check_inputs_len(&self, len: usize) -> Result<()> {
         if self.inputs.len() != len {
             return Err(
                 KdezeroError::SizeError(
@@ -116,7 +116,7 @@ impl Node {
         Ok(())
     }
 
-    pub fn check_outputs_len(&self, len: usize) -> Result<()> {
+    pub(crate) fn check_outputs_len(&self, len: usize) -> Result<()> {
         if self.outputs.len() != len {
             return Err(
                 KdezeroError::SizeError(
@@ -129,7 +129,7 @@ impl Node {
         Ok(())
     }
 
-    pub fn check_inputs_len_at_least(&self, len: usize) -> Result<()> {
+    pub(crate) fn check_inputs_len_at_least(&self, len: usize) -> Result<()> {
         if self.inputs.len() < len {
             return Err(
                 KdezeroError::SizeSmallError(
@@ -142,7 +142,7 @@ impl Node {
         Ok(())
     }
 
-    pub fn check_outputs_len_at_least(&self, len: usize) -> Result<()> {
+    pub(crate) fn check_outputs_len_at_least(&self, len: usize) -> Result<()> {
         if self.outputs.len() < len {
             return Err(
                 KdezeroError::SizeSmallError(

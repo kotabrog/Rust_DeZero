@@ -1,13 +1,13 @@
 use anyhow::Result;
 use super::Model;
-use crate::node::{Node, NodeData};
+use crate::node::NodeData;
 use crate::variable::VariableData;
 use crate::operator::OperatorContents;
 
 impl Model {
-    pub fn add_node(&mut self, node: Node) -> Result<()> {
-        self.graph.add_node(node)
-    }
+    // pub(crate) fn add_node(&mut self, node: Node) -> Result<()> {
+    //     self.graph.add_node(node)
+    // }
 
     pub fn add_new_node(
         &mut self, id: usize, name: String,

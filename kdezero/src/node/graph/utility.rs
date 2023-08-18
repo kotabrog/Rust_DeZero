@@ -1,4 +1,3 @@
-use anyhow::Result;
 use super::Graph;
 
 impl Graph {

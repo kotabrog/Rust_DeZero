@@ -67,11 +67,7 @@ impl Model {
     pub fn get_grad_from_variable_name(&self, name: &str) -> Result<&Variable> {
         let node = self.graph.get_node_from_name(name)?;
         let variable_id = node.get_data().get_variable_id()?;
-        let grad_id = self.variables.get_grad(variable_id)?
-            .ok_or_else(|| KdezeroError::NotFoundError(
-                "Variable.grad".to_string(),
-                "Variable".to_string()
-            ))?;
+        let grad_id = self.variables.get_grad_id(variable_id)?;
         self.get_grad_model_result()?
             .get_variable_from_node_id(grad_id)
     }
@@ -100,9 +96,8 @@ impl Model {
     }
 
     pub(crate) fn get_variable_id_from_node_id(&self, node_id: usize) -> Result<usize> {
-        let variable_id = self.graph.get_node(node_id)?
-            .get_variable_id()?;
-        Ok(variable_id)
+        self.graph.get_node(node_id)?
+            .get_variable_id()
     }
 
     pub(crate) fn get_variable_from_node_id(&self, node_id: usize) -> Result<&Variable> {
@@ -117,12 +112,7 @@ impl Model {
 
     pub(crate) fn get_grad_id_from_node_id(&self, node_id: usize) -> Result<usize> {
         let variable_id = self.get_variable_id_from_node_id(node_id)?;
-        let grad_id = self.get_variable_from_node_id(node_id)?.get_grad()
-            .ok_or_else(|| KdezeroError::NotFoundError(
-                "Variable.grad".to_string(),
-                format!("Variable(id={})", variable_id)
-            ))?;
-        Ok(grad_id)
+        self.variables.get_grad_id(variable_id)
     }
 
     pub(crate) fn get_grad_ids_from_node_ids(&self, node_ids: &Vec<usize>) -> Result<Vec<usize>> {

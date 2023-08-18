@@ -21,6 +21,11 @@ impl Variables {
         Ok(variable.get_grad())
     }
 
+    pub fn get_grad_id(&self, id: usize) -> Result<usize> {
+        let variable = self.get_variable(id)?;
+        variable.get_grad_id()
+    }
+
     pub(crate) fn get_node_id(&self, id: usize) -> Result<Option<usize>> {
         let variable = self.get_variable(id)?;
         Ok(variable.get_node())

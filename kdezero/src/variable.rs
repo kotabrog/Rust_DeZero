@@ -4,6 +4,9 @@ pub mod variable_data;
 pub use variables::Variables;
 pub use variable_data::VariableData;
 
+use anyhow::Result;
+use crate::error::KdezeroError;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Variable {
     id: usize,
@@ -36,6 +39,15 @@ impl Variable {
 
     pub fn get_grad(&self) -> Option<usize> {
         self.grad
+    }
+
+    pub(crate) fn get_grad_id(&self) -> Result<usize> {
+        self.grad.ok_or_else(
+            || KdezeroError::NotFoundError(
+                "grad".to_string(),
+                "Variable".to_string()
+            ).into()
+        )
     }
 
     pub fn set_data(&mut self, data: VariableData) {
