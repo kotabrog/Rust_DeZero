@@ -62,6 +62,7 @@ impl Model {
             model.change_node_id(node_id, new_node_id)?;
             new_node_id += 1;
         }
+        self.graph.set_next_id(new_node_id);
 
         let variable_node_ids = model.variables
             .get_variables().keys().map(|&x| x).collect::<Vec<usize>>();
@@ -71,6 +72,7 @@ impl Model {
             model.change_variable_id(variable_id, new_variable_id)?;
             new_variable_id += 1;
         }
+        self.variables.set_next_id(new_variable_id);
 
         let operator_node_ids = model.operators
             .get_operators().keys().map(|&x| x).collect::<Vec<usize>>();
@@ -80,6 +82,7 @@ impl Model {
             model.change_operator_id(operator_id, new_operator_id)?;
             new_operator_id += 1;
         }
+        self.operators.set_next_id(new_operator_id);
 
         let model_inputs = model.inputs.clone();
         for (node_id, new_node_id) in model_inputs.iter().zip(inputs) {

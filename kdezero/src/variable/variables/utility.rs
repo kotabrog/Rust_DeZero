@@ -14,6 +14,7 @@ impl Variables {
 
     pub fn print_variables(&self) {
         println!("Variables:");
+        println!("  next_id: {}", self.next_id);
         for i in self.variables.keys() {
             println!("  {:?}: {:?}", i, self.variables[i]);
         }

@@ -24,6 +24,10 @@ impl Variables {
         Ok(())
     }
 
+    pub(crate) fn set_next_id(&mut self, id: usize) {
+        self.next_id = id;
+    }
+
     pub(crate) fn change_variable_id(&mut self, id: usize, new_id: usize) -> Result<()> {
         self.check_id_not_in_variables(id)?;
         self.check_id_in_variables(new_id)?;

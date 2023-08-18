@@ -2,11 +2,13 @@ pub mod square;
 pub mod add;
 pub mod identity;
 pub mod mul;
+pub mod exp;
 
 pub use square::Square;
 pub use add::Add;
 pub use identity::Identity;
 pub use mul::Mul;
+pub use exp::Exp;
 
 use anyhow::Result;
 use crate::model::Model;

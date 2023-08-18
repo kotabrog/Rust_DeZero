@@ -7,6 +7,7 @@ impl Graph {
 
     pub fn print_graph(&self) {
         println!("Graph:");
+        println!("  next_id: {}", self.next_id);
         for i in self.nodes.keys() {
             println!("  {}: {:?}", i, self.nodes[i]);
         }

@@ -88,4 +88,17 @@ impl VariableData {
             ).into()),
         }
     }
+
+    pub fn exp(&self) -> Result<Self> {
+        match self {
+            VariableData::F32(tensor) =>
+                Ok(VariableData::F32(Box::new(tensor.exp()))),
+            VariableData::F64(tensor) =>
+                Ok(VariableData::F64(Box::new(tensor.exp()))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "exp".to_string(),
+                self.to_string()
+            ).into()),
+        }
+    }
 }

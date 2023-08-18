@@ -42,6 +42,10 @@ impl Graph {
         Ok(())
     }
 
+    pub(crate) fn set_next_id(&mut self, id: usize) {
+        self.next_id = id;
+    }
+
     pub(crate) fn change_node_id(&mut self, old_id: usize, new_id: usize) -> Result<()> {
         self.check_id_not_in_nodes(old_id)?;
         self.check_id_in_nodes(new_id)?;
