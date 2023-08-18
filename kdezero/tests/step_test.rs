@@ -82,14 +82,14 @@ fn step2_2() {
         .unwrap();
     let mut model = Model::make_model(
         vec![ModelVariable::new(
-                "in".to_string(), tensor.into()
+                "in", tensor.into()
         )],
         vec![ModelVariable::new(
-                "out".to_string(), VariableData::None
+                "out", VariableData::None
         )],
         vec![ModelOperator::new(
-                "op".to_string(), Box::new(kdezero::operator::operator_contents::Square {}),
-                vec!["in".to_string()], vec!["out".to_string()], vec![]
+                "op", Box::new(kdezero::operator::operator_contents::Square {}),
+                vec!["in"], vec!["out"], vec![]
         )],
         vec![]
     ).unwrap();
@@ -114,14 +114,14 @@ fn step2_3() {
         .unwrap();
     let mut model = Model::make_model(
         vec![ModelVariable::new(
-                "in".to_string(), tensor.into()
+                "in", tensor.into()
         )],
         vec![ModelVariable::new(
-                "out".to_string(), VariableData::None
+                "out", VariableData::None
         )],
         vec![ModelOperator::new(
-                "op".to_string(), Box::new(kdezero::operator::operator_contents::Square {}),
-                vec!["in".to_string()], vec!["out".to_string()], vec![]
+                "op", Box::new(kdezero::operator::operator_contents::Square {}),
+                vec!["in"], vec!["out"], vec![]
         )],
         vec![]
     ).unwrap();

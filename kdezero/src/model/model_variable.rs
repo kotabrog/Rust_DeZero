@@ -6,7 +6,7 @@ pub struct ModelVariable {
 }
 
 impl ModelVariable {
-    pub fn new(name: String, data: VariableData) -> Self {
-        Self { name, data }
+    pub fn new(name: &str, data: VariableData) -> Self {
+        Self { name: name.to_string(), data }
     }
 }

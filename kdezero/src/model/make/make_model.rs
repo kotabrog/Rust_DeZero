@@ -86,7 +86,7 @@ impl Model {
         ) {
             let param_name = (*id_counter).to_string();
             model_variable_to_model_element(
-                model, ModelVariable::new(param_name, param),
+                model, ModelVariable::new(param_name.as_str(), param),
                 *id_counter, *variable_counter
             );
             param_ids.push(*id_counter);

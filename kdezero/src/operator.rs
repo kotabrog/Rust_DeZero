@@ -51,6 +51,10 @@ impl Operator {
         }
     }
 
+    pub(crate) fn set_node(&mut self, node: Option<usize>) {
+        self.node = node;
+    }
+
     pub fn get_forward_set(&self) -> Result<(usize, OperatorContentsWrapper)> {
         Ok((
             self.get_node_id()?,

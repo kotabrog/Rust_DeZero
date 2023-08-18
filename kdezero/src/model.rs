@@ -5,6 +5,7 @@ mod run;
 mod getter;
 mod setter;
 mod check_state;
+mod print;
 
 pub use model_variable::ModelVariable;
 pub use model_operator::ModelOperator;

@@ -27,7 +27,6 @@ impl Model {
             self.sorted_backward_nodes = self.graph.topological_sort(true)?;
         }
         self.set_ones_grad(&self.outputs.clone())?;
-        self.init_grad_model();
         for id in self.sorted_backward_nodes.clone().iter() {
             let node = self.graph.get_node(*id)?;
             match node.get_data() {
@@ -39,6 +38,7 @@ impl Model {
                 _ => (),
             }
         }
+        self.get_grad_model_mut().forward()?;
         Ok(())
     }
 }

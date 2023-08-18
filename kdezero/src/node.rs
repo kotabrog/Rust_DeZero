@@ -66,8 +66,20 @@ impl Node {
         &self.outputs
     }
 
+    // pub(crate) fn get_data_mut(&mut self) -> &mut NodeData {
+    //     &mut self.data
+    // }
+
     pub(crate) fn set_inputs(&mut self, inputs: Vec<usize>) {
         self.inputs = inputs;
+    }
+
+    pub(crate) fn set_id(&mut self, id: usize) {
+        self.id = id;
+    }
+
+    pub(crate) fn set_data(&mut self, data: NodeData) {
+        self.data = data;
     }
 
     pub(crate) fn add_input(&mut self, input: usize) {
@@ -76,6 +88,19 @@ impl Node {
 
     pub(crate) fn add_output(&mut self, output: usize) {
         self.outputs.push(output);
+    }
+
+    pub(crate) fn change_input_and_output_node_id(&mut self, old_id: usize, new_id: usize) {
+        for input in self.inputs.iter_mut() {
+            if *input == old_id {
+                *input = new_id;
+            }
+        }
+        for output in self.outputs.iter_mut() {
+            if *output == old_id {
+                *output = new_id;
+            }
+        }
     }
 
     pub fn check_inputs_len(&self, len: usize) -> Result<()> {
@@ -102,5 +127,35 @@ impl Node {
             );
         }
         Ok(())
+    }
+
+    pub fn check_inputs_len_at_least(&self, len: usize) -> Result<()> {
+        if self.inputs.len() < len {
+            return Err(
+                KdezeroError::SizeSmallError(
+                    "inputs".to_string(),
+                    len,
+                    self.inputs.len()
+                ).into()
+            );
+        }
+        Ok(())
+    }
+
+    pub fn check_outputs_len_at_least(&self, len: usize) -> Result<()> {
+        if self.outputs.len() < len {
+            return Err(
+                KdezeroError::SizeSmallError(
+                    "outputs".to_string(),
+                    len,
+                    self.outputs.len()
+                ).into()
+            );
+        }
+        Ok(())
+    }
+
+    pub(crate) fn move_output(self) -> Vec<usize> {
+        self.outputs
     }
 }

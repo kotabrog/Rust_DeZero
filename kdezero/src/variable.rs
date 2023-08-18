@@ -45,4 +45,12 @@ impl Variable {
     pub fn set_grad(&mut self, grad: Option<usize>) {
         self.grad = grad;
     }
+
+    pub(crate) fn set_node(&mut self, node: Option<usize>) {
+        self.node = node;
+    }
+
+    pub(crate) fn set_id(&mut self, id: usize) {
+        self.id = id;
+    }
 }

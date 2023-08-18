@@ -25,8 +25,12 @@ impl Graph {
         self.next_id
     }
 
-    pub fn add_node(&mut self, node: Node) -> Option<Node>{
-        self.nodes.insert(node.get_id(), node)
+    pub fn add_node(&mut self, node: Node) -> Result<()> {
+        let id = node.get_id();
+        self.check_id_in_nodes(id)?;
+        self.nodes.insert(id, node);
+        self.update_next_id(id);
+        Ok(())
     }
 
     fn check_id_in_nodes(&self, id: usize) -> Result<()> {
@@ -72,6 +76,33 @@ impl Graph {
         )
     }
 
+    fn get_node_mut(&mut self, id: usize) -> Result<&mut Node> {
+        self.check_id_not_in_nodes(id)?;
+        Ok(self.nodes.get_mut(&id).unwrap())
+    }
+
+    pub(crate) fn get_nodes_mut(&mut self) -> &mut HashMap<usize, Node> {
+        &mut self.nodes
+    }
+
+    // pub(crate) fn get_node_data_mut(&mut self, id: usize) -> Result<&mut NodeData> {
+    //     self.check_id_not_in_nodes(id)?;
+    //     let node = self.nodes.get_mut(&id).unwrap();
+    //     Ok(node.get_data_mut())
+    // }
+
+    pub(crate) fn set_node_inputs(&mut self, node_id: usize, inputs: Vec<usize>) -> Result<()> {
+        let node = self.get_node_mut(node_id)?;
+        node.set_inputs(inputs);
+        Ok(())
+    }
+
+    pub(crate) fn set_node_data(&mut self, node_id: usize, data: NodeData) -> Result<()> {
+        let node = self.get_node_mut(node_id)?;
+        node.set_data(data);
+        Ok(())
+    }
+
     pub fn add_new_node(
         &mut self, id: usize, name: String,
         data: NodeData, inputs: Vec<usize>, outputs: Vec<usize>
@@ -83,24 +114,27 @@ impl Graph {
         Ok(())
     }
 
-    pub(crate) fn set_node_inputs(&mut self, node_id: usize, inputs: Vec<usize>) -> Result<()> {
-        self.check_id_not_in_nodes(node_id)?;
-        let node = self.nodes.get_mut(&node_id).unwrap();
-        node.set_inputs(inputs);
-        Ok(())
-    }
-
     pub(crate) fn add_node_input(&mut self, node_id: usize, input: usize) -> Result<()> {
-        self.check_id_not_in_nodes(node_id)?;
-        let node = self.nodes.get_mut(&node_id).unwrap();
+        let node = self.get_node_mut(node_id)?;
         node.add_input(input);
         Ok(())
     }
 
     pub(crate) fn add_node_output(&mut self, node_id: usize, output: usize) -> Result<()> {
-        self.check_id_not_in_nodes(node_id)?;
-        let node = self.nodes.get_mut(&node_id).unwrap();
+        let node = self.get_node_mut(node_id)?;
         node.add_output(output);
+        Ok(())
+    }
+
+    pub(crate) fn change_node_id(&mut self, old_id: usize, new_id: usize) -> Result<()> {
+        self.check_id_not_in_nodes(old_id)?;
+        self.check_id_in_nodes(new_id)?;
+        let mut node = self.nodes.remove(&old_id).unwrap();
+        node.set_id(new_id);
+        self.nodes.insert(new_id, node);
+        for node in self.nodes.values_mut() {
+            node.change_input_and_output_node_id(old_id, new_id);
+        }
         Ok(())
     }
 
@@ -140,7 +174,11 @@ impl Graph {
         let mut sorted_list = Vec::new();
         let mut visited = HashSet::new();
         let mut queue = get_empty_inputs_node(self, reverse);
-        while !queue.is_empty() {
+        let max_count = self.nodes.len().pow(3) + 100;
+        for _ in 0..max_count {
+            if queue.is_empty() {
+                break;
+            }
             let id = queue.pop_front().unwrap();
             if visited.contains(&id) {
                 continue;
@@ -166,5 +204,20 @@ impl Graph {
             );
         }
         Ok(sorted_list)
+    }
+
+    pub(crate) fn move_all_node(self) -> HashMap<usize, Node> {
+        self.nodes
+    }
+
+    fn update_next_id(&mut self, id: usize) {
+        self.next_id = self.next_id.max(id) + 1;
+    }
+
+    pub fn print_graph(&self) {
+        println!("Graph:");
+        for i in self.nodes.keys() {
+            println!("  {}: {:?}", i, self.nodes[i]);
+        }
     }
 }

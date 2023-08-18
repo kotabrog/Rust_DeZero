@@ -1,7 +1,7 @@
 use anyhow::Result;
 use super::Model;
 use crate::variable::{Variable, Variables, VariableData};
-use crate::node::Graph;
+use crate::node::{Graph, NodeData};
 use crate::operator::Operators;
 use crate::error::KdezeroError;
 
@@ -72,13 +72,25 @@ impl Model {
                 "Variable.grad".to_string(),
                 "Variable".to_string()
             ))?;
-        self.grad_model.as_ref()
-            .ok_or_else(
-                || KdezeroError::NotFoundError(
-                    "grad_model".to_string(),
-                    "Model".to_string()
-                )
-            )?.variables.get_variable(grad_id)
+        self.get_grad_model_result()?
+            .get_variable_from_node_id(grad_id)
+    }
+
+    pub(crate) fn get_node_inputs_from_node_id(&self, node_id: usize) -> Result<&Vec<usize>> {
+        let inputs = self.graph.get_node(node_id)?
+            .get_inputs();
+        Ok(inputs)
+    }
+
+    pub(crate) fn get_node_outputs_from_node_id(&self, node_id: usize) -> Result<&Vec<usize>> {
+        let outputs = self.graph.get_node(node_id)?
+            .get_outputs();
+        Ok(outputs)
+    }
+
+    pub(crate) fn get_node_data_from_node_id(&self, node_id: usize) -> Result<&NodeData> {
+        Ok(self.graph.get_node(node_id)?
+            .get_data())
     }
 
     pub(crate) fn get_variable_data_from_node_id(&self, node_id: usize) -> Result<&VariableData> {
@@ -100,7 +112,7 @@ impl Model {
 
     pub(crate) fn get_variable_from_node_id_mut(&mut self, node_id: usize) -> Result<&mut Variable> {
         let variable_id = self.get_variable_id_from_node_id(node_id)?;
-        Ok(self.variables.get_mut_variable(variable_id)?)
+        Ok(self.variables.get_variable_mut(variable_id)?)
     }
 
     pub(crate) fn get_grad_id_from_node_id(&self, node_id: usize) -> Result<usize> {
@@ -113,9 +125,18 @@ impl Model {
         Ok(grad_id)
     }
 
-    pub(crate) fn get_grad_data_from_node_id(&self, node_id: usize) -> Result<&VariableData> {
-        let grad_id = self.get_grad_id_from_node_id(node_id)?;
-        Ok(self.get_grad_model_result()?
-            .get_variable_data_from_node_id(grad_id)?)
+    pub(crate) fn get_grad_ids_from_node_ids(&self, node_ids: &Vec<usize>) -> Result<Vec<usize>> {
+        let mut grad_ids = vec![];
+        for node_id in node_ids {
+            let grad_id = self.get_grad_id_from_node_id(*node_id)?;
+            grad_ids.push(grad_id);
+        }
+        Ok(grad_ids)
     }
+
+    // pub(crate) fn get_grad_data_from_node_id(&self, node_id: usize) -> Result<&VariableData> {
+    //     let grad_id = self.get_grad_id_from_node_id(node_id)?;
+    //     Ok(self.get_grad_model_result()?
+    //         .get_variable_data_from_node_id(grad_id)?)
+    // }
 }

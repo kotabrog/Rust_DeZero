@@ -11,9 +11,15 @@ pub struct ModelOperator {
 
 impl ModelOperator {
     pub fn new(
-        name: String, data: Box<dyn OperatorContents>,
-        inputs: Vec<String>, outputs: Vec<String>, params: Vec<VariableData>
+        name: &str, data: Box<dyn OperatorContents>,
+        inputs: Vec<&str>, outputs: Vec<&str>, params: Vec<VariableData>
     ) -> Self {
-        Self { name, data, inputs, outputs, params }
+        Self {
+            name: name.to_string(),
+            data,
+            inputs: inputs.into_iter().map(|s| s.to_string()).collect(),
+            outputs: outputs.into_iter().map(|s| s.to_string()).collect(),
+            params
+        }
     }
 }

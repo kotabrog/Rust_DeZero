@@ -9,6 +9,8 @@ pub enum KdezeroError {
     NotFoundError(String, String),
     #[error("SizeError: {0} is not equal to {1}. {2}")]
     SizeError(String, usize, usize),
+    #[error("SizeSmallError: {0} is smaller than {1}. {2}")]
+    SizeSmallError(String, usize, usize),
     #[error("NotImplementedTypeError: {0} is not implemented for {1}")]
     NotImplementedTypeError(String, String),
     #[error("NotCollectTypeError: {0} is not collect type. Expected {1}")]
