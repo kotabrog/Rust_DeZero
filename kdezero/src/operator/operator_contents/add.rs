@@ -118,7 +118,8 @@ mod tests {
             vec![]
         ).unwrap();
         model.forward().unwrap();
-        model.backward().unwrap();
+        let output_id = model.get_node_id_from_name("out").unwrap();
+        model.backward(output_id).unwrap();
         let input1_grad_variable = model.get_grad_from_variable_name("in1").unwrap();
         let input2_grad_variable = model.get_grad_from_variable_name("in2").unwrap();
         assert_eq!(input1_grad_variable.get_data().to_string(), "F64");

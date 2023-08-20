@@ -72,6 +72,10 @@ impl Model {
             .get_variable_from_node_id(grad_id)
     }
 
+    pub fn get_node_id_from_name(&self, name: &str) -> Result<usize> {
+        self.graph.get_node_id_from_name(name)
+    }
+
     pub(crate) fn get_node_inputs_from_node_id(&self, node_id: usize) -> Result<&Vec<usize>> {
         let inputs = self.graph.get_node(node_id)?
             .get_inputs();

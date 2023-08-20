@@ -17,6 +17,11 @@ impl Graph {
         Ok(self.nodes.get(&id).unwrap())
     }
 
+    pub fn get_node_id_from_name(&self, name: &str) -> Result<usize> {
+        let node = self.get_node_from_name(name)?;
+        Ok(node.get_id())
+    }
+
     pub fn get_node_from_name(&self, name: &str) -> Result<&Node> {
         for node in self.nodes.values() {
             if node.get_name() == name {

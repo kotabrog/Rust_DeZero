@@ -30,4 +30,15 @@ impl Model {
         node.check_outputs_len(outputs_len)?;
         Ok((node.get_inputs(), node.get_outputs()))
     }
+
+    // pub(crate) fn is_all_output_grad_present(&self, node_id: usize) -> Result<bool> {
+    //     let output = self.get_node_outputs_from_node_id(node_id)?;
+    //     for &output_id in output.iter() {
+    //         let output_grad_id = self.get_grad_data_from_node_id(output_id)?;
+    //         if output_grad_id.is_none() {
+    //             return Ok(false);
+    //         }
+    //     }
+    //     Ok(true)
+    // }
 }

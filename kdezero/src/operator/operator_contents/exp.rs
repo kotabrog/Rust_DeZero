@@ -98,7 +98,8 @@ mod tests {
             vec![]
         ).unwrap();
         model.forward().unwrap();
-        model.backward().unwrap();
+        let output_id = model.get_node_id_from_name("out").unwrap();
+        model.backward(output_id).unwrap();
         let input_grad_variable = model.get_grad_from_variable_name("in").unwrap();
         assert_eq!(input_grad_variable.get_data().to_string(), "F64");
         assert_eq!(input_grad_variable.get_data(), &Tensor::new(vec![2.718281828459045], vec![]).unwrap().into());

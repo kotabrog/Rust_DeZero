@@ -22,11 +22,15 @@ impl Model {
         Ok(())
     }
 
-    pub fn backward(&mut self) -> Result<()> {
+    pub fn backward(&mut self, node_id: usize) -> Result<()> {
         if self.sorted_backward_nodes.is_empty() {
             self.sorted_backward_nodes = self.graph.topological_sort(true)?;
         }
-        self.set_ones_grad(&self.outputs.clone())?;
+        let remain_outputs: Vec<usize> = self.get_outputs().clone()
+            .into_iter().filter(|&output_id| output_id != node_id)
+            .collect();
+        self.set_ones_grad(&vec![node_id])?;
+        self.set_zeros_grad(&remain_outputs)?;
         for id in self.sorted_backward_nodes.clone().iter() {
             let node = self.graph.get_node(*id)?;
             match node.get_data() {

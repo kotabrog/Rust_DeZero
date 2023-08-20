@@ -73,12 +73,25 @@ impl Model {
     }
 
     pub(crate) fn set_ones_grad(&mut self, nodes: &Vec<usize>) -> Result<()> {
+        self.set_fulls_grad(nodes, false)
+    }
+
+    pub(crate) fn set_zeros_grad(&mut self, nodes: &Vec<usize>) -> Result<()> {
+        self.set_fulls_grad(nodes, true)
+    }
+
+    pub(crate) fn set_fulls_grad(&mut self, nodes: &Vec<usize>, is_zero: bool) -> Result<()> {
         for &node_id in nodes {
             let node = self.graph.get_node(node_id)?;
             let variable_id = node.get_data().get_variable_id()?;
             let variable_data =
                 self.variables.get_variable(variable_id)?.get_data();
-            let grad_data = VariableData::ones_like(variable_data)?;
+            let grad_data = 
+                if is_zero {
+                    VariableData::zeros_like(variable_data)?
+                } else {
+                    VariableData::ones_like(variable_data)?
+                };
             let grad = self.variables.get_grad(variable_id)?;
             match grad {
                 Some(_) => (),

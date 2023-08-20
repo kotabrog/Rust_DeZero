@@ -42,6 +42,13 @@ impl VariableData {
             ).into()),
         }
     }
+
+    pub fn is_none(&self) -> bool {
+        match self {
+            VariableData::None => true,
+            _ => false,
+        }
+    }
 }
 
 impl From<Tensor<f32>> for VariableData {
