@@ -57,7 +57,7 @@ impl OperatorContents for Add {
         let grad_outputs = model.get_grad_model_mut()
             .insert_structure_model(insert_model, &vec![output_grad_id])?;
         for (grad, node_id) in grad_outputs.into_iter().zip(inputs.clone()) {
-            model.set_grad_from_node_id(node_id, Some(grad))?;
+            model.set_or_add_grad(node_id, grad)?;
         }
         Ok(inputs)
     }

@@ -26,8 +26,8 @@ impl Model {
         &self.outputs
     }
 
-    pub fn get_grad_model(&self) -> &Option<Box<Model>> {
-        &self.grad_model
+    pub fn get_grad_model(&self) -> Option<&Box<Model>> {
+        self.grad_model.as_ref()
     }
 
     // pub(crate) fn get_variables_mut(&mut self) -> &mut Variables {
@@ -112,6 +112,11 @@ impl Model {
     pub(crate) fn get_variable_from_node_id_mut(&mut self, node_id: usize) -> Result<&mut Variable> {
         let variable_id = self.get_variable_id_from_node_id(node_id)?;
         Ok(self.variables.get_variable_mut(variable_id)?)
+    }
+
+    pub(crate) fn get_grad_from_node_id(&self, node_id: usize) -> Result<Option<usize>> {
+        let variable_id = self.get_variable_id_from_node_id(node_id)?;
+        self.variables.get_grad(variable_id)
     }
 
     pub(crate) fn get_grad_id_from_node_id(&self, node_id: usize) -> Result<usize> {

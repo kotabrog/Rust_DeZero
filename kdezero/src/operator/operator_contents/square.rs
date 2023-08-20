@@ -41,7 +41,7 @@ impl OperatorContents for Square {
         )?;
         let grad_outputs = model.get_grad_model_mut()
             .insert_structure_model(insert_model, &vec![output_grad_id])?;
-        model.set_grad_from_node_id(input_id, Some(grad_outputs[0]))?;
+        model.set_or_add_grad(input_id, grad_outputs[0])?;
         Ok(vec![input_id])
     }
 }

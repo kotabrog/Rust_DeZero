@@ -61,7 +61,7 @@ impl OperatorContents for Identity {
             )?
         };
         let new_inputs = model.insert_structure_model(insert_model, &output_grad_ids)?;
-        model.set_grad_from_node_id(input, Some(new_inputs[0]))?;
+        model.set_or_add_grad(input, new_inputs[0])?;
         Ok(vec![input])
     }
 }
