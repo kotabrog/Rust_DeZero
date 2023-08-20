@@ -222,7 +222,7 @@ fn step7() {
     model.backward(output_id).unwrap();
     let input_grad_variable = model.get_grad_from_variable_name("in").unwrap();
     assert_eq!(input_grad_variable.get_data().to_string(), "F64");
-    // assert_eq!(input_grad_variable.get_data(), &Tensor::new(vec![20.0], vec![]).unwrap().into());
+    assert_eq!(input_grad_variable.get_data(), &Tensor::new(vec![3.297442541400256], vec![]).unwrap().into());
     println!("input grad variable: {:?}", input_grad_variable);
 }
 

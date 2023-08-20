@@ -32,9 +32,7 @@ impl OperatorContents for Sin {
         let input_id = inputs[0];
         let output_id = outputs[0];
         let output_grad_id = model.get_grad_id_from_node_id(output_id)?;
-        if !model.get_grad_model_result()?.is_in_node_id(input_id) {
-            model.clone_node_to_grad_model(input_id)?;
-        }
+        model.clone_node_to_grad_model_if_needed(input_id)?;
         let insert_model = Model::make_model(
             vec![
                 ModelVariable::new("in", VariableData::None),

@@ -127,4 +127,11 @@ impl Model {
             .add_node_no_check(node);
         Ok(())
     }
+
+    pub(crate) fn clone_node_to_grad_model_if_needed(&mut self, node_id: usize) -> Result<()> {
+        if !self.get_grad_model_result()?.is_in_node_id(node_id) {
+            self.clone_node_to_grad_model(node_id)?;
+        }
+        Ok(())
+    }
 }
