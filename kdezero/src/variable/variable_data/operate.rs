@@ -101,4 +101,30 @@ impl VariableData {
             ).into()),
         }
     }
+
+    pub fn sin(&self) -> Result<Self> {
+        match self {
+            VariableData::F32(tensor) =>
+                Ok(VariableData::F32(Box::new(tensor.sin()))),
+            VariableData::F64(tensor) =>
+                Ok(VariableData::F64(Box::new(tensor.sin()))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "sin".to_string(),
+                self.to_string()
+            ).into()),
+        }
+    }
+
+    pub fn cos(&self) -> Result<Self> {
+        match self {
+            VariableData::F32(tensor) =>
+                Ok(VariableData::F32(Box::new(tensor.cos()))),
+            VariableData::F64(tensor) =>
+                Ok(VariableData::F64(Box::new(tensor.cos()))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "cos".to_string(),
+                self.to_string()
+            ).into()),
+        }
+    }
 }

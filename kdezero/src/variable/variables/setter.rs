@@ -2,6 +2,10 @@ use anyhow::Result;
 use super::{Variable, Variables, VariableData};
 
 impl Variables {
+    pub(crate) fn add_variable_no_check(&mut self, variable: Variable) {
+        self.variables.insert(variable.get_id(), variable);
+    }
+
     pub fn add_new_variable(
         &mut self, id: usize, node: Option<usize>, data: VariableData)
     -> Result<()> {

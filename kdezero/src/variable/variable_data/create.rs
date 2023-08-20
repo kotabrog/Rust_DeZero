@@ -41,4 +41,23 @@ impl VariableData {
             ).into()),
         }
     }
+
+    pub fn scalar(variable_data: &Self, scalar: f64) -> Result<Self> {
+        match variable_data {
+            VariableData::F32(_) =>
+                Ok(VariableData::F32(Box::new(Tensor::new(vec![scalar as f32], vec![])?))),
+            VariableData::F64(_) =>
+                Ok(VariableData::F64(Box::new(Tensor::new(vec![scalar], vec![])?))),
+            VariableData::USIZE(_) =>
+                Ok(VariableData::USIZE(Box::new(Tensor::new(vec![scalar as usize], vec![])?))),
+            VariableData::I32(_) =>
+                Ok(VariableData::I32(Box::new(Tensor::new(vec![scalar as i32], vec![])?))),
+            VariableData::I64(_) =>
+                Ok(VariableData::I64(Box::new(Tensor::new(vec![scalar as i64], vec![])?))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "scalar".to_string(),
+                variable_data.to_string()
+            ).into()),
+        }
+    }
 }

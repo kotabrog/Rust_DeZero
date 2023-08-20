@@ -69,3 +69,14 @@ impl Operator {
         ))
     }
 }
+
+impl Clone for Operator {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id,
+            node: self.node,
+            params: self.params.clone(),
+            operator: self.operator.clone_operator(),
+        }
+    }
+}

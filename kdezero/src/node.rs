@@ -74,6 +74,10 @@ impl Node {
         self.inputs = inputs;
     }
 
+    pub(crate) fn set_outputs(&mut self, outputs: Vec<usize>) {
+        self.outputs = outputs;
+    }
+
     pub(crate) fn set_id(&mut self, id: usize) {
         self.id = id;
     }

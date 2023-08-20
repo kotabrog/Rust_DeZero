@@ -2,6 +2,10 @@ use anyhow::Result;
 use super::{Operator, Operators, OperatorContents};
 
 impl Operators {
+    pub fn add_operator_no_check(&mut self, operator: Operator) {
+        self.operators.insert(operator.get_id(), operator);
+    }
+
     pub fn add_new_operator(
         &mut self, id: usize, node: Option<usize>, params: Vec<usize>, operator: Box<dyn OperatorContents>
     ) -> Result<()> {

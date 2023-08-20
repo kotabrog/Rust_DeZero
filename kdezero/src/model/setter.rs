@@ -120,6 +120,10 @@ impl Model {
             Some(_) => (),
             None => {
                 self.grad_model = Some(Box::new(Model::new()));
+                let grad_model = self.grad_model.as_mut().unwrap();
+                grad_model.graph.set_next_id(self.graph.get_next_id());
+                grad_model.variables.set_next_id(self.variables.get_next_id());
+                grad_model.operators.set_next_id(self.operators.get_next_id());
             }
         }
     }

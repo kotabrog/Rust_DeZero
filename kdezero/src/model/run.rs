@@ -31,6 +31,7 @@ impl Model {
         let remain_outputs: Vec<usize> = self.get_outputs().clone()
             .into_iter().filter(|&output_id| output_id != node_id)
             .collect();
+        self.init_grad_model();
         self.set_ones_grad(&vec![node_id])?;
         self.set_zeros_grad(&remain_outputs)?;
         for id in self.sorted_backward_nodes.clone().iter() {
@@ -44,6 +45,24 @@ impl Model {
                 _ => (),
             }
         }
+
+        let mut grad_output = vec![];
+        for output in self.inputs.clone() {
+            grad_output.push(self.get_grad_id_from_node_id(output)?);
+        }
+        self.get_grad_model_mut().set_outputs(grad_output);
+
+        let mut grad_input = vec![self.get_grad_id_from_node_id(node_id)?];
+        let grad_model = self.get_grad_model_result()?;
+        let self_id = self.graph.get_next_id();
+        for id in grad_model.graph.get_nodes().keys() {
+            if *id < self_id {
+                if grad_model.get_node_inputs_from_node_id(*id)?.is_empty() {
+                    grad_input.push(*id);
+                }
+            }
+        }
+        self.get_grad_model_mut().set_inputs(grad_input);
         self.get_grad_model_mut().forward()?;
         Ok(())
     }
@@ -82,6 +101,30 @@ impl Model {
                 grad
         };
         self.set_grad_from_node_id(id, Some(grad_id))?;
+        Ok(())
+    }
+
+    pub(crate) fn clone_node_to_grad_model(&mut self, node_id: usize) -> Result<()> {
+        let node = self.graph.get_node(node_id)?;
+        let node_data = node.get_data().clone();
+        match node_data {
+            NodeData::Variable(variable_id) => {
+                let variable = self.variables.get_variable(variable_id)?.clone();
+                self.grad_model.as_mut().unwrap().variables
+                    .add_variable_no_check(variable);
+            },
+            NodeData::Operator(operator_id) => {
+                let operator = self.operators.get_operator(operator_id)?.clone();
+                self.grad_model.as_mut().unwrap().operators
+                    .add_operator_no_check(operator);
+            },
+            NodeData::None => (),
+        }
+        let mut node = node.clone();
+        node.set_inputs(vec![]);
+        node.set_outputs(vec![]);
+        self.get_grad_model_mut().graph
+            .add_node_no_check(node);
         Ok(())
     }
 }

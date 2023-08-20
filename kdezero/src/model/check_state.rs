@@ -31,6 +31,10 @@ impl Model {
         Ok((node.get_inputs(), node.get_outputs()))
     }
 
+    pub(crate) fn is_in_node_id(&self, node_id: usize) -> bool {
+        self.graph.get_nodes().contains_key(&node_id)
+    }
+
     // pub(crate) fn is_all_output_grad_present(&self, node_id: usize) -> Result<bool> {
     //     let output = self.get_node_outputs_from_node_id(node_id)?;
     //     for &output_id in output.iter() {

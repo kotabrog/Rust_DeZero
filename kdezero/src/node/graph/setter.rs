@@ -2,6 +2,10 @@ use anyhow::Result;
 use super::{Node, NodeData, Graph};
 
 impl Graph {
+    pub(crate) fn add_node_no_check(&mut self, node: Node) {
+        self.nodes.insert(node.get_id(), node);
+    }
+
     pub(crate) fn add_node(&mut self, node: Node) -> Result<()> {
         let id = node.get_id();
         self.check_id_in_nodes(id)?;

@@ -114,6 +114,12 @@ impl Model {
         Ok(self.variables.get_variable_mut(variable_id)?)
     }
 
+    pub fn get_grad_variable_from_node_id(&self, node_id: usize) -> Result<&Variable> {
+        let grad_id = self.get_grad_id_from_node_id(node_id)?;
+        self.get_grad_model_result()?
+            .get_variable_from_node_id(grad_id)
+    }
+
     pub(crate) fn get_grad_from_node_id(&self, node_id: usize) -> Result<Option<usize>> {
         let variable_id = self.get_variable_id_from_node_id(node_id)?;
         self.variables.get_grad(variable_id)

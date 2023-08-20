@@ -3,12 +3,16 @@ pub mod add;
 pub mod identity;
 pub mod mul;
 pub mod exp;
+pub mod sin;
+pub mod cos;
 
 pub use square::Square;
 pub use add::Add;
 pub use identity::Identity;
 pub use mul::Mul;
 pub use exp::Exp;
+pub use sin::Sin;
+pub use cos::Cos;
 
 use anyhow::Result;
 use crate::model::Model;
@@ -65,5 +69,13 @@ impl OperatorContentsWrapper {
         model: &mut Model,
     ) -> Result<Vec<usize>> {
         self.operator.backward(node_id, model)
+    }
+}
+
+impl Clone for OperatorContentsWrapper {
+    fn clone(&self) -> Self {
+        Self {
+            operator: self.operator.clone_operator(),
+        }
     }
 }
