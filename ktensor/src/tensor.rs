@@ -8,6 +8,7 @@ mod ops;
 mod matmul;
 mod math;
 mod random;
+pub mod iter;
 
 use anyhow::Result;
 pub use random::TensorRng;

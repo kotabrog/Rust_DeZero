@@ -376,6 +376,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "ktensor",
+ "num-traits",
  "plotters",
  "thiserror",
 ]
