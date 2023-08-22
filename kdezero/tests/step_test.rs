@@ -184,6 +184,23 @@ fn step3() {
 }
 
 #[test]
+fn step4() {
+    use ktensor::Tensor;
+    use kdezero::test_utility::{
+        assert_approx_eq_tensor,
+        numerical_diff,
+    };
+
+    let tensor = Tensor::new(vec![0.5], vec![])
+        .unwrap();
+    let mut f =
+        |x: &Tensor<f64>| x.powi(2).exp().powi(2);
+    let dy = numerical_diff(&mut f, &tensor, 1e-4);
+    assert_approx_eq_tensor(
+        &dy, &Tensor::new(vec![3.29744], vec![]).unwrap(), 1e-4);
+}
+
+#[test]
 fn step7() {
     use ktensor::Tensor;
     use kdezero::{
@@ -224,6 +241,98 @@ fn step7() {
     assert_eq!(input_grad_variable.get_data().to_string(), "F64");
     assert_eq!(input_grad_variable.get_data(), &Tensor::new(vec![3.297442541400256], vec![]).unwrap().into());
     println!("input grad variable: {:?}", input_grad_variable);
+}
+
+#[test]
+fn step11() {
+    use ktensor::Tensor;
+    use kdezero::{
+        operator::operator_contents::Add,
+        variable::VariableData,
+        model::{Model, ModelVariable, ModelOperator},
+    };
+
+    let tensor0 = Tensor::new(vec![2.0], vec![])
+        .unwrap();
+    let tensor1 = Tensor::new(vec![3.0], vec![])
+        .unwrap();
+    let mut model = Model::make_model(
+        vec![
+            ModelVariable::new("in0", tensor0.into()),
+            ModelVariable::new("in1", tensor1.into())
+        ],
+        vec![ModelVariable::new(
+                "out", VariableData::None
+        )],
+        vec![ModelOperator::new(
+                "op1", Box::new(Add {}),
+                vec!["in0", "in1"], vec!["out"], vec![]
+        )], vec![]
+    ).unwrap();
+    model.forward().unwrap();
+    let input_variable0 = model.get_variable_from_name("in0").unwrap();
+    let input_variable1 = model.get_variable_from_name("in1").unwrap();
+    let output_variable = model.get_variable_from_name("out").unwrap();
+    assert_eq!(output_variable.get_data().to_string(), "F64");
+    assert_eq!(output_variable.get_data(), &Tensor::new(vec![5.0], vec![]).unwrap().into());
+    println!("input variable0: {:?}", input_variable0);
+    println!("input variable1: {:?}", input_variable1);
+    println!("output variable: {:?}", output_variable);
+}
+
+#[test]
+fn step13() {
+    use ktensor::Tensor;
+    use kdezero::{
+        operator::operator_contents::{Add, Square},
+        variable::VariableData,
+        model::{Model, ModelVariable, ModelOperator},
+    };
+
+    let tensor0 = Tensor::new(vec![2.0], vec![])
+        .unwrap();
+    let tensor1 = Tensor::new(vec![3.0], vec![])
+        .unwrap();
+    let mut model = Model::make_model(
+        vec![
+            ModelVariable::new("in0", tensor0.into()),
+            ModelVariable::new("in1", tensor1.into()),
+        ],
+        vec![ModelVariable::new(
+                "out", VariableData::None
+        )],
+        vec![
+            ModelOperator::new(
+                "op0", Box::new(Square {}),
+                vec!["in0"], vec!["square0"], vec![]
+            ), ModelOperator::new(
+                "op1", Box::new(Square {}),
+                vec!["in1"], vec!["square1"], vec![]
+            ), ModelOperator::new(
+                "op2", Box::new(Add {}),
+                vec!["square0", "square1"], vec!["out"], vec![]
+            )
+        ], vec![]
+    ).unwrap();
+    model.forward().unwrap();
+    let input_variable0 = model.get_variable_from_name("in0").unwrap();
+    let input_variable1 = model.get_variable_from_name("in1").unwrap();
+    let output_variable = model.get_variable_from_name("out").unwrap();
+    assert_eq!(output_variable.get_data().to_string(), "F64");
+    assert_eq!(output_variable.get_data(), &Tensor::new(vec![13.0], vec![]).unwrap().into());
+    println!("input variable0: {:?}", input_variable0);
+    println!("input variable1: {:?}", input_variable1);
+    println!("output variable: {:?}", output_variable);
+    let output_id = model.get_node_id_from_name("out").unwrap();
+    model.backward(output_id).unwrap();
+    let input_grad_variable = model.get_grad_from_variable_name("in0").unwrap();
+    assert_eq!(input_grad_variable.get_data().to_string(), "F64");
+    assert_eq!(input_grad_variable.get_data(), &Tensor::new(vec![4.0], vec![]).unwrap().into());
+    println!("input grad variable0: {:?}", input_grad_variable);
+    let input_grad_variable = model.get_grad_from_variable_name("in1").unwrap();
+    assert_eq!(input_grad_variable.get_data().to_string(), "F64");
+    assert_eq!(input_grad_variable.get_data(), &Tensor::new(vec![6.0], vec![]).unwrap().into());
+    println!("input grad variable1: {:?}", input_grad_variable);
 }
 
 #[test]

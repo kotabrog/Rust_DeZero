@@ -27,6 +27,17 @@ where
     }
 }
 
+pub fn numerical_diff<T>(f: &mut dyn FnMut(&Tensor<T>) -> Tensor<T>, x: &Tensor<T>, eps: T) -> Tensor<T>
+where
+    T: Float + Copy
+{
+    let x0 = x - eps;
+    let x1 = x + eps;
+    let y0 = f(&x0);
+    let y1 = f(&x1);
+    (y1 - y0) / (eps + eps)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -59,5 +70,15 @@ mod tests {
         let b = Tensor::new(vec![1.0, 1.0, 3.0], vec![3])
             .unwrap();
         assert_approx_eq_tensor(&a, &b, 1e-4);
+    }
+
+    #[test]
+    fn numerical_diff_normal() {
+        let x = Tensor::new(vec![2.0], vec![])
+            .unwrap();
+        let mut f = |x: &Tensor<f64>| x.powi(2);
+        let dy = numerical_diff(&mut f, &x, 1e-4);
+        assert_approx_eq_tensor(
+            &dy, &Tensor::new([4.0], []).unwrap(), 1e-6);
     }
 }
