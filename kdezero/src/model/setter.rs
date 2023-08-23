@@ -127,4 +127,9 @@ impl Model {
             }
         }
     }
+
+    pub fn clear_grads(&mut self) {
+        self.variables.clear_grads();
+        self.grad_model = None;
+    }
 }

@@ -40,4 +40,10 @@ impl Variables {
         self.variables.insert(new_id, variable);
         Ok(())
     }
+
+    pub fn clear_grads(&mut self) {
+        for (_, variable) in self.variables.iter_mut() {
+            variable.clear_grad();
+        }
+    }
 }

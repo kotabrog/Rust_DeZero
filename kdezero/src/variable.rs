@@ -65,4 +65,8 @@ impl Variable {
     pub(crate) fn set_id(&mut self, id: usize) {
         self.id = id;
     }
+
+    pub fn clear_grad(&mut self) {
+        self.grad = None;
+    }
 }
