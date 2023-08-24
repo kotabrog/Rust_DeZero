@@ -18,6 +18,45 @@ pub enum VariableData {
 }
 
 impl VariableData {
+    pub fn get_shape(&self) -> Result<&Vec<usize>> {
+        match self {
+            VariableData::None => Err(KdezeroError::NotSetError(
+                "VariableData".to_string()).into()
+            ),
+            VariableData::F32(tensor) => Ok(tensor.get_shape()),
+            VariableData::F64(tensor) => Ok(tensor.get_shape()),
+            VariableData::USIZE(tensor) => Ok(tensor.get_shape()),
+            VariableData::I32(tensor) => Ok(tensor.get_shape()),
+            VariableData::I64(tensor) => Ok(tensor.get_shape()),
+        }
+    }
+
+    pub fn ndim(&self) -> Result<usize> {
+        match self {
+            VariableData::None => Err(KdezeroError::NotSetError(
+                "VariableData".to_string()).into()
+            ),
+            VariableData::F32(tensor) => Ok(tensor.ndim()),
+            VariableData::F64(tensor) => Ok(tensor.ndim()),
+            VariableData::USIZE(tensor) => Ok(tensor.ndim()),
+            VariableData::I32(tensor) => Ok(tensor.ndim()),
+            VariableData::I64(tensor) => Ok(tensor.ndim()),
+        }
+    }
+
+    pub fn size(&self) -> Result<usize> {
+        match self {
+            VariableData::None => Err(KdezeroError::NotSetError(
+                "VariableData".to_string()).into()
+            ),
+            VariableData::F32(tensor) => Ok(tensor.size()),
+            VariableData::F64(tensor) => Ok(tensor.size()),
+            VariableData::USIZE(tensor) => Ok(tensor.size()),
+            VariableData::I32(tensor) => Ok(tensor.size()),
+            VariableData::I64(tensor) => Ok(tensor.size()),
+        }
+    }
+
     pub fn to_string(&self) -> String {
         match self {
             VariableData::None => "None".to_string(),

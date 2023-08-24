@@ -50,6 +50,22 @@ impl Variable {
         )
     }
 
+    pub fn get_shape(&self) -> Result<&Vec<usize>> {
+        self.data.get_shape()
+    }
+
+    pub fn ndim(&self) -> Result<usize> {
+        self.data.ndim()
+    }
+
+    pub fn size(&self) -> Result<usize> {
+        self.data.size()
+    }
+
+    pub fn get_type(&self) -> String {
+        self.data.to_string()
+    }
+
     pub fn set_data(&mut self, data: VariableData) {
         self.data = data;
     }
