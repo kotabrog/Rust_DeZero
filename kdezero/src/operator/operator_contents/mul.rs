@@ -60,3 +60,69 @@ impl OperatorContents for Mul {
         Ok(inputs)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn forward_normal() {
+        use ktensor::Tensor;
+
+        let tensor0 = Tensor::new(vec![3.0], vec![])
+            .unwrap();
+        let tensor1 = Tensor::new(vec![2.0], vec![])
+            .unwrap();
+        let mut model = Model::make_model(
+            vec![
+                ModelVariable::new("in0", tensor0.into()),
+                ModelVariable::new("in1", tensor1.into()),
+            ],
+            vec![ModelVariable::new("out", VariableData::None)],
+            vec![
+                ModelOperator::new(
+                    "op0", Box::new(Mul {}),
+                    vec!["in0", "in1"], vec!["out"], vec![]
+                ),
+            ],
+            vec![]
+        ).unwrap();
+        model.forward().unwrap();
+        let output_variable = model.get_variable_from_name("out").unwrap();
+        assert_eq!(output_variable.get_type(), "F64");
+        assert_eq!(output_variable.get_data(), &Tensor::new(vec![6.0], vec![]).unwrap().into());
+    }
+
+    #[test]
+    fn backward_normal() {
+        use ktensor::Tensor;
+
+        let tensor0 = Tensor::new(vec![3.0], vec![])
+            .unwrap();
+        let tensor1 = Tensor::new(vec![2.0], vec![])
+            .unwrap();
+        let mut model = Model::make_model(
+            vec![
+                ModelVariable::new("in0", tensor0.into()),
+                ModelVariable::new("in1", tensor1.into()),
+            ],
+            vec![ModelVariable::new("out", VariableData::None)],
+            vec![
+                ModelOperator::new(
+                    "op0", Box::new(Mul {}),
+                    vec!["in0", "in1"], vec!["out"], vec![]
+                ),
+            ],
+            vec![]
+        ).unwrap();
+        model.forward().unwrap();
+        let output_id = model.get_node_id_from_name("out").unwrap();
+        model.backward(output_id).unwrap();
+        let input_grad0 = model.get_grad_from_variable_name("in0").unwrap();
+        let input_grad1 = model.get_grad_from_variable_name("in1").unwrap();
+        assert_eq!(input_grad0.get_type(), "F64");
+        assert_eq!(input_grad0.get_data(), &Tensor::new(vec![2.0], vec![]).unwrap().into());
+        assert_eq!(input_grad1.get_type(), "F64");
+        assert_eq!(input_grad1.get_data(), &Tensor::new(vec![3.0], vec![]).unwrap().into());
+    }
+}
