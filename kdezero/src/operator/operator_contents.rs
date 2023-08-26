@@ -5,6 +5,7 @@ pub mod mul;
 pub mod exp;
 pub mod sin;
 pub mod cos;
+pub mod neg;
 
 pub use square::Square;
 pub use add::Add;
@@ -13,6 +14,7 @@ pub use mul::Mul;
 pub use exp::Exp;
 pub use sin::Sin;
 pub use cos::Cos;
+pub use neg::Neg;
 
 use anyhow::Result;
 use crate::model::Model;

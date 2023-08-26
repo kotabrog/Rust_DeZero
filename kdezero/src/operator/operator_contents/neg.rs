@@ -1,14 +1,12 @@
-use std::vec;
-
 use anyhow::Result;
-use super::{OperatorContents, Mul, Cos};
+use super::OperatorContents;
 use crate::model::{Model, ModelVariable, ModelOperator};
 use crate::variable::VariableData;
 
 #[derive(Clone)]
-pub struct Sin {}
+pub struct Neg {}
 
-impl OperatorContents for Sin {
+impl OperatorContents for Neg {
     fn forward(
             &self, node_id: usize,
             model: &mut Model,
@@ -18,7 +16,7 @@ impl OperatorContents for Sin {
         let input_id = inputs[0];
         let output_id = outputs[0];
         let variable_data = model.get_variable_data_from_node_id(input_id)?;
-        let output_data = variable_data.sin()?;
+        let output_data = variable_data.neg()?;
         model.set_variable_data_from_node_id(output_id, output_data)?;
         Ok(vec![output_id])
     }
@@ -32,24 +30,16 @@ impl OperatorContents for Sin {
         let input_id = inputs[0];
         let output_id = outputs[0];
         let output_grad_id = model.get_grad_id_from_node_id(output_id)?;
-        model.clone_node_to_grad_model_if_needed(input_id)?;
         let insert_model = Model::make_model(
-            vec![
-                ModelVariable::new("in", VariableData::None),
-                ModelVariable::new("x", VariableData::None),
-            ],
+            vec![ModelVariable::new("in", VariableData::None)],
             vec![ModelVariable::new("out", VariableData::None)],
-            vec![
-                ModelOperator::new(
-                    "op0", Box::new(Cos {}),
-                    vec!["x"], vec!["cos"], vec![]
-                ), ModelOperator::new(
-                    "op1", Box::new(Mul {}),
-                    vec!["in", "cos"], vec!["out"], vec![]
-                )], vec![]
+            vec![ModelOperator::new(
+                    "op", Box::new(Neg {}),
+                    vec!["in"], vec!["out"], vec![])],
+            vec![]
         )?;
         let grad_outputs = model.get_grad_model_mut()
-            .insert_structure_model(insert_model, &vec![output_grad_id, input_id])?;
+            .insert_structure_model(insert_model, &vec![output_grad_id])?;
         model.set_or_add_grad(input_id, grad_outputs[0])?;
         Ok(vec![input_id])
     }
@@ -63,7 +53,7 @@ mod tests {
     fn forward_normal() {
         use ktensor::Tensor;
 
-        let tensor = Tensor::new(vec![1.0], vec![])
+        let tensor = Tensor::new(vec![2.0], vec![])
             .unwrap();
         let mut model = Model::make_model(
             vec![ModelVariable::new(
@@ -73,21 +63,21 @@ mod tests {
                     "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                    "op", Box::new(Sin {}),
+                    "op", Box::new(Neg {}),
                     vec!["in"], vec!["out"], vec![]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
         let output_variable = model.get_variable_from_name("out").unwrap();
         assert_eq!(output_variable.get_type(), "F64");
-        assert_eq!(output_variable.get_data(), &Tensor::new(vec![0.8414709848078965], vec![]).unwrap().into());
+        assert_eq!(output_variable.get_data(), &Tensor::new(vec![-2.0], vec![]).unwrap().into());
     }
 
     #[test]
     fn backward_normal() {
         use ktensor::Tensor;
 
-        let tensor = Tensor::new(vec![1.0], vec![])
+        let tensor = Tensor::new(vec![2.0], vec![])
             .unwrap();
         let mut model = Model::make_model(
             vec![ModelVariable::new(
@@ -97,7 +87,7 @@ mod tests {
                     "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                    "op", Box::new(Sin {}),
+                    "op", Box::new(Neg {}),
                     vec!["in"], vec!["out"], vec![]
             )], vec![]
         ).unwrap();
@@ -106,14 +96,18 @@ mod tests {
         model.backward(output_id).unwrap();
         let input_grad = model.get_grad_from_variable_name("in").unwrap();
         assert_eq!(input_grad.get_type(), "F64");
-        assert_eq!(input_grad.get_data(), &Tensor::new(vec![0.5403023058681398], vec![]).unwrap().into());
+        assert_eq!(input_grad.get_data(), &Tensor::new(vec![-1.0], vec![]).unwrap().into());
     }
 
+    /// Test backward of backward.
+    /// This test is expected to panic
+    /// because it doesn't get through to x
     #[test]
+    #[should_panic]
     fn backward_backward_normal() {
         use ktensor::Tensor;
 
-        let tensor = Tensor::new(vec![1.0], vec![])
+        let tensor = Tensor::new(vec![2.0], vec![])
             .unwrap();
         let mut model = Model::make_model(
             vec![ModelVariable::new(
@@ -123,7 +117,7 @@ mod tests {
                     "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                    "op", Box::new(Sin {}),
+                    "op", Box::new(Neg {}),
                     vec!["in"], vec!["out"], vec![]
             )], vec![]
         ).unwrap();
@@ -136,6 +130,6 @@ mod tests {
         grad_model.backward(grad_id).unwrap();
         let grad = grad_model.get_grad_variable_from_node_id(input_id).unwrap();
         assert_eq!(grad.get_type(), "F64");
-        assert_eq!(grad.get_data(), &Tensor::new(vec![-0.8414709848078965], vec![]).unwrap().into());
+        assert_eq!(grad.get_data(), &Tensor::new(vec![-1.0], vec![]).unwrap().into());
     }
 }
