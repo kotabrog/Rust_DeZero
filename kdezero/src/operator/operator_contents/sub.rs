@@ -1,12 +1,12 @@
 use anyhow::Result;
-use super::OperatorContents;
+use super::{OperatorContents, Identity, Neg};
 use crate::model::{Model, ModelVariable, ModelOperator};
 use crate::variable::VariableData;
 
 #[derive(Clone)]
-pub struct Mul {}
+pub struct Sub {}
 
-impl OperatorContents for Mul {
+impl OperatorContents for Sub {
     fn forward(
             &self, node_id: usize,
             model: &mut Model,
@@ -16,7 +16,7 @@ impl OperatorContents for Mul {
         let output = outputs[0];
         let variable_data0 = model.get_variable_data_from_node_id(inputs[0])?;
         let variable_data1 = model.get_variable_data_from_node_id(inputs[1])?;
-        let output_data = variable_data0.mul(variable_data1)?;
+        let output_data = variable_data0.sub(variable_data1)?;
         model.set_variable_data_from_node_id(output, output_data)?;
         Ok(vec![output])
     }
@@ -29,33 +29,26 @@ impl OperatorContents for Mul {
             model.check_inputs_outputs_len(node_id, 2, 1)?;
         let inputs = inputs.clone();
         let output_grad_id = model.get_grad_id_from_node_id(outputs[0])?;
-        model.clone_node_to_grad_model_if_needed(inputs[0])?;
-        model.clone_node_to_grad_model_if_needed(inputs[1])?;
         let insert_model = Model::make_model(
-            vec![
-                ModelVariable::new("in", VariableData::None),
-                ModelVariable::new("x0", VariableData::None),
-                ModelVariable::new("x1", VariableData::None),
-            ],
+            vec![ModelVariable::new("in", VariableData::None)],
             vec![
                 ModelVariable::new("out0", VariableData::None),
                 ModelVariable::new("out1", VariableData::None),
             ],
             vec![
                 ModelOperator::new(
-                    "op0", Box::new(Mul {}),
-                    vec!["in", "x1"], vec!["out0"], vec![]
+                    "op0", Box::new(Identity {}),
+                    vec!["in"], vec!["out0"], vec![]
                 ),
                 ModelOperator::new(
-                    "op1", Box::new(Mul {}),
-                    vec!["in", "x0"], vec!["out1"], vec![]
+                    "op1", Box::new(Neg {}),
+                    vec!["in"], vec!["out1"], vec![]
                 ),
             ],
             vec![]
         )?;
         let grad_outputs = model.get_grad_model_mut()
-            .insert_structure_model(insert_model, &vec![
-                output_grad_id, inputs[0], inputs[1]])?;
+            .insert_structure_model(insert_model, &vec![output_grad_id])?;
         for (grad, node_id) in grad_outputs.into_iter().zip(inputs.clone()) {
             model.set_or_add_grad(node_id, grad)?;
         }
@@ -83,7 +76,7 @@ mod tests {
             vec![ModelVariable::new("out", VariableData::None)],
             vec![
                 ModelOperator::new(
-                    "op0", Box::new(Mul {}),
+                    "op0", Box::new(Sub {}),
                     vec!["in0", "in1"], vec!["out"], vec![]
                 ),
             ],
@@ -92,7 +85,7 @@ mod tests {
         model.forward().unwrap();
         let output_variable = model.get_variable_from_name("out").unwrap();
         assert_eq!(output_variable.get_type(), "F64");
-        assert_eq!(output_variable.get_data(), &Tensor::new(vec![6.0], vec![]).unwrap().into());
+        assert_eq!(output_variable.get_data(), &Tensor::new(vec![1.0], vec![]).unwrap().into());
     }
 
     #[test]
@@ -111,7 +104,7 @@ mod tests {
             vec![ModelVariable::new("out", VariableData::None)],
             vec![
                 ModelOperator::new(
-                    "op0", Box::new(Mul {}),
+                    "op0", Box::new(Sub {}),
                     vec!["in0", "in1"], vec!["out"], vec![]
                 ),
             ],
@@ -123,8 +116,8 @@ mod tests {
         let input_grad0 = model.get_grad_from_variable_name("in0").unwrap();
         let input_grad1 = model.get_grad_from_variable_name("in1").unwrap();
         assert_eq!(input_grad0.get_type(), "F64");
-        assert_eq!(input_grad0.get_data(), &Tensor::new(vec![2.0], vec![]).unwrap().into());
+        assert_eq!(input_grad0.get_data(), &Tensor::new(vec![1.0], vec![]).unwrap().into());
         assert_eq!(input_grad1.get_type(), "F64");
-        assert_eq!(input_grad1.get_data(), &Tensor::new(vec![3.0], vec![]).unwrap().into());
+        assert_eq!(input_grad1.get_data(), &Tensor::new(vec![-1.0], vec![]).unwrap().into());
     }
 }

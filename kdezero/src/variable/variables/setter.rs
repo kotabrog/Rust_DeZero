@@ -38,6 +38,7 @@ impl Variables {
         let mut variable = self.variables.remove(&id).unwrap();
         variable.set_id(new_id);
         self.variables.insert(new_id, variable);
+        self.update_next_id(new_id);
         Ok(())
     }
 

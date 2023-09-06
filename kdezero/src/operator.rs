@@ -68,6 +68,28 @@ impl Operator {
             OperatorContentsWrapper::new(self.operator.clone_operator())
         ))
     }
+
+    pub(crate) fn check_params_len(&self, params_len: usize) -> Result<&Vec<usize>> {
+        if self.params.len() != params_len {
+            return Err(
+                KdezeroError::SizeError(
+                    "params".to_string(),
+                    params_len,
+                    self.params.len()
+                ).into()
+            );
+        }
+        Ok(&self.params)
+    }
+
+    pub(crate) fn change_variable_id(&mut self, old_id: usize, new_id: usize) -> Result<()> {
+        for param in self.params.iter_mut() {
+            if *param == old_id {
+                *param = new_id;
+            }
+        }
+        Ok(())
+    }
 }
 
 impl Clone for Operator {

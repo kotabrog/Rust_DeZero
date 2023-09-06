@@ -11,6 +11,8 @@ pub enum KdezeroError {
     SizeError(String, usize, usize),
     #[error("SizeSmallError: {0} is smaller than {1}. {2}")]
     SizeSmallError(String, usize, usize),
+    #[error("NotScalarError: {0} is not scalar. {1:?}")]
+    NotScalarError(String, Vec<usize>),
     #[error("NotImplementedTypeError: {0} is not implemented for {1}")]
     NotImplementedTypeError(String, String),
     #[error("NotCollectTypeError: {0} is not collect type. Expected {1}")]

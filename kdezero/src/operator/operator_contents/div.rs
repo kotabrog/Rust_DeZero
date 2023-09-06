@@ -1,12 +1,12 @@
 use anyhow::Result;
-use super::OperatorContents;
+use super::{OperatorContents, Neg, Mul};
 use crate::model::{Model, ModelVariable, ModelOperator};
 use crate::variable::VariableData;
 
 #[derive(Clone)]
-pub struct Mul {}
+pub struct Div {}
 
-impl OperatorContents for Mul {
+impl OperatorContents for Div {
     fn forward(
             &self, node_id: usize,
             model: &mut Model,
@@ -16,7 +16,7 @@ impl OperatorContents for Mul {
         let output = outputs[0];
         let variable_data0 = model.get_variable_data_from_node_id(inputs[0])?;
         let variable_data1 = model.get_variable_data_from_node_id(inputs[1])?;
-        let output_data = variable_data0.mul(variable_data1)?;
+        let output_data = variable_data0.div(variable_data1)?;
         model.set_variable_data_from_node_id(output, output_data)?;
         Ok(vec![output])
     }
@@ -43,12 +43,24 @@ impl OperatorContents for Mul {
             ],
             vec![
                 ModelOperator::new(
-                    "op0", Box::new(Mul {}),
+                    "op0", Box::new(Div {}),
                     vec!["in", "x1"], vec!["out0"], vec![]
                 ),
                 ModelOperator::new(
+                    "op0", Box::new(Mul {}),
+                    vec!["x1", "x1"], vec!["x1_2"], vec![]
+                ),
+                ModelOperator::new(
+                    "op0", Box::new(Div {}),
+                    vec!["x0", "x1_2"], vec!["x0_x1_2"], vec![]
+                ),
+                ModelOperator::new(
+                    "op0", Box::new(Neg {}),
+                    vec!["x0_x1_2"], vec!["minus_x0_x1_2"], vec![]
+                ),
+                ModelOperator::new(
                     "op1", Box::new(Mul {}),
-                    vec!["in", "x0"], vec!["out1"], vec![]
+                    vec!["in", "minus_x0_x1_2"], vec!["out1"], vec![]
                 ),
             ],
             vec![]
@@ -83,7 +95,7 @@ mod tests {
             vec![ModelVariable::new("out", VariableData::None)],
             vec![
                 ModelOperator::new(
-                    "op0", Box::new(Mul {}),
+                    "op0", Box::new(Div {}),
                     vec!["in0", "in1"], vec!["out"], vec![]
                 ),
             ],
@@ -92,7 +104,7 @@ mod tests {
         model.forward().unwrap();
         let output_variable = model.get_variable_from_name("out").unwrap();
         assert_eq!(output_variable.get_type(), "F64");
-        assert_eq!(output_variable.get_data(), &Tensor::new(vec![6.0], vec![]).unwrap().into());
+        assert_eq!(output_variable.get_data(), &Tensor::new(vec![1.5], vec![]).unwrap().into());
     }
 
     #[test]
@@ -111,7 +123,7 @@ mod tests {
             vec![ModelVariable::new("out", VariableData::None)],
             vec![
                 ModelOperator::new(
-                    "op0", Box::new(Mul {}),
+                    "op0", Box::new(Div {}),
                     vec!["in0", "in1"], vec!["out"], vec![]
                 ),
             ],
@@ -123,8 +135,8 @@ mod tests {
         let input_grad0 = model.get_grad_from_variable_name("in0").unwrap();
         let input_grad1 = model.get_grad_from_variable_name("in1").unwrap();
         assert_eq!(input_grad0.get_type(), "F64");
-        assert_eq!(input_grad0.get_data(), &Tensor::new(vec![2.0], vec![]).unwrap().into());
+        assert_eq!(input_grad0.get_data(), &Tensor::new(vec![0.5], vec![]).unwrap().into());
         assert_eq!(input_grad1.get_type(), "F64");
-        assert_eq!(input_grad1.get_data(), &Tensor::new(vec![3.0], vec![]).unwrap().into());
+        assert_eq!(input_grad1.get_data(), &Tensor::new(vec![-3.0 / 4.0], vec![]).unwrap().into());
     }
 }

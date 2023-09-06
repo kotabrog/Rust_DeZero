@@ -12,6 +12,8 @@ pub enum TensorError {
     IndexError(Vec<usize>, Vec<usize>),
     #[error("CastError: type: {0}")]
     CastError(String),
+    #[error("NotScalarError: shape: {0:?}")]
+    NotScalarError(Vec<usize>),
 }
 
 #[cfg(test)]
@@ -94,6 +96,22 @@ mod tests {
             Err(e) => {
                 let e = e.downcast::<TensorError>().context("downcast error")?;
                 assert_eq!(e.to_string(), "CastError: type: Vec<i32>");
+                Ok(())
+            }
+        }
+    }
+
+    fn error_not_scalar() -> Result<()> {
+        Err(TensorError::NotScalarError(vec![1, 2]).into())
+    }
+
+    #[test]
+    fn tensor_error_not_scalar() -> Result<()> {
+        match error_not_scalar() {
+            Ok(_) => panic!("error"),
+            Err(e) => {
+                let e = e.downcast::<TensorError>().context("downcast error")?;
+                assert_eq!(e.to_string(), "NotScalarError: shape: [1, 2]");
                 Ok(())
             }
         }

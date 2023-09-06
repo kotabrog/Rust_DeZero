@@ -1,7 +1,7 @@
 use std::vec;
 
 use anyhow::Result;
-use super::{OperatorContents, Mul, Sin};
+use super::{OperatorContents, Mul, Sin, Neg};
 use crate::model::{Model, ModelVariable, ModelOperator};
 use crate::variable::VariableData;
 
@@ -31,11 +31,8 @@ impl OperatorContents for Cos {
             model.check_inputs_outputs_len(node_id, 1, 1)?;
         let input_id = inputs[0];
         let output_id = outputs[0];
-        if !model.get_grad_model_result()?.is_in_node_id(input_id) {
-            model.clone_node_to_grad_model(input_id)?;
-        }
-        let input_data = model.get_variable_data_from_node_id(input_id)?;
         let output_grad_id = model.get_grad_id_from_node_id(output_id)?;
+        model.clone_node_to_grad_model_if_needed(input_id)?;
         let insert_model = Model::make_model(
             vec![
                 ModelVariable::new("in", VariableData::None),
@@ -46,19 +43,102 @@ impl OperatorContents for Cos {
                     "op", Box::new(Sin {}),
                     vec!["x"], vec!["sin"], vec![]
                 ), ModelOperator::new(
-                    "op", Box::new(Mul {}),
-                    vec!["init", "sin"], vec!["minus"], vec![]
+                    "op", Box::new(Neg {}),
+                    vec!["sin"], vec!["minus"], vec![]
                 ), ModelOperator::new(
                     "op", Box::new(Mul {}),
                     vec!["in", "minus"], vec!["out"], vec![]
                 )],
-            vec![
-                ModelVariable::new("init", VariableData::scalar(&input_data, -1.0)?),
-            ]
+            vec![]
         )?;
         let grad_outputs = model.get_grad_model_mut()
             .insert_structure_model(insert_model, &vec![output_grad_id, input_id])?;
         model.set_or_add_grad(input_id, grad_outputs[0])?;
         Ok(vec![input_id])
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn forward_normal() {
+        use ktensor::Tensor;
+
+        let tensor = Tensor::new(vec![1.0], vec![])
+            .unwrap();
+        let mut model = Model::make_model(
+            vec![ModelVariable::new(
+                    "in", tensor.into()
+            )],
+            vec![ModelVariable::new(
+                    "out", VariableData::None
+            )],
+            vec![ModelOperator::new(
+                    "op", Box::new(Cos {}),
+                    vec!["in"], vec!["out"], vec![]
+            )], vec![]
+        ).unwrap();
+        model.forward().unwrap();
+        let output_variable = model.get_variable_from_name("out").unwrap();
+        assert_eq!(output_variable.get_type(), "F64");
+        assert_eq!(output_variable.get_data(), &Tensor::new(vec![1.0f64.cos()], vec![]).unwrap().into());
+    }
+
+    #[test]
+    fn backward_normal() {
+        use ktensor::Tensor;
+
+        let tensor = Tensor::new(vec![1.0], vec![])
+            .unwrap();
+        let mut model = Model::make_model(
+            vec![ModelVariable::new(
+                    "in", tensor.into()
+            )],
+            vec![ModelVariable::new(
+                    "out", VariableData::None
+            )],
+            vec![ModelOperator::new(
+                    "op", Box::new(Cos {}),
+                    vec!["in"], vec!["out"], vec![]
+            )], vec![]
+        ).unwrap();
+        model.forward().unwrap();
+        let output_id = model.get_node_id_from_name("out").unwrap();
+        model.backward(output_id).unwrap();
+        let input_grad = model.get_grad_from_variable_name("in").unwrap();
+        assert_eq!(input_grad.get_type(), "F64");
+        assert_eq!(input_grad.get_data(), &Tensor::new(vec![-1.0f64.sin()], vec![]).unwrap().into());
+    }
+
+    #[test]
+    fn backward_backward_normal() {
+        use ktensor::Tensor;
+
+        let tensor = Tensor::new(vec![1.0], vec![])
+            .unwrap();
+        let mut model = Model::make_model(
+            vec![ModelVariable::new(
+                    "in", tensor.into()
+            )],
+            vec![ModelVariable::new(
+                    "out", VariableData::None
+            )],
+            vec![ModelOperator::new(
+                    "op", Box::new(Cos {}),
+                    vec!["in"], vec!["out"], vec![]
+            )], vec![]
+        ).unwrap();
+        model.forward().unwrap();
+        let output_id = model.get_node_id_from_name("out").unwrap();
+        model.backward(output_id).unwrap();
+        let input_id = model.get_node_id_from_name("in").unwrap();
+        let grad_id = model.get_grad_id_from_node_id(input_id).unwrap();
+        let grad_model = model.get_grad_model_mut();
+        grad_model.backward(grad_id).unwrap();
+        let grad = grad_model.get_grad_variable_from_node_id(input_id).unwrap();
+        assert_eq!(grad.get_type(), "F64");
+        assert_eq!(grad.get_data(), &Tensor::new(vec![-1.0f64.cos()], vec![]).unwrap().into());
     }
 }

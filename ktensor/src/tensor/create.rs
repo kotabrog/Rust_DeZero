@@ -125,6 +125,20 @@ where
     }
 }
 
+impl<T> Tensor<T> {
+    /// Create a scalar tensor with the specified value
+    /// 
+    /// # Arguments
+    /// 
+    /// * `value` - The value to be used for the tensor
+    pub fn scalar(value: T) -> Self {
+        Self {
+            data: vec![value],
+            shape: vec![],
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -254,5 +268,12 @@ mod tests {
         let y = Tensor::<i32>::full_like(10, &x);
         assert_eq!(y.get_data(), &vec![10, 10, 10, 10, 10, 10]);
         assert_eq!(y.get_shape(), &vec![3, 2]);
+    }
+
+    #[test]
+    fn scalar_normal() {
+        let x = Tensor::<i32>::scalar(10);
+        assert_eq!(x.get_data(), &vec![10]);
+        assert_eq!(x.get_shape(), &vec![]);
     }
 }

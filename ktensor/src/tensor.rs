@@ -8,6 +8,7 @@ mod ops;
 mod matmul;
 mod math;
 mod random;
+mod convert;
 pub mod iter;
 
 use anyhow::Result;

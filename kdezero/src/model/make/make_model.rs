@@ -81,28 +81,24 @@ impl Model {
 
         /// Initialize operator parameters.
         fn param_init(
-            model: &mut Model, param: VariableData, id_counter: &mut usize,
+            model: &mut Model, param: VariableData,
             variable_counter: &mut usize, param_ids: &mut Vec<usize>
         ) {
-            let param_name = (*id_counter).to_string();
-            model_variable_to_model_element(
-                model, ModelVariable::new(param_name.as_str(), param),
-                *id_counter, *variable_counter
-            );
-            param_ids.push(*id_counter);
-            *id_counter += 1;
+            model.add_new_variable(
+                *variable_counter, None, param).unwrap();
+            param_ids.push(*variable_counter);
             *variable_counter += 1;
         }
 
         /// Initialize operator parameters.
         fn param_inits(
             model: &mut Model, params: Vec<VariableData>,
-            id_counter: &mut usize, variable_counter: &mut usize
+            variable_counter: &mut usize
         ) -> Vec<usize> {
             let mut param_ids = vec![];
             for param in params {
                 param_init(
-                    model, param, id_counter, variable_counter, &mut param_ids)
+                    model, param, variable_counter, &mut param_ids)
             }
             param_ids
         }
@@ -200,7 +196,7 @@ impl Model {
             *id_counter += 1;
             check_name_in_nodes(&name, variable_nodes)?;
             let param_ids = param_inits(
-                model, model_operator.params, id_counter, variable_counter);
+                model, model_operator.params, variable_counter);
             let output_ids = output_inits(
                 model, model_operator.outputs, id_counter, variable_counter,
                 node_id, variable_nodes, output_range

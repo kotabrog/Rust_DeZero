@@ -34,4 +34,11 @@ impl Operators {
         self.update_next_id(new_id);
         Ok(())
     }
+
+    pub(crate) fn change_variable_id(&mut self, old_id: usize, new_id: usize) -> Result<()> {
+        for operator in self.operators.values_mut() {
+            operator.change_variable_id(old_id, new_id)?;
+        }
+        Ok(())
+    }
 }

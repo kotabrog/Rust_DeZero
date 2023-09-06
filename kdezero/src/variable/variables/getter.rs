@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::collections::HashMap;
-use super::{Variable, Variables};
+use super::{Variable, Variables, VariableData};
 
 impl Variables {
     pub fn get_variables(&self) -> &HashMap<usize, Variable> {
@@ -14,6 +14,11 @@ impl Variables {
     pub fn get_variable(&self, id: usize) -> Result<&Variable> {
         self.check_id_not_in_variables(id)?;
         Ok(self.variables.get(&id).unwrap())
+    }
+
+    pub(crate) fn get_variable_data(&self, id: usize) -> Result<&VariableData> {
+        let variable = self.get_variable(id)?;
+        Ok(variable.get_data())
     }
 
     pub fn get_grad(&self, id: usize) -> Result<Option<usize>> {

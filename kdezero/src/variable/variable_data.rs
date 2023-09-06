@@ -1,5 +1,6 @@
 mod create;
 mod operate;
+mod data_type;
 
 extern crate ktensor;
 
@@ -65,20 +66,6 @@ impl VariableData {
             VariableData::USIZE(_) => "USIZE".to_string(),
             VariableData::I32(_) => "I32".to_string(),
             VariableData::I64(_) => "I64".to_string(),
-        }
-    }
-
-    pub fn check_type(&self, other: &Self) -> Result<()> {
-        match (self, other) {
-            (VariableData::F32(_), VariableData::F32(_)) => Ok(()),
-            (VariableData::F64(_), VariableData::F64(_)) => Ok(()),
-            (VariableData::USIZE(_), VariableData::USIZE(_)) => Ok(()),
-            (VariableData::I32(_), VariableData::I32(_)) => Ok(()),
-            (VariableData::I64(_), VariableData::I64(_)) => Ok(()),
-            _ => Err(KdezeroError::NotCollectTypeError(
-                self.to_string(),
-                other.to_string(),
-            ).into()),
         }
     }
 
