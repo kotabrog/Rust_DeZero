@@ -475,3 +475,46 @@ fn step20() {
     assert_eq!(input_grad_variable.get_data(), &Tensor::new(vec![3.0], vec![]).unwrap().into());
     println!("input grad variable: {:?}", input_grad_variable);
 }
+
+#[test]
+fn step26() {
+    use std::fs::create_dir;
+    use ktensor::Tensor;
+    use kdezero::{
+        operator::operator_contents::{Add, Mul},
+        variable::VariableData,
+        model::{Model, ModelVariable, ModelOperator},
+    };
+
+    let tensor0 = Tensor::new(vec![3.0], vec![])
+        .unwrap();
+    let tensor1 = Tensor::new(vec![2.0], vec![])
+        .unwrap();
+    let tensor2 = Tensor::new(vec![1.0], vec![])
+        .unwrap();
+    let mut model = Model::make_model(
+        vec![
+            ModelVariable::new("in0", tensor0.into()),
+            ModelVariable::new("in1", tensor1.into()),
+            ModelVariable::new("in2", tensor2.into()),
+        ],
+        vec![ModelVariable::new(
+                "out", VariableData::None
+        )],
+        vec![
+            ModelOperator::new(
+                "op0", Box::new(Mul {}),
+                vec!["in0", "in1"], vec!["add0"], vec![]
+            ), ModelOperator::new(
+                "op1", Box::new(Add {}),
+                vec!["add0", "in2"], vec!["out"], vec![]
+            )
+        ], vec![]
+    ).unwrap();
+
+    match create_dir("output") {
+        Ok(_) => println!("create output directory"),
+        Err(_) => {},
+    }
+    model.plot_dot_graph("output/step26", true).unwrap();
+}
