@@ -44,16 +44,6 @@ impl OperatorContents for Pow {
             ))?;
         let input_data = model.get_variable_data_from_node_id(input)?;
         let c1 = VariableData::as_type_from_other(c.clone(), input_data)?;
-        // let c1 = match input_data {
-        //     VariableData::F32(_) => Tensor::scalar(c as f32).into(),
-        //     VariableData::F64(_) => Tensor::scalar(c as f64).into(),
-        //     VariableData::I32(_) => Tensor::scalar(c as i32).into(),
-        //     VariableData::I64(_) => Tensor::scalar(c as i64).into(),
-        //     VariableData::USIZE(_) => Tensor::scalar(c as usize).into(),
-        //     _ => return Err(KdezeroError::NotImplementedTypeError(
-        //         input_data.to_string(), "Pow".to_string()
-        //     ).into()),
-        // };
         let output_grad_id = model.get_grad_id_from_node_id(output)?;
         model.clone_node_to_grad_model_if_needed(input)?;
         let insert_model = Model::make_model(

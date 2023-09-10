@@ -492,7 +492,7 @@ fn step26() {
         .unwrap();
     let tensor2 = Tensor::new(vec![1.0], vec![])
         .unwrap();
-    let mut model = Model::make_model(
+    let model = Model::make_model(
         vec![
             ModelVariable::new("in0", tensor0.into()),
             ModelVariable::new("in1", tensor1.into()),
@@ -517,4 +517,117 @@ fn step26() {
         Err(_) => {},
     }
     model.plot_dot_graph("output/step26", true).unwrap();
+}
+
+#[test]
+fn step27() {
+    use ktensor::Tensor;
+    use kdezero::{
+        operator::operator_contents::Sin,
+        variable::VariableData,
+        model::{Model, ModelVariable, ModelOperator},
+    };
+
+    let tensor0 = Tensor::new(vec![
+        std::f64::consts::FRAC_PI_4,
+    ], vec![]).unwrap();
+
+    let mut model = Model::make_model(
+        vec![ModelVariable::new(
+                "in", tensor0.into()
+        )],
+        vec![ModelVariable::new(
+                "out", VariableData::None
+        )],
+        vec![
+            ModelOperator::new(
+                "op0", Box::new(Sin {}),
+                vec!["in"], vec!["out"], vec![]
+            )
+        ], vec![]
+    ).unwrap();
+
+    model.forward().unwrap();
+    let output_id = model.get_node_id_from_name("out").unwrap();
+    model.backward(output_id).unwrap();
+
+    let output_variable = model.get_variable_from_name("out").unwrap();
+    assert_eq!(output_variable.get_type(), "F64");
+    assert_eq!(output_variable.get_data(), &Tensor::new(vec![
+        std::f64::consts::FRAC_PI_4.sin(),
+    ], vec![]).unwrap().into());
+    println!("output variable: {:?}", output_variable);
+
+    let input_grad_variable = model.get_grad_from_variable_name("in").unwrap();
+    assert_eq!(input_grad_variable.get_type(), "F64");
+    assert_eq!(input_grad_variable.get_data(), &Tensor::new(vec![
+        std::f64::consts::FRAC_PI_4.cos(),
+    ], vec![]).unwrap().into());
+    println!("input grad variable: {:?}", input_grad_variable);
+}
+
+#[test]
+fn step33() {
+    use ktensor::Tensor;
+    use kdezero::{
+        operator::operator_contents::{Sub, Pow, ScalarMul},
+        variable::VariableData,
+        model::{Model, ModelVariable, ModelOperator},
+        test_utility::assert_approx_eq_tensor,
+    };
+
+    fn f(x: Tensor<f64>) -> Model {
+        Model::make_model(
+            vec![ModelVariable::new(
+                    "x", x.into()
+            )],
+            vec![ModelVariable::new(
+                    "y", VariableData::None
+            )],
+            vec![
+                ModelOperator::new(
+                    "op0", Box::new(Pow {}),
+                    vec!["x"], vec!["x4"],
+                    vec![Tensor::scalar(4usize).into()]
+                ), ModelOperator::new(
+                    "op1", Box::new(Pow {}),
+                    vec!["x"], vec!["x2"],
+                    vec![Tensor::scalar(2usize).into()]
+                ), ModelOperator::new(
+                    "op2", Box::new(ScalarMul {}),
+                    vec!["x2"], vec!["x2_2"],
+                    vec![Tensor::scalar(2.0).into()]
+                ), ModelOperator::new(
+                    "op3", Box::new(Sub {}),
+                    vec!["x4", "x2_2"], vec!["y"], vec![]
+                )
+            ], vec![]
+        ).unwrap()
+    }
+
+    let mut x = Tensor::scalar(2.0);
+    let iters = 10;
+    for i in 0..iters {
+        println!("iter: {}, x: {:?}", i, x);
+
+        let mut model = f(x.clone());
+        model.forward().unwrap();
+        let output_id = model.get_node_id_from_name("y").unwrap();
+        model.backward(output_id).unwrap();
+
+        let input_id = model.get_node_id_from_name("x").unwrap();
+        let grad_id = model.get_grad_id_from_node_id(input_id).unwrap();
+        let grad_model = model.get_grad_model_mut();
+        grad_model.backward(grad_id).unwrap();
+
+        let grad_model = model.get_grad_model().unwrap();
+        let input_grad = model.get_grad_from_variable_name("x").unwrap()
+            .get_data().to_f64_tensor().unwrap();
+        let input_grad_grad = grad_model.get_grad_from_variable_name("x").unwrap()
+            .get_data().to_f64_tensor().unwrap();
+        x = x - input_grad / input_grad_grad;
+    }
+
+    assert_approx_eq_tensor(
+        &x, &Tensor::new(vec![1.0], vec![]).unwrap(), 1e-4);
 }

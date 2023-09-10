@@ -34,7 +34,7 @@ impl Model {
     //     &mut self.variables
     // }
 
-    pub(crate) fn get_grad_model_mut(&mut self) -> &mut Box<Model> {
+    pub fn get_grad_model_mut(&mut self) -> &mut Box<Model> {
         self.init_grad_model();
         self.grad_model.as_mut().unwrap()
     }
@@ -129,7 +129,7 @@ impl Model {
         self.variables.get_grad(variable_id)
     }
 
-    pub(crate) fn get_grad_id_from_node_id(&self, node_id: usize) -> Result<usize> {
+    pub fn get_grad_id_from_node_id(&self, node_id: usize) -> Result<usize> {
         let variable_id = self.get_variable_id_from_node_id(node_id)?;
         self.variables.get_grad_id(variable_id)
     }

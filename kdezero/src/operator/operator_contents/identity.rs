@@ -60,8 +60,9 @@ impl OperatorContents for Identity {
                 )], vec![]
             )?
         };
-        let new_inputs = model.insert_structure_model(insert_model, &output_grad_ids)?;
-        model.set_or_add_grad(input, new_inputs[0])?;
+        let grad_outputs = model.get_grad_model_mut()
+            .insert_structure_model(insert_model, &output_grad_ids)?;
+        model.set_or_add_grad(input, grad_outputs[0])?;
         Ok(vec![input])
     }
 }
