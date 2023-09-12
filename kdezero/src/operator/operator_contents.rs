@@ -10,6 +10,8 @@ pub mod sub;
 pub mod div;
 pub mod pow;
 pub mod scalar_mul;
+pub mod scalar_add;
+pub mod tanh;
 
 pub use square::Square;
 pub use add::Add;
@@ -23,6 +25,8 @@ pub use sub::Sub;
 pub use div::Div;
 pub use pow::Pow;
 pub use scalar_mul::ScalarMul;
+pub use scalar_add::ScalarAdd;
+pub use tanh::Tanh;
 
 use anyhow::Result;
 use crate::model::Model;

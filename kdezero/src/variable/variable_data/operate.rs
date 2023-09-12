@@ -96,6 +96,25 @@ impl VariableData {
         }
     }
 
+    pub fn scalar_add(&self, value: f64) -> Result<Self> {
+        match self {
+            VariableData::F32(tensor) =>
+                Ok(VariableData::F32(Box::new(&**tensor + (value as f32)))),
+            VariableData::F64(tensor) =>
+                Ok(VariableData::F64(Box::new(&**tensor + value))),
+            VariableData::USIZE(tensor) =>
+                Ok(VariableData::USIZE(Box::new(&**tensor + (value as usize)))),
+            VariableData::I32(tensor) =>
+                Ok(VariableData::I32(Box::new(&**tensor + (value as i32)))),
+            VariableData::I64(tensor) =>
+                Ok(VariableData::I64(Box::new(&**tensor + (value as i64)))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "scalar_add".to_string(),
+                self.to_string()
+            ).into()),
+        }
+    }
+
     pub fn scalar_mul(&self, value: f64) -> Result<Self> {
         match self {
             VariableData::F32(tensor) =>
@@ -178,6 +197,19 @@ impl VariableData {
                 Ok(VariableData::F64(Box::new(tensor.cos()))),
             _ => Err(KdezeroError::NotImplementedTypeError(
                 "cos".to_string(),
+                self.to_string()
+            ).into()),
+        }
+    }
+
+    pub fn tanh(&self) -> Result<Self> {
+        match self {
+            VariableData::F32(tensor) =>
+                Ok(VariableData::F32(Box::new(tensor.tanh()))),
+            VariableData::F64(tensor) =>
+                Ok(VariableData::F64(Box::new(tensor.tanh()))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "tanh".to_string(),
                 self.to_string()
             ).into()),
         }
