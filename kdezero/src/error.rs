@@ -29,6 +29,8 @@ pub enum KdezeroError {
     DuplicateError(String, String),
     #[error("OverflowError: {0} is overflow")]
     OverflowError(String),
+    #[error("PrameterError: {0} is not a suitable parameter for {1}. Expect {2}")]
+    ParameterError(String, String, String),
 }
 
 #[cfg(test)]

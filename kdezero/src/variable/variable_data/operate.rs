@@ -214,4 +214,42 @@ impl VariableData {
             ).into()),
         }
     }
+
+    pub fn reshape(&self, shape: &[usize]) -> Result<Self> {
+        match self {
+            VariableData::F32(tensor) =>
+                Ok(VariableData::F32(Box::new(tensor.reshape(shape)?))),
+            VariableData::F64(tensor) =>
+                Ok(VariableData::F64(Box::new(tensor.reshape(shape)?))),
+            VariableData::USIZE(tensor) =>
+                Ok(VariableData::USIZE(Box::new(tensor.reshape(shape)?))),
+            VariableData::I32(tensor) =>
+                Ok(VariableData::I32(Box::new(tensor.reshape(shape)?))),
+            VariableData::I64(tensor) =>
+                Ok(VariableData::I64(Box::new(tensor.reshape(shape)?))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "reshape".to_string(),
+                self.to_string()
+            ).into()),
+        }
+    }
+
+    pub fn transpose(&self) -> Result<Self> {
+        match self {
+            VariableData::F32(tensor) =>
+                Ok(VariableData::F32(Box::new(tensor.transpose()))),
+            VariableData::F64(tensor) =>
+                Ok(VariableData::F64(Box::new(tensor.transpose()))),
+            VariableData::USIZE(tensor) =>
+                Ok(VariableData::USIZE(Box::new(tensor.transpose()))),
+            VariableData::I32(tensor) =>
+                Ok(VariableData::I32(Box::new(tensor.transpose()))),
+            VariableData::I64(tensor) =>
+                Ok(VariableData::I64(Box::new(tensor.transpose()))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "transpose".to_string(),
+                self.to_string()
+            ).into()),
+        }
+    }
 }

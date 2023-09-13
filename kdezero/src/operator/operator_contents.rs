@@ -12,6 +12,8 @@ pub mod pow;
 pub mod scalar_mul;
 pub mod scalar_add;
 pub mod tanh;
+pub mod reshape;
+pub mod transpose;
 
 pub use square::Square;
 pub use add::Add;
@@ -27,6 +29,7 @@ pub use pow::Pow;
 pub use scalar_mul::ScalarMul;
 pub use scalar_add::ScalarAdd;
 pub use tanh::Tanh;
+pub use reshape::Reshape;
 
 use anyhow::Result;
 use crate::model::Model;
