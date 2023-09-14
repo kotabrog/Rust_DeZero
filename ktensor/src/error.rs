@@ -14,6 +14,8 @@ pub enum TensorError {
     CastError(String),
     #[error("NotScalarError: shape: {0:?}")]
     NotScalarError(Vec<usize>),
+    #[error("NotVectorError: shape: {0:?}")]
+    NotVectorError(Vec<usize>),
 }
 
 #[cfg(test)]

@@ -215,6 +215,44 @@ impl VariableData {
         }
     }
 
+    pub fn sum<U: AsRef<[usize]>>(&self, axis: Option<U>, keepdims: bool) -> Result<Self> {
+        match self {
+            VariableData::F32(tensor) =>
+                Ok(VariableData::F32(Box::new(tensor.sum(axis, keepdims)))),
+            VariableData::F64(tensor) =>
+                Ok(VariableData::F64(Box::new(tensor.sum(axis, keepdims)))),
+            VariableData::USIZE(tensor) =>
+                Ok(VariableData::USIZE(Box::new(tensor.sum(axis, keepdims)))),
+            VariableData::I32(tensor) =>
+                Ok(VariableData::I32(Box::new(tensor.sum(axis, keepdims)))),
+            VariableData::I64(tensor) =>
+                Ok(VariableData::I64(Box::new(tensor.sum(axis, keepdims)))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "sum".to_string(),
+                self.to_string()
+            ).into()),
+        }
+    }
+
+    pub fn sum_to<U: AsRef<[usize]>>(&self, shape: U) -> Result<Self> {
+        match self {
+            VariableData::F32(tensor) =>
+                Ok(VariableData::F32(Box::new(tensor.sum_to(shape)?))),
+            VariableData::F64(tensor) =>
+                Ok(VariableData::F64(Box::new(tensor.sum_to(shape)?))),
+            VariableData::USIZE(tensor) =>
+                Ok(VariableData::USIZE(Box::new(tensor.sum_to(shape)?))),
+            VariableData::I32(tensor) =>
+                Ok(VariableData::I32(Box::new(tensor.sum_to(shape)?))),
+            VariableData::I64(tensor) =>
+                Ok(VariableData::I64(Box::new(tensor.sum_to(shape)?))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "sum_to".to_string(),
+                self.to_string()
+            ).into()),
+        }
+    }
+
     pub fn reshape(&self, shape: &[usize]) -> Result<Self> {
         match self {
             VariableData::F32(tensor) =>
@@ -227,6 +265,8 @@ impl VariableData {
                 Ok(VariableData::I32(Box::new(tensor.reshape(shape)?))),
             VariableData::I64(tensor) =>
                 Ok(VariableData::I64(Box::new(tensor.reshape(shape)?))),
+            VariableData::Bool(tensor) =>
+                Ok(VariableData::Bool(Box::new(tensor.reshape(shape)?))),
             _ => Err(KdezeroError::NotImplementedTypeError(
                 "reshape".to_string(),
                 self.to_string()
@@ -246,8 +286,31 @@ impl VariableData {
                 Ok(VariableData::I32(Box::new(tensor.transpose()))),
             VariableData::I64(tensor) =>
                 Ok(VariableData::I64(Box::new(tensor.transpose()))),
+            VariableData::Bool(tensor) =>
+                Ok(VariableData::Bool(Box::new(tensor.transpose()))),
             _ => Err(KdezeroError::NotImplementedTypeError(
                 "transpose".to_string(),
+                self.to_string()
+            ).into()),
+        }
+    }
+
+    pub fn broadcast_to<U: Into<Vec<usize>>>(&self, shape: U) -> Result<Self> {
+        match self {
+            VariableData::F32(tensor) =>
+                Ok(VariableData::F32(Box::new(tensor.broadcast_to(shape)?))),
+            VariableData::F64(tensor) =>
+                Ok(VariableData::F64(Box::new(tensor.broadcast_to(shape)?))),
+            VariableData::USIZE(tensor) =>
+                Ok(VariableData::USIZE(Box::new(tensor.broadcast_to(shape)?))),
+            VariableData::I32(tensor) =>
+                Ok(VariableData::I32(Box::new(tensor.broadcast_to(shape)?))),
+            VariableData::I64(tensor) =>
+                Ok(VariableData::I64(Box::new(tensor.broadcast_to(shape)?))),
+            VariableData::Bool(tensor) =>
+                Ok(VariableData::Bool(Box::new(tensor.broadcast_to(shape)?))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "broadcast_to".to_string(),
                 self.to_string()
             ).into()),
         }

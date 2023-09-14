@@ -16,6 +16,7 @@ pub enum VariableData {
     USIZE(Box<Tensor<usize>>),
     I32(Box<Tensor<i32>>),
     I64(Box<Tensor<i64>>),
+    Bool(Box<Tensor<bool>>),
 }
 
 impl VariableData {
@@ -29,6 +30,7 @@ impl VariableData {
             VariableData::USIZE(tensor) => Ok(tensor.get_shape()),
             VariableData::I32(tensor) => Ok(tensor.get_shape()),
             VariableData::I64(tensor) => Ok(tensor.get_shape()),
+            VariableData::Bool(tensor) => Ok(tensor.get_shape()),
         }
     }
 
@@ -42,6 +44,7 @@ impl VariableData {
             VariableData::USIZE(tensor) => Ok(tensor.ndim()),
             VariableData::I32(tensor) => Ok(tensor.ndim()),
             VariableData::I64(tensor) => Ok(tensor.ndim()),
+            VariableData::Bool(tensor) => Ok(tensor.ndim()),
         }
     }
 
@@ -55,6 +58,7 @@ impl VariableData {
             VariableData::USIZE(tensor) => Ok(tensor.size()),
             VariableData::I32(tensor) => Ok(tensor.size()),
             VariableData::I64(tensor) => Ok(tensor.size()),
+            VariableData::Bool(tensor) => Ok(tensor.size()),
         }
     }
 
@@ -66,6 +70,7 @@ impl VariableData {
             VariableData::USIZE(_) => "USIZE".to_string(),
             VariableData::I32(_) => "I32".to_string(),
             VariableData::I64(_) => "I64".to_string(),
+            VariableData::Bool(_) => "Bool".to_string(),
         }
     }
 
@@ -104,5 +109,11 @@ impl From<Tensor<i32>> for VariableData {
 impl From<Tensor<i64>> for VariableData {
     fn from(tensor: Tensor<i64>) -> Self {
         Self::I64(Box::new(tensor))
+    }
+}
+
+impl From<Tensor<bool>> for VariableData {
+    fn from(tensor: Tensor<bool>) -> Self {
+        Self::Bool(Box::new(tensor))
     }
 }

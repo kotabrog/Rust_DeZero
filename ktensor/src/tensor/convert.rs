@@ -27,6 +27,27 @@ where
             )
         }
     }
+
+    /// Convert to vector when vector
+    /// 
+    /// # Returns
+    /// 
+    /// * `Result<Vec<T>>` - Result of the conversion
+    /// 
+    /// # Note
+    /// 
+    /// If the tensor is not vector, `TensorError::NotVectorError` is returned
+    pub fn to_vector(&self) -> Result<Vec<T>> {
+        if self.is_vector() {
+            Ok(self.data.clone())
+        } else {
+            Err(
+                TensorError::NotVectorError(
+                    self.shape.clone()
+                ).into()
+            )
+        }
+    }
 }
 
 impl<T> Tensor<T>
@@ -66,6 +87,24 @@ mod tests {
             Err(e) => {
                 let e = e.downcast::<TensorError>().unwrap();
                 assert_eq!(e, TensorError::NotScalarError(vec![2]))
+            }
+        }
+    }
+
+    #[test]
+    fn to_vector_normal() {
+        let tensor = Tensor::new(vec![1, 2], vec![2]).unwrap();
+        assert_eq!(tensor.to_vector().unwrap(), vec![1, 2]);
+    }
+
+    #[test]
+    fn to_vector_error() {
+        let tensor = Tensor::new(vec![1], vec![]).unwrap();
+        match tensor.to_vector() {
+            Ok(_) => panic!("Should be error"),
+            Err(e) => {
+                let e = e.downcast::<TensorError>().unwrap();
+                assert_eq!(e, TensorError::NotVectorError(vec![]))
             }
         }
     }

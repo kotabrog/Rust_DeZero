@@ -54,6 +54,8 @@ impl VariableData {
                 Ok(VariableData::I32(Box::new(Tensor::new(vec![scalar as i32], vec![])?))),
             VariableData::I64(_) =>
                 Ok(VariableData::I64(Box::new(Tensor::new(vec![scalar as i64], vec![])?))),
+            VariableData::Bool(_) =>
+                Ok(VariableData::Bool(Box::new(Tensor::new(vec![scalar != 0.0], vec![])?))),
             _ => Err(KdezeroError::NotImplementedTypeError(
                 "scalar".to_string(),
                 variable_data.to_string()

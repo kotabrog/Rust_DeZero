@@ -21,6 +21,11 @@ impl<T> Tensor<T>
     pub fn is_scalar(&self) -> bool {
         self.ndim() == 0
     }
+
+    /// Check if the tensor is a vector
+    pub fn is_vector(&self) -> bool {
+        self.ndim() == 1
+    }
 }
 
 #[cfg(test)]
@@ -69,5 +74,15 @@ mod tests {
         assert!(x.is_scalar());
         let x = Tensor::new([0.0, 1.0, 2.0], [3,]).unwrap();
         assert!(!x.is_scalar());
+    }
+
+    #[test]
+    fn is_vector_normal() {
+        let x = Tensor::new([0.0], []).unwrap();
+        assert!(!x.is_vector());
+        let x = Tensor::new([0.0, 1.0, 2.0], [3,]).unwrap();
+        assert!(x.is_vector());
+        let x = Tensor::new([0.0, 1.0, 2.0], [3, 1]).unwrap();
+        assert!(!x.is_vector());
     }
 }

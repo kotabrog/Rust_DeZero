@@ -12,6 +12,7 @@ impl VariableData {
             (VariableData::USIZE(_), VariableData::USIZE(_)) => Ok(()),
             (VariableData::I32(_), VariableData::I32(_)) => Ok(()),
             (VariableData::I64(_), VariableData::I64(_)) => Ok(()),
+            (VariableData::Bool(_), VariableData::Bool(_)) => Ok(()),
             _ => Err(KdezeroError::NotCollectTypeError(
                 self.to_string(),
                 other.to_string(),
@@ -78,6 +79,16 @@ impl VariableData {
             _ => Err(KdezeroError::NotCollectTypeError(
                 self.to_string(),
                 "I64".to_string(),
+            ).into()),
+        }
+    }
+
+    pub fn to_bool_tensor(&self) -> Result<&Tensor<bool>> {
+        match self {
+            VariableData::Bool(tensor) => Ok(tensor),
+            _ => Err(KdezeroError::NotCollectTypeError(
+                self.to_string(),
+                "Bool".to_string(),
             ).into()),
         }
     }
