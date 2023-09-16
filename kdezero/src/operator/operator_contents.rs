@@ -17,6 +17,7 @@ pub mod transpose;
 pub mod sum;
 pub mod broadcast_to;
 pub mod sum_to;
+pub mod matmul;
 
 pub use square::Square;
 pub use add::Add;
@@ -37,6 +38,7 @@ pub use transpose::Transpose;
 pub use sum::Sum;
 pub use broadcast_to::BroadcastTo;
 pub use sum_to::SumTo;
+pub use matmul::MatMul;
 
 use anyhow::Result;
 use crate::model::Model;

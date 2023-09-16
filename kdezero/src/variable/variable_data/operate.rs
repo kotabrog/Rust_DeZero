@@ -253,6 +253,25 @@ impl VariableData {
         }
     }
 
+    pub fn matmul(&self, other: &Self) -> Result<Self> {
+        match (self, other) {
+            (VariableData::F32(tensor1), VariableData::F32(tensor2)) =>
+                Ok(VariableData::F32(Box::new(tensor1.matmul(tensor2)?))),
+            (VariableData::F64(tensor1), VariableData::F64(tensor2)) =>
+                Ok(VariableData::F64(Box::new(tensor1.matmul(tensor2)?))),
+            (VariableData::USIZE(tensor1), VariableData::USIZE(tensor2)) =>
+                Ok(VariableData::USIZE(Box::new(tensor1.matmul(tensor2)?))),
+            (VariableData::I32(tensor1), VariableData::I32(tensor2)) =>
+                Ok(VariableData::I32(Box::new(tensor1.matmul(tensor2)?))),
+            (VariableData::I64(tensor1), VariableData::I64(tensor2)) =>
+                Ok(VariableData::I64(Box::new(tensor1.matmul(tensor2)?))),
+            _ => Err(KdezeroError::NotImplementedTypeError(
+                "matmul".to_string(),
+                format!("{} and {}", self.to_string(), other.to_string())
+            ).into()),
+        }
+    }
+
     pub fn reshape(&self, shape: &[usize]) -> Result<Self> {
         match self {
             VariableData::F32(tensor) =>
