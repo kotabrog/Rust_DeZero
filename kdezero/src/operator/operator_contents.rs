@@ -107,3 +107,9 @@ impl Clone for OperatorContentsWrapper {
         }
     }
 }
+
+impl From<Box<dyn OperatorContents>> for OperatorContentsWrapper {
+    fn from(operator: Box<dyn OperatorContents>) -> Self {
+        Self::new(operator)
+    }
+}

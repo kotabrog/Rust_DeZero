@@ -11,7 +11,7 @@ pub struct Operator {
     id: usize,
     node: Option<usize>,
     params: Vec<usize>,
-    operator: Box<dyn OperatorContents>,
+    operator: Option<OperatorContentsWrapper>,
 }
 
 impl Operator {
@@ -20,7 +20,7 @@ impl Operator {
             id,
             node,
             params,
-            operator,
+            operator: Some(operator.into()),
         }
     }
 
@@ -36,7 +36,7 @@ impl Operator {
         &self.params
     }
 
-    pub fn get_operator(&self) -> &Box<dyn OperatorContents> {
+    pub fn get_operator(&self) -> &Option<OperatorContentsWrapper> {
         &self.operator
     }
 
@@ -55,18 +55,23 @@ impl Operator {
         self.node = node;
     }
 
-    pub fn get_forward_set(&self) -> Result<(usize, OperatorContentsWrapper)> {
-        Ok((
-            self.get_node_id()?,
-            OperatorContentsWrapper::new(self.operator.clone_operator())
-        ))
+    pub(crate) fn set_operator(&mut self, operator: OperatorContentsWrapper) {
+        self.operator = Some(operator);
     }
 
-    pub fn get_backward_set(&self) -> Result<(usize, OperatorContentsWrapper)> {
-        Ok((
-            self.get_node_id()?,
-            OperatorContentsWrapper::new(self.operator.clone_operator())
-        ))
+    // pub(crate) fn take_operator(&mut self) -> Option<OperatorContentsWrapper> {
+    //     self.operator.take()
+    // }
+
+    pub(crate) fn take_operator_result(&mut self) -> Result<OperatorContentsWrapper> {
+        match self.operator.take() {
+            Some(operator) => Ok(operator),
+            None => Err(
+                KdezeroError::OperatorError(
+                    "operator contents is not set".to_string()
+                ).into()
+            )
+        }
     }
 
     pub(crate) fn check_params_len(&self, params_len: usize) -> Result<&Vec<usize>> {
@@ -98,7 +103,7 @@ impl Clone for Operator {
             id: self.id,
             node: self.node,
             params: self.params.clone(),
-            operator: self.operator.clone_operator(),
+            operator: self.operator.clone(),
         }
     }
 }

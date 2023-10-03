@@ -12,13 +12,18 @@ impl Model {
         }
         for id in self.sorted_forward_nodes.clone().iter() {
             let node = self.graph.get_node(*id)?;
-            match node.get_data() {
+            let operator_contents = match node.get_data() {
                 NodeData::Operator(operator_id) => {
-                    let operator = self.operators.get_operator(*operator_id)?;
-                    let (node_id, operator) = operator.get_backward_set()?;
-                    operator.forward(node_id, self)?;
+                    let operator = self.operators.get_operator_mut(*operator_id)?;
+                    Some((*operator_id, operator.take_operator_result()?))
                 },
-                _ => (),
+                _ => None,
+            };
+            if let Some(temp) = operator_contents {
+                let (operator_id, operator_contents) = temp;
+                operator_contents.forward(*id, self)?;
+                let operator = self.operators.get_operator_mut(operator_id)?;
+                operator.set_operator(operator_contents);
             }
         }
         Ok(())
@@ -36,13 +41,18 @@ impl Model {
         self.set_zeros_grad(&remain_outputs)?;
         for id in self.sorted_backward_nodes.clone().iter() {
             let node = self.graph.get_node(*id)?;
-            match node.get_data() {
+            let operator_contents = match node.get_data() {
                 NodeData::Operator(operator_id) => {
-                    let operator = self.operators.get_operator(*operator_id)?;
-                    let (node_id, operator) = operator.get_backward_set()?;
-                    operator.backward(node_id, self)?;
+                    let operator = self.operators.get_operator_mut(*operator_id)?;
+                    Some((*operator_id, operator.take_operator_result()?))
                 },
-                _ => (),
+                _ => None,
+            };
+            if let Some(temp) = operator_contents {
+                let (operator_id, operator_contents) = temp;
+                operator_contents.backward(*id, self)?;
+                let operator = self.operators.get_operator_mut(operator_id)?;
+                operator.set_operator(operator_contents);
             }
         }
 
@@ -118,7 +128,7 @@ impl Model {
                 self.grad_model.as_mut().unwrap().operators
                     .add_operator_no_check(operator);
             },
-            NodeData::None => (),
+            _ => (),
         }
         let mut node = node.clone();
         node.set_inputs(vec![]);

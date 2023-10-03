@@ -6,6 +6,7 @@ pub enum NodeData {
     None,
     Variable(usize),
     Operator(usize),
+    Layer(usize),
 }
 
 impl NodeData {
@@ -14,6 +15,7 @@ impl NodeData {
             NodeData::None => "None".to_string(),
             NodeData::Variable(_) => "Variable".to_string(),
             NodeData::Operator(_) => "Operator".to_string(),
+            NodeData::Layer(_) => "Layer".to_string(),
         }
     }
 
