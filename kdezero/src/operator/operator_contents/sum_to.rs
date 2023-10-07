@@ -1,5 +1,4 @@
 use anyhow::Result;
-use ktensor::Tensor;
 use super::{OperatorContents, BroadcastTo};
 use crate::model::{Model, ModelVariable, ModelOperator};
 use crate::variable::VariableData;
@@ -36,15 +35,15 @@ impl OperatorContents for SumTo {
         let output = outputs[0];
         let input_shape = model.get_variable_data_from_node_id(input)?
             .get_shape()?;
-        let input_shape = Tensor::new(input_shape.clone(), vec![input_shape.len()])?;
         let output_grad_id = model.get_grad_id_from_node_id(output)?;
         let insert_model = Model::make_model(
             vec![ModelVariable::new("in", VariableData::None)],
             vec![ModelVariable::new("out", VariableData::None)],
             vec![ModelOperator::new(
-                "op", Box::new(BroadcastTo {}),
-                vec!["in"], vec!["out"],
-                vec![input_shape.into()]
+                "op", Box::new(BroadcastTo {
+                    shape: input_shape.clone()
+                }),
+                vec!["in"], vec!["out"], vec![]
             )],
             vec![]
         )?;

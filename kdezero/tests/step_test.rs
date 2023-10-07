@@ -663,9 +663,10 @@ fn step42() {
                     "op0", Box::new(MatMul {}),
                     vec!["x", "w"], vec!["xw"], vec![]
                 ), ModelOperator::new(
-                    "op1", Box::new(BroadcastTo {}),
-                    vec!["b"], vec!["b_cast"],
-                    vec![Tensor::new(xw_shape, vec![2]).unwrap().into()]
+                    "op1", Box::new(BroadcastTo {
+                        shape: xw_shape.clone(),
+                    }),
+                    vec!["b"], vec!["b_cast"], vec![]
                 ), ModelOperator::new(
                     "op2", Box::new(Add {}),
                     vec!["xw", "b_cast"], vec!["y_pred"], vec![]

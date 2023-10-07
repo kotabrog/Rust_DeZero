@@ -55,9 +55,10 @@ impl OperatorContents for MeanSquaredError {
                     vec!["x0", "x1"], vec!["diff"], vec![]
                 ),
                 ModelOperator::new(
-                    "op1", Box::new(BroadcastTo {}),
-                    vec!["in"], vec!["gy"],
-                    vec![Tensor::new(shape.clone(), vec![shape.len()])?.into()]
+                    "op1", Box::new(BroadcastTo {
+                        shape: shape.clone()
+                    }),
+                    vec!["in"], vec!["gy"], vec![]
                 ),
                 ModelOperator::new(
                     "op2", Box::new(Mul {}),

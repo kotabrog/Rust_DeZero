@@ -76,17 +76,21 @@ impl OperatorContents for Sum {
             );
             operators.push(
                 ModelOperator::new(
-                    "op1", Box::new(BroadcastTo {}),
+                    "op1", Box::new(BroadcastTo {
+                        shape: input_shape.clone()
+                    }),
                     vec!["reshape"], vec!["out"],
-                    vec![Tensor::new(input_shape.clone(), vec![input_shape.len()])?.into()]
+                    vec![]
                 )
             );
         } else {
             operators.push(
                 ModelOperator::new(
-                    "op", Box::new(BroadcastTo {}),
+                    "op", Box::new(BroadcastTo {
+                        shape: input_shape.clone()
+                    }),
                     vec!["in"], vec!["out"],
-                    vec![Tensor::new(input_shape.clone(), vec![input_shape.len()])?.into()]
+                    vec![]
                 )
             );
         }
