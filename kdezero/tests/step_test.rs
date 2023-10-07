@@ -586,13 +586,15 @@ fn step33() {
             )],
             vec![
                 ModelOperator::new(
-                    "op0", Box::new(Pow {}),
-                    vec!["x"], vec!["x4"],
-                    vec![Tensor::scalar(4usize).into()]
+                    "op0", Box::new(Pow {
+                        c: 4,
+                    }),
+                    vec!["x"], vec!["x4"], vec![]
                 ), ModelOperator::new(
-                    "op1", Box::new(Pow {}),
-                    vec!["x"], vec!["x2"],
-                    vec![Tensor::scalar(2usize).into()]
+                    "op1", Box::new(Pow {
+                        c: 2,
+                    }),
+                    vec!["x"], vec!["x2"], vec![]
                 ), ModelOperator::new(
                     "op2", Box::new(ScalarMul {}),
                     vec!["x2"], vec!["x2_2"],

@@ -6,7 +6,9 @@ use crate::model::{Model, ModelVariable, ModelOperator};
 use crate::error::KdezeroError;
 
 #[derive(Clone)]
-pub struct Pow {}
+pub struct Pow {
+    pub c: u32,
+}
 
 impl OperatorContents for Pow {
     fn forward(
@@ -15,14 +17,10 @@ impl OperatorContents for Pow {
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =
             model.check_inputs_outputs_len(node_id, 1, 1)?;
-        let params = model.check_params_len(node_id, 1)?;
         let input = inputs[0];
         let output = outputs[0];
-        let c = model.get_variable_data_from_variable_id(params[0])?
-            .to_usize_tensor()?
-            .to_scalar()?;
         let input_data = model.get_variable_data_from_node_id(input)?;
-        let output_data = input_data.pow(c as u32)?;
+        let output_data = input_data.pow(self.c)?;
         model.set_variable_data_from_node_id(output, output_data)?;
         Ok(vec![output])
     }
@@ -33,17 +31,15 @@ impl OperatorContents for Pow {
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =
             model.check_inputs_outputs_len(node_id, 1, 1)?;
-            let params = model.check_params_len(node_id, 1)?;
         let input = inputs[0];
         let output = outputs[0];
-        let c = model.get_variable_data_from_variable_id(params[0])?
-            .to_usize_tensor()?;
-        let c0 = c.to_scalar()?.checked_sub(1)
+        let c0 = self.c.checked_sub(1)
             .ok_or_else(|| KdezeroError::OverflowError(
                 "Pow c".to_string()
             ))?;
         let input_data = model.get_variable_data_from_node_id(input)?;
-        let c1 = VariableData::as_type_from_other(c.clone(), input_data)?;
+        let c1 = VariableData::as_type_from_other(
+            Tensor::scalar(self.c), input_data)?;
         let output_grad_id = model.get_grad_id_from_node_id(output)?;
         model.clone_node_to_grad_model_if_needed(input)?;
         let insert_model = Model::make_model(
@@ -54,9 +50,10 @@ impl OperatorContents for Pow {
             vec![ModelVariable::new("out", VariableData::None)],
             vec![
                 ModelOperator::new(
-                    "op0", Box::new(Pow {}),
-                    vec!["x"], vec!["pow"],
-                    vec![Tensor::scalar(c0).into()]
+                    "op0", Box::new(Pow {
+                        c: c0 as u32,
+                    }),
+                    vec!["x"], vec!["pow"], vec![]
                 ), ModelOperator::new(
                     "op1", Box::new(ScalarMul {}),
                     vec!["pow"], vec!["scalar_mul"],
@@ -94,9 +91,10 @@ mod tests {
                     "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                    "op", Box::new(super::Pow {}),
-                    vec!["in"], vec!["out"],
-                    vec![Tensor::scalar(3usize).into()]
+                    "op", Box::new(super::Pow {
+                        c: 3,
+                    }),
+                    vec!["in"], vec!["out"], vec![]
             )],
             vec![]
         ).unwrap();
@@ -121,9 +119,10 @@ mod tests {
                     "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                    "op", Box::new(Pow {}),
-                    vec!["in"], vec!["out"],
-                    vec![Tensor::scalar(3usize).into()]
+                    "op", Box::new(Pow {
+                        c: 3,
+                    }),
+                    vec!["in"], vec!["out"], vec![]
             )],
             vec![]
         ).unwrap();

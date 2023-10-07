@@ -40,9 +40,10 @@ impl OperatorContents for Tanh {
             vec![ModelVariable::new("out", VariableData::None)],
             vec![
                 ModelOperator::new(
-                    "op0", Box::new(Pow {}),
-                    vec!["y"], vec!["pow"],
-                    vec![Tensor::scalar(2usize).into()]
+                    "op0", Box::new(Pow {
+                        c: 2,
+                    }),
+                    vec!["y"], vec!["pow"], vec![]
                 ), ModelOperator::new(
                     "op0", Box::new(Neg {}),
                     vec!["pow"], vec!["neg"], vec![]
