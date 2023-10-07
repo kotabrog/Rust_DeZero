@@ -1,5 +1,4 @@
 use anyhow::Result;
-use ktensor::Tensor;
 use super::{OperatorContents, Reshape, BroadcastTo};
 use crate::model::{Model, ModelVariable, ModelOperator};
 use crate::variable::VariableData;
@@ -66,12 +65,12 @@ impl OperatorContents for Sum {
             for i in axis.iter() {
                 output_shape.insert(*i, 1);
             }
-            let output_shape = Tensor::new(output_shape.clone(), vec![output_shape.len()])?;
             operators.push(
                 ModelOperator::new(
-                    "op0", Box::new(Reshape {}),
-                    vec!["in"], vec!["reshape"],
-                    vec![output_shape.into()]
+                    "op0", Box::new(Reshape {
+                        shape: output_shape,
+                    }),
+                    vec!["in"], vec!["reshape"], vec![]
                 )
             );
             operators.push(

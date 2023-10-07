@@ -1,13 +1,12 @@
-use std::vec;
-
 use anyhow::Result;
-use ktensor::Tensor;
 use super::OperatorContents;
 use crate::model::{Model, ModelVariable, ModelOperator};
 use crate::variable::VariableData;
 
 #[derive(Clone)]
-pub struct Reshape {}
+pub struct Reshape {
+    pub shape: Vec<usize>,
+}
 
 impl OperatorContents for Reshape {
     fn forward(
@@ -16,14 +15,10 @@ impl OperatorContents for Reshape {
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =
             model.check_inputs_outputs_len(node_id, 1, 1)?;
-        let params = model.check_params_len(node_id, 1)?;
         let input_id = inputs[0];
         let output_id = outputs[0];
-        let shape = model.get_variable_data_from_variable_id(params[0])?
-            .to_usize_tensor()?
-            .to_vector()?;
         let variable_data = model.get_variable_data_from_node_id(input_id)?;
-        let output_data = variable_data.reshape(&shape)?;
+        let output_data = variable_data.reshape(&self.shape)?;
         model.set_variable_data_from_node_id(output_id, output_data)?;
         Ok(vec![output_id])
     }
@@ -37,8 +32,7 @@ impl OperatorContents for Reshape {
         let input_id = inputs[0];
         let output_id = outputs[0];
         let input_data = model.get_variable_data_from_node_id(input_id)?;
-        let shape = input_data.get_shape()?;
-        let shape = Tensor::new(shape.clone(), vec![shape.len()])?;
+        let shape = input_data.get_shape()?.clone();
         let output_grad_id = model.get_grad_id_from_node_id(output_id)?;
         model.clone_node_to_grad_model_if_needed(input_id)?;
         let insert_model = Model::make_model(
@@ -46,9 +40,10 @@ impl OperatorContents for Reshape {
             vec![ModelVariable::new("out", VariableData::None)],
             vec![
                 ModelOperator::new(
-                    "op", Box::new(Reshape {}),
-                    vec!["in"], vec!["out"],
-                    vec![shape.into()]
+                    "op", Box::new(Reshape {
+                        shape,
+                    }),
+                    vec!["in"], vec!["out"], vec![]
                 ),
             ],
             vec![]
@@ -71,7 +66,6 @@ mod tests {
         let tensor = Tensor::new(
             vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], vec![2, 3]
         ).unwrap();
-        let shape = Tensor::<usize>::new(vec![3, 2], vec![2]).unwrap();
         let mut model = Model::make_model(
             vec![ModelVariable::new(
                     "in", tensor.into()
@@ -80,8 +74,10 @@ mod tests {
                     "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                    "op", Box::new(Reshape {}),
-                    vec!["in"], vec!["out"], vec![shape.into()]
+                    "op", Box::new(Reshape {
+                        shape: vec![3, 2]
+                    }),
+                    vec!["in"], vec!["out"], vec![]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -98,7 +94,6 @@ mod tests {
         let tensor = Tensor::new(
             vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], vec![2, 3]
         ).unwrap();
-        let shape = Tensor::<usize>::new(vec![3, 2], vec![2]).unwrap();
         let mut model = Model::make_model(
             vec![ModelVariable::new(
                     "in", tensor.into()
@@ -107,8 +102,10 @@ mod tests {
                     "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                    "op", Box::new(Reshape {}),
-                    vec!["in"], vec!["out"], vec![shape.into()]
+                    "op", Box::new(Reshape {
+                        shape: vec![3, 2]
+                    }),
+                    vec!["in"], vec!["out"], vec![]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
