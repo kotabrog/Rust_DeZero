@@ -8,7 +8,7 @@ pub struct Exp {}
 
 impl OperatorContents for Exp {
     fn forward(
-            &self, node_id: usize,
+            &mut self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =
@@ -22,7 +22,7 @@ impl OperatorContents for Exp {
     }
 
     fn backward(
-            &self, node_id: usize,
+            &mut self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =

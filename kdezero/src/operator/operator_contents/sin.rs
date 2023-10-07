@@ -10,7 +10,7 @@ pub struct Sin {}
 
 impl OperatorContents for Sin {
     fn forward(
-            &self, node_id: usize,
+            &mut self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =
@@ -24,7 +24,7 @@ impl OperatorContents for Sin {
     }
 
     fn backward(
-            &self, node_id: usize,
+            &mut self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =

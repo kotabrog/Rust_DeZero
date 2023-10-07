@@ -8,7 +8,7 @@ pub struct Add {}
 
 impl OperatorContents for Add {
     fn forward(
-            &self, node_id: usize,
+            &mut self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
         model.check_inputs_len_at_least(node_id, 2)?;
@@ -29,7 +29,7 @@ impl OperatorContents for Add {
     }
 
     fn backward(
-            &self, node_id: usize,
+            &mut self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
         model.check_inputs_len_at_least(node_id, 2)?;

@@ -52,12 +52,12 @@ pub trait CloneOperator {
 
 pub trait OperatorContents: CloneOperator {
     fn forward(
-        &self, node_id: usize,
+        &mut self, node_id: usize,
         model: &mut Model,
     ) -> Result<Vec<usize>>;
 
     fn backward(
-        &self, node_id: usize,
+        &mut self, node_id: usize,
         model: &mut Model,
     ) -> Result<Vec<usize>>;
 }
@@ -86,14 +86,14 @@ impl OperatorContentsWrapper {
     }
 
     pub fn forward(
-        &self, node_id: usize,
+        &mut self, node_id: usize,
         model: &mut Model,
     ) -> Result<Vec<usize>> {
         self.operator.forward(node_id, model)
     }
 
     pub fn backward(
-        &self, node_id: usize,
+        &mut self, node_id: usize,
         model: &mut Model,
     ) -> Result<Vec<usize>> {
         self.operator.backward(node_id, model)

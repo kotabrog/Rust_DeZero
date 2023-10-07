@@ -20,7 +20,7 @@ impl Model {
                 _ => None,
             };
             if let Some(temp) = operator_contents {
-                let (operator_id, operator_contents) = temp;
+                let (operator_id, mut operator_contents) = temp;
                 operator_contents.forward(*id, self)?;
                 let operator = self.operators.get_operator_mut(operator_id)?;
                 operator.set_operator(operator_contents);
@@ -49,7 +49,7 @@ impl Model {
                 _ => None,
             };
             if let Some(temp) = operator_contents {
-                let (operator_id, operator_contents) = temp;
+                let (operator_id, mut operator_contents) = temp;
                 operator_contents.backward(*id, self)?;
                 let operator = self.operators.get_operator_mut(operator_id)?;
                 operator.set_operator(operator_contents);

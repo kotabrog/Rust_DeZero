@@ -8,7 +8,7 @@ pub struct ScalarAdd {}
 
 impl OperatorContents for ScalarAdd {
     fn forward(
-            &self, node_id: usize,
+            &mut self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =
@@ -26,7 +26,7 @@ impl OperatorContents for ScalarAdd {
     }
 
     fn backward(
-            &self, node_id: usize,
+            &mut self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =

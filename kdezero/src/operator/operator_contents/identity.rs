@@ -8,7 +8,7 @@ pub struct Identity {}
 
 impl OperatorContents for Identity {
     fn forward(
-            &self, node_id: usize,
+            &mut self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
         model.check_inputs_len(node_id, 1)?;
@@ -23,7 +23,7 @@ impl OperatorContents for Identity {
     }
 
     fn backward(
-            &self, node_id: usize,
+            &mut self, node_id: usize,
             model: &mut Model,
         ) -> Result<Vec<usize>> {
         model.check_inputs_len(node_id, 1)?;
