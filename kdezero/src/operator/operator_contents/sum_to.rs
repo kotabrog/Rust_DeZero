@@ -4,7 +4,9 @@ use crate::model::{Model, ModelVariable, ModelOperator};
 use crate::variable::VariableData;
 
 #[derive(Clone)]
-pub struct SumTo {}
+pub struct SumTo {
+    pub shape: Vec<usize>,
+}
 
 impl OperatorContents for SumTo {
     fn forward(
@@ -13,14 +15,10 @@ impl OperatorContents for SumTo {
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =
             model.check_inputs_outputs_len(node_id, 1, 1)?;
-        let params = model.check_params_len(node_id, 1)?;
         let input_id = inputs[0];
         let output_id = outputs[0];
-        let shape = model.get_variable_data_from_variable_id(params[0])?
-            .to_usize_tensor()?
-            .to_vector()?;
         let variable_data = model.get_variable_data_from_node_id(input_id)?;
-        let output_data = variable_data.sum_to(shape)?;
+        let output_data = variable_data.sum_to(&self.shape)?;
         model.set_variable_data_from_node_id(output_id, output_data)?;
         Ok(vec![output_id])
     }
@@ -71,9 +69,10 @@ mod tests {
                 "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                "op", Box::new(SumTo {}),
-                vec!["in"], vec!["out"],
-                vec![Tensor::new(vec![3usize], vec![1]).unwrap().into()]
+                "op", Box::new(SumTo {
+                    shape: vec![3]
+                }),
+                vec!["in"], vec!["out"], vec![]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -96,9 +95,10 @@ mod tests {
                 "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                "op", Box::new(SumTo {}),
-                vec!["in"], vec!["out"],
-                vec![Tensor::new(vec![3usize], vec![1]).unwrap().into()]
+                "op", Box::new(SumTo {
+                    shape: vec![3]
+                }),
+                vec!["in"], vec!["out"], vec![]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
