@@ -39,13 +39,13 @@ impl OperatorContents for Cos {
             vec![
                 ModelOperator::new(
                     "op", Box::new(Sin {}),
-                    vec!["x"], vec!["sin"], vec![]
+                    vec!["x"], vec!["sin"]
                 ), ModelOperator::new(
                     "op", Box::new(Neg {}),
-                    vec!["sin"], vec!["minus"], vec![]
+                    vec!["sin"], vec!["minus"]
                 ), ModelOperator::new(
                     "op", Box::new(Mul {}),
-                    vec!["in", "minus"], vec!["out"], vec![]
+                    vec!["in", "minus"], vec!["out"]
                 )],
             vec![]
         )?;
@@ -75,7 +75,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Cos {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -99,7 +99,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Cos {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -125,7 +125,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Cos {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();

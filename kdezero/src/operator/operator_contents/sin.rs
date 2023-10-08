@@ -40,10 +40,10 @@ impl OperatorContents for Sin {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Cos {}),
-                    vec!["x"], vec!["cos"], vec![]
+                    vec!["x"], vec!["cos"]
                 ), ModelOperator::new(
                     "op1", Box::new(Mul {}),
-                    vec!["in", "cos"], vec!["out"], vec![]
+                    vec!["in", "cos"], vec!["out"]
                 )], vec![]
         )?;
         let grad_outputs = model.get_grad_model_mut()
@@ -72,7 +72,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Sin {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -96,7 +96,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Sin {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -122,7 +122,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Sin {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();

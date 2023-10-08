@@ -44,19 +44,19 @@ impl OperatorContents for MatMul {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Transpose {}),
-                    vec!["x1"], vec!["x1_T"], vec![]
+                    vec!["x1"], vec!["x1_T"]
                 ),
                 ModelOperator::new(
                     "op1", Box::new(Transpose {}),
-                    vec!["x0"], vec!["x0_T"], vec![]
+                    vec!["x0"], vec!["x0_T"]
                 ),
                 ModelOperator::new(
                     "op2", Box::new(MatMul {}),
-                    vec!["in", "x1_T"], vec!["out0"], vec![]
+                    vec!["in", "x1_T"], vec!["out0"]
                 ),
                 ModelOperator::new(
                     "op3", Box::new(MatMul {}),
-                    vec!["x0_T", "in"], vec!["out1"], vec![]
+                    vec!["x0_T", "in"], vec!["out1"]
                 ),
             ],
             vec![]
@@ -91,7 +91,7 @@ mod tests {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(MatMul {}),
-                    vec!["in0", "in1"], vec!["out"], vec![]
+                    vec!["in0", "in1"], vec!["out"]
                 ),
             ],
             vec![]
@@ -119,7 +119,7 @@ mod tests {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(MatMul {}),
-                    vec!["in0", "in1"], vec!["out"], vec![]
+                    vec!["in0", "in1"], vec!["out"]
                 ),
             ],
             vec![]

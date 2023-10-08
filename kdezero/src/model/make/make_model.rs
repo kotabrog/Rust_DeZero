@@ -79,30 +79,6 @@ impl Model {
             Ok(())
         }
 
-        /// Initialize operator parameters.
-        fn param_init(
-            model: &mut Model, param: VariableData,
-            variable_counter: &mut usize, param_ids: &mut Vec<usize>
-        ) {
-            model.add_new_variable(
-                *variable_counter, None, param).unwrap();
-            param_ids.push(*variable_counter);
-            *variable_counter += 1;
-        }
-
-        /// Initialize operator parameters.
-        fn param_inits(
-            model: &mut Model, params: Vec<VariableData>,
-            variable_counter: &mut usize
-        ) -> Vec<usize> {
-            let mut param_ids = vec![];
-            for param in params {
-                param_init(
-                    model, param, variable_counter, &mut param_ids)
-            }
-            param_ids
-        }
-
         /// Case where node's output is model's output.
         fn model_output_case(
             model: &mut Model, output: String, node_id: usize,
@@ -168,14 +144,13 @@ impl Model {
 
         /// Initialize operator node.
         fn operator_init(
-            model: &mut Model, node_id: usize,
-            param_ids: Vec<usize>, operator_counter: usize,
+            model: &mut Model, node_id: usize, operator_counter: usize,
             operator_data: Box<dyn OperatorContents>,
             name: String, output_ids: Vec<usize>
         ) {
             model.add_new_operator(
                 operator_counter, Some(node_id),
-                param_ids, operator_data
+                operator_data
             ).unwrap();
             model.add_new_node(
                 node_id, name,
@@ -195,14 +170,14 @@ impl Model {
             let node_id = *id_counter;
             *id_counter += 1;
             check_name_in_nodes(&name, variable_nodes)?;
-            let param_ids = param_inits(
-                model, model_operator.params, variable_counter);
+            // let param_ids = param_inits(
+            //     model, model_operator.params, variable_counter);
             let output_ids = output_inits(
                 model, model_operator.outputs, id_counter, variable_counter,
                 node_id, variable_nodes, output_range
             )?;
             operator_init(
-                model, node_id, param_ids, operator_counter,
+                model, node_id, operator_counter,
                 model_operator.data, name, output_ids
             );
             Ok((node_id, model_operator.inputs))

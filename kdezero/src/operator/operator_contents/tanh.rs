@@ -42,18 +42,18 @@ impl OperatorContents for Tanh {
                     "op0", Box::new(Pow {
                         c: 2,
                     }),
-                    vec!["y"], vec!["pow"], vec![]
+                    vec!["y"], vec!["pow"]
                 ), ModelOperator::new(
                     "op0", Box::new(Neg {}),
-                    vec!["pow"], vec!["neg"], vec![]
+                    vec!["pow"], vec!["neg"]
                 ), ModelOperator::new(
                     "op0", Box::new(ScalarAdd {
                         c: 1.0,
                     }),
-                    vec!["neg"], vec!["add"], vec![]
+                    vec!["neg"], vec!["add"]
                 ), ModelOperator::new(
                     "op1", Box::new(Mul {}),
-                    vec!["in", "add"], vec!["out"], vec![]
+                    vec!["in", "add"], vec!["out"]
                 )], vec![]
         )?;
         let grad_outputs = model.get_grad_model_mut()
@@ -82,7 +82,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Tanh {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -106,7 +106,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Tanh {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();

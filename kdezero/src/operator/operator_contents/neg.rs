@@ -35,7 +35,7 @@ impl OperatorContents for Neg {
             vec![ModelVariable::new("out", VariableData::None)],
             vec![ModelOperator::new(
                     "op", Box::new(Neg {}),
-                    vec!["in"], vec!["out"], vec![])],
+                    vec!["in"], vec!["out"])],
             vec![]
         )?;
         let grad_outputs = model.get_grad_model_mut()
@@ -64,7 +64,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Neg {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -88,7 +88,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Neg {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -118,7 +118,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Neg {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();

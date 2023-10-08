@@ -49,15 +49,15 @@ impl OperatorContents for Pow {
                     "op0", Box::new(Pow {
                         c: c0 as u32,
                     }),
-                    vec!["x"], vec!["pow"], vec![]
+                    vec!["x"], vec!["pow"]
                 ), ModelOperator::new(
                     "op1", Box::new(ScalarMul {
                         c: self.c as f64,
                     }),
-                    vec!["pow"], vec!["scalar_mul"], vec![]
+                    vec!["pow"], vec!["scalar_mul"]
                 ), ModelOperator::new(
                     "op2", Box::new(Mul {}),
-                    vec!["in", "scalar_mul"], vec!["out"], vec![]
+                    vec!["in", "scalar_mul"], vec!["out"]
                 ),
             ], vec![],
         )?;
@@ -91,7 +91,7 @@ mod tests {
                     "op", Box::new(super::Pow {
                         c: 3,
                     }),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )],
             vec![]
         ).unwrap();
@@ -119,7 +119,7 @@ mod tests {
                     "op", Box::new(Pow {
                         c: 3,
                     }),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )],
             vec![]
         ).unwrap();

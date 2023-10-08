@@ -44,11 +44,11 @@ impl OperatorContents for Mul {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Mul {}),
-                    vec!["in", "x1"], vec!["out0"], vec![]
+                    vec!["in", "x1"], vec!["out0"]
                 ),
                 ModelOperator::new(
                     "op1", Box::new(Mul {}),
-                    vec!["in", "x0"], vec!["out1"], vec![]
+                    vec!["in", "x0"], vec!["out1"]
                 ),
             ],
             vec![]
@@ -84,7 +84,7 @@ mod tests {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Mul {}),
-                    vec!["in0", "in1"], vec!["out"], vec![]
+                    vec!["in0", "in1"], vec!["out"]
                 ),
             ],
             vec![]
@@ -112,7 +112,7 @@ mod tests {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Mul {}),
-                    vec!["in0", "in1"], vec!["out"], vec![]
+                    vec!["in0", "in1"], vec!["out"]
                 ),
             ],
             vec![]

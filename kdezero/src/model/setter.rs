@@ -27,9 +27,9 @@ impl Model {
     }
 
     pub fn add_new_operator(
-        &mut self, id: usize, node: Option<usize>, params: Vec<usize>, operator: Box<dyn OperatorContents>
+        &mut self, id: usize, node: Option<usize>, operator: Box<dyn OperatorContents>
     ) -> Result<()> {
-        self.operators.add_new_operator(id, node, params, operator)
+        self.operators.add_new_operator(id, node, operator)
     }
 
     pub(crate) fn add_node_input(&mut self, node_id: usize, input: usize) -> Result<()> {

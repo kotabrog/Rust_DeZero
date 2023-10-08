@@ -53,7 +53,7 @@ impl OperatorContents for Sum {
                     "op0", Box::new(Reshape {
                         shape: output_shape,
                     }),
-                    vec!["in"], vec!["reshape"], vec![]
+                    vec!["in"], vec!["reshape"]
                 )
             );
             operators.push(
@@ -61,7 +61,7 @@ impl OperatorContents for Sum {
                     "op1", Box::new(BroadcastTo {
                         shape: input_shape.clone()
                     }),
-                    vec!["reshape"], vec!["out"], vec![]
+                    vec!["reshape"], vec!["out"]
                 )
             );
         } else {
@@ -70,7 +70,7 @@ impl OperatorContents for Sum {
                     "op", Box::new(BroadcastTo {
                         shape: input_shape.clone()
                     }),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
                 )
             );
         }
@@ -107,7 +107,7 @@ mod tests {
                     axis: Some(vec![0]),
                     keepdims: false,
                 }),
-                vec!["in"], vec!["out"], vec![]
+                vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -134,7 +134,7 @@ mod tests {
                     axis: Some(vec![0]),
                     keepdims: true,
                 }),
-                vec!["in"], vec!["out"], vec![]
+                vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -163,7 +163,7 @@ mod tests {
                     axis: Some(vec![0]),
                     keepdims: false,
                 }),
-                vec!["in"], vec!["out"], vec![]
+                vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();

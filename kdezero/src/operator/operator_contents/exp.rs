@@ -39,7 +39,7 @@ impl OperatorContents for Exp {
             vec![ModelVariable::new("out", VariableData::None)],
             vec![ModelOperator::new(
                 "op", Box::new(Mul {}),
-                vec!["in", "x"], vec!["out"], vec![]
+                vec!["in", "x"], vec!["out"]
             )],
             vec![]
         )?;
@@ -70,7 +70,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Exp {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )],
             vec![]
         ).unwrap();
@@ -96,7 +96,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Exp {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )],
             vec![]
         ).unwrap();

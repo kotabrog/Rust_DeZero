@@ -51,27 +51,27 @@ impl OperatorContents for MeanSquaredError {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Sub {}),
-                    vec!["x0", "x1"], vec!["diff"], vec![]
+                    vec!["x0", "x1"], vec!["diff"]
                 ),
                 ModelOperator::new(
                     "op1", Box::new(BroadcastTo {
                         shape: shape.clone()
                     }),
-                    vec!["in"], vec!["gy"], vec![]
+                    vec!["in"], vec!["gy"]
                 ),
                 ModelOperator::new(
                     "op2", Box::new(Mul {}),
-                    vec!["gy", "diff"], vec!["mul"], vec![]
+                    vec!["gy", "diff"], vec!["mul"]
                 ),
                 ModelOperator::new(
                     "op3", Box::new(ScalarMul {
                         c: 2.0 / size as f64,
                     }),
-                    vec!["mul"], vec!["out0"], vec![]
+                    vec!["mul"], vec!["out0"]
                 ),
                 ModelOperator::new(
                     "op4", Box::new(Neg {}),
-                    vec!["out0"], vec!["out1"], vec![]
+                    vec!["out0"], vec!["out1"]
                 ),
             ],
             vec![]
@@ -107,7 +107,7 @@ mod tests {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(MeanSquaredError {}),
-                    vec!["in0", "in1"], vec!["out"], vec![]
+                    vec!["in0", "in1"], vec!["out"]
                 ),
             ],
             vec![]
@@ -135,7 +135,7 @@ mod tests {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(MeanSquaredError {}),
-                    vec!["in0", "in1"], vec!["out"], vec![]
+                    vec!["in0", "in1"], vec!["out"]
                 ),
             ],
             vec![]

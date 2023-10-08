@@ -37,7 +37,7 @@ impl OperatorContents for Identity {
                 vec![ModelVariable::new("out", VariableData::None)],
                 vec![ModelOperator::new(
                         "op", Box::new(Identity {}),
-                        vec!["in"], vec!["out"], vec![]
+                        vec!["in"], vec!["out"]
                 )],
                 vec![]
             )?
@@ -56,7 +56,7 @@ impl OperatorContents for Identity {
                 vec![ModelOperator::new(
                         "op", Box::new(Add {}),
                         input_names.iter().map(|s| s.as_str()).collect(),
-                        vec!["out"], vec![]
+                        vec!["out"]
                 )], vec![]
             )?
         };

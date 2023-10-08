@@ -7,10 +7,10 @@ impl Operators {
     }
 
     pub fn add_new_operator(
-        &mut self, id: usize, node: Option<usize>, params: Vec<usize>, operator: Box<dyn OperatorContents>
+        &mut self, id: usize, node: Option<usize>, operator: Box<dyn OperatorContents>
     ) -> Result<()> {
         self.check_id_in_operators(id)?;
-        let operator = Operator::new(id, node, params, operator);
+        let operator = Operator::new(id, node, operator);
         self.operators.insert(id, operator);
         self.update_next_id(id);
         Ok(())
@@ -32,13 +32,6 @@ impl Operators {
         let operator = self.operators.remove(&old_id).unwrap();
         self.operators.insert(new_id, operator);
         self.update_next_id(new_id);
-        Ok(())
-    }
-
-    pub(crate) fn change_variable_id(&mut self, old_id: usize, new_id: usize) -> Result<()> {
-        for operator in self.operators.values_mut() {
-            operator.change_variable_id(old_id, new_id)?;
-        }
         Ok(())
     }
 }

@@ -59,7 +59,7 @@ fn step2() {
         1, Some(2), VariableData::None
     ).unwrap();
     model.add_new_operator(
-        0, Some(1), vec![], Box::new(Square {})
+        0, Some(1), Box::new(Square {})
     ).unwrap();
     model.forward().unwrap();
     let input_variable = model.get_variables().get_variable(0).unwrap();
@@ -89,7 +89,7 @@ fn step2_2() {
         )],
         vec![ModelOperator::new(
                 "op", Box::new(kdezero::operator::operator_contents::Square {}),
-                vec!["in"], vec!["out"], vec![]
+                vec!["in"], vec!["out"]
         )],
         vec![]
     ).unwrap();
@@ -121,7 +121,7 @@ fn step2_3() {
         )],
         vec![ModelOperator::new(
                 "op", Box::new(kdezero::operator::operator_contents::Square {}),
-                vec!["in"], vec!["out"], vec![]
+                vec!["in"], vec!["out"]
         )],
         vec![]
     ).unwrap();
@@ -164,13 +164,13 @@ fn step3() {
         )],
         vec![ModelOperator::new(
                 "op1", Box::new(Square {}),
-                vec!["in"], vec!["out1"], vec![]
+                vec!["in"], vec!["out1"]
         ), ModelOperator::new(
                 "op2", Box::new(Exp {}),
-                vec!["out1"], vec!["out2"], vec![]
+                vec!["out1"], vec!["out2"]
         ), ModelOperator::new(
                 "op3", Box::new(Square {}),
-                vec!["out2"], vec!["out"], vec![]
+                vec!["out2"], vec!["out"]
         )],
         vec![]
     ).unwrap();
@@ -220,13 +220,13 @@ fn step7() {
         )],
         vec![ModelOperator::new(
                 "op1", Box::new(Square {}),
-                vec!["in"], vec!["out1"], vec![]
+                vec!["in"], vec!["out1"]
         ), ModelOperator::new(
                 "op2", Box::new(Exp {}),
-                vec!["out1"], vec!["out2"], vec![]
+                vec!["out1"], vec!["out2"]
         ), ModelOperator::new(
                 "op3", Box::new(Square {}),
-                vec!["out2"], vec!["out"], vec![]
+                vec!["out2"], vec!["out"]
         )],
         vec![]
     ).unwrap();
@@ -266,7 +266,7 @@ fn step11() {
         )],
         vec![ModelOperator::new(
                 "op1", Box::new(Add {}),
-                vec!["in0", "in1"], vec!["out"], vec![]
+                vec!["in0", "in1"], vec!["out"]
         )], vec![]
     ).unwrap();
     model.forward().unwrap();
@@ -304,13 +304,13 @@ fn step13() {
         vec![
             ModelOperator::new(
                 "op0", Box::new(Square {}),
-                vec!["in0"], vec!["square0"], vec![]
+                vec!["in0"], vec!["square0"]
             ), ModelOperator::new(
                 "op1", Box::new(Square {}),
-                vec!["in1"], vec!["square1"], vec![]
+                vec!["in1"], vec!["square1"]
             ), ModelOperator::new(
                 "op2", Box::new(Add {}),
-                vec!["square0", "square1"], vec!["out"], vec![]
+                vec!["square0", "square1"], vec!["out"]
             )
         ], vec![]
     ).unwrap();
@@ -355,7 +355,7 @@ fn step14() {
         )],
         vec![ModelOperator::new(
                 "op1", Box::new(Add {}),
-                vec!["in", "in"], vec!["out"], vec![]
+                vec!["in", "in"], vec!["out"]
         )], vec![]
     ).unwrap();
     model.forward().unwrap();
@@ -394,16 +394,16 @@ fn step16() {
         vec![
             ModelOperator::new(
                 "op0", Box::new(Square {}),
-                vec!["in"], vec!["square0"], vec![]
+                vec!["in"], vec!["square0"]
             ), ModelOperator::new(
                 "op1", Box::new(Square {}),
-                vec!["square0"], vec!["square1"], vec![]
+                vec!["square0"], vec!["square1"]
             ), ModelOperator::new(
                 "op2", Box::new(Square {}),
-                vec!["square0"], vec!["square2"], vec![]
+                vec!["square0"], vec!["square2"]
             ), ModelOperator::new(
                 "op3", Box::new(Add {}),
-                vec!["square1", "square2"], vec!["out"], vec![]
+                vec!["square1", "square2"], vec!["out"]
             )
         ], vec![]
     ).unwrap();
@@ -449,10 +449,10 @@ fn step20() {
         vec![
             ModelOperator::new(
                 "op0", Box::new(Mul {}),
-                vec!["in0", "in1"], vec!["add0"], vec![]
+                vec!["in0", "in1"], vec!["add0"]
             ), ModelOperator::new(
                 "op1", Box::new(Add {}),
-                vec!["add0", "in2"], vec!["out"], vec![]
+                vec!["add0", "in2"], vec!["out"],
             )
         ], vec![]
     ).unwrap();
@@ -504,10 +504,10 @@ fn step26() {
         vec![
             ModelOperator::new(
                 "op0", Box::new(Mul {}),
-                vec!["in0", "in1"], vec!["add0"], vec![]
+                vec!["in0", "in1"], vec!["add0"]
             ), ModelOperator::new(
                 "op1", Box::new(Add {}),
-                vec!["add0", "in2"], vec!["out"], vec![]
+                vec!["add0", "in2"], vec!["out"]
             )
         ], vec![]
     ).unwrap();
@@ -542,7 +542,7 @@ fn step27() {
         vec![
             ModelOperator::new(
                 "op0", Box::new(Sin {}),
-                vec!["in"], vec!["out"], vec![]
+                vec!["in"], vec!["out"]
             )
         ], vec![]
     ).unwrap();
@@ -589,20 +589,20 @@ fn step33() {
                     "op0", Box::new(Pow {
                         c: 4,
                     }),
-                    vec!["x"], vec!["x4"], vec![]
+                    vec!["x"], vec!["x4"]
                 ), ModelOperator::new(
                     "op1", Box::new(Pow {
                         c: 2,
                     }),
-                    vec!["x"], vec!["x2"], vec![]
+                    vec!["x"], vec!["x2"]
                 ), ModelOperator::new(
                     "op2", Box::new(ScalarMul {
                         c: 2.0,
                     }),
-                    vec!["x2"], vec!["x2_2"], vec![]
+                    vec!["x2"], vec!["x2_2"]
                 ), ModelOperator::new(
                     "op3", Box::new(Sub {}),
-                    vec!["x4", "x2_2"], vec!["y"], vec![]
+                    vec!["x4", "x2_2"], vec!["y"]
                 )
             ], vec![]
         ).unwrap()
@@ -664,18 +664,18 @@ fn step42() {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(MatMul {}),
-                    vec!["x", "w"], vec!["xw"], vec![]
+                    vec!["x", "w"], vec!["xw"]
                 ), ModelOperator::new(
                     "op1", Box::new(BroadcastTo {
                         shape: xw_shape.clone(),
                     }),
-                    vec!["b"], vec!["b_cast"], vec![]
+                    vec!["b"], vec!["b_cast"]
                 ), ModelOperator::new(
                     "op2", Box::new(Add {}),
-                    vec!["xw", "b_cast"], vec!["y_pred"], vec![]
+                    vec!["xw", "b_cast"], vec!["y_pred"]
                 ), ModelOperator::new(
                     "op3", Box::new(MeanSquaredError {}),
-                    vec!["y", "y_pred"], vec!["loss"], vec![]
+                    vec!["y", "y_pred"], vec!["loss"]
                 )
             ], vec![]
         ).unwrap()

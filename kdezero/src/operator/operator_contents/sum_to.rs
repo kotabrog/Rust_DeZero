@@ -41,7 +41,7 @@ impl OperatorContents for SumTo {
                 "op", Box::new(BroadcastTo {
                     shape: input_shape.clone()
                 }),
-                vec!["in"], vec!["out"], vec![]
+                vec!["in"], vec!["out"]
             )],
             vec![]
         )?;
@@ -72,7 +72,7 @@ mod tests {
                 "op", Box::new(SumTo {
                     shape: vec![3]
                 }),
-                vec!["in"], vec!["out"], vec![]
+                vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -98,7 +98,7 @@ mod tests {
                 "op", Box::new(SumTo {
                     shape: vec![3]
                 }),
-                vec!["in"], vec!["out"], vec![]
+                vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();

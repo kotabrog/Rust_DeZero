@@ -39,7 +39,7 @@ impl OperatorContents for ScalarMul {
                 "op", Box::new(ScalarMul {
                     c: self.c,
                 }),
-                vec!["in"], vec!["out"], vec![]
+                vec!["in"], vec!["out"]
             )],
             vec![]
         )?;
@@ -72,7 +72,7 @@ mod tests {
                     "op", Box::new(ScalarMul {
                         c: 3.0,
                     }),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )],
             vec![]
         ).unwrap();
@@ -100,7 +100,7 @@ mod tests {
                     "op", Box::new(ScalarMul {
                         c: 3.0,
                     }),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )],
             vec![]
         ).unwrap();

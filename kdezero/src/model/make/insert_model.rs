@@ -32,7 +32,6 @@ impl Model {
         if let Some(node_id) = node_id_option {
             self.graph.set_node_data(node_id, NodeData::Variable(new_variable_id))?;
         }
-        self.operators.change_variable_id(variable_id, new_variable_id)?;
         Ok(())
     }
 

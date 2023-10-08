@@ -40,11 +40,11 @@ impl OperatorContents for Square {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Add {}),
-                    vec!["x", "x"], vec!["x2"], vec![]
+                    vec!["x", "x"], vec!["x2"]
                 ),
                 ModelOperator::new(
                     "op1", Box::new(Mul {}),
-                    vec!["in", "x2"], vec!["out"], vec![]
+                    vec!["in", "x2"], vec!["out"]
                 ),
             ],
             vec![]
@@ -75,7 +75,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Square {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -99,7 +99,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Square {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();

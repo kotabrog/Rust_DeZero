@@ -38,11 +38,11 @@ impl OperatorContents for Sub {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Identity {}),
-                    vec!["in"], vec!["out0"], vec![]
+                    vec!["in"], vec!["out0"]
                 ),
                 ModelOperator::new(
                     "op1", Box::new(Neg {}),
-                    vec!["in"], vec!["out1"], vec![]
+                    vec!["in"], vec!["out1"]
                 ),
             ],
             vec![]
@@ -77,7 +77,7 @@ mod tests {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Sub {}),
-                    vec!["in0", "in1"], vec!["out"], vec![]
+                    vec!["in0", "in1"], vec!["out"]
                 ),
             ],
             vec![]
@@ -105,7 +105,7 @@ mod tests {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Sub {}),
-                    vec!["in0", "in1"], vec!["out"], vec![]
+                    vec!["in0", "in1"], vec!["out"]
                 ),
             ],
             vec![]

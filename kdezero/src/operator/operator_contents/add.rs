@@ -51,7 +51,7 @@ impl OperatorContents for Add {
             model_outputs,
             vec![ModelOperator::new(
                     "op", Box::new(Identity {}), vec!["in"],
-                    output_names.iter().map(|s| s.as_str()).collect(), vec![]
+                    output_names.iter().map(|s| s.as_str()).collect()
             )], vec![]
         )?;
         let grad_outputs = model.get_grad_model_mut()
@@ -85,7 +85,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Add {}),
-                    vec!["in1", "in2"], vec!["out"], vec![]
+                    vec!["in1", "in2"], vec!["out"]
             )],
             vec![]
         ).unwrap();
@@ -113,7 +113,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Add {}),
-                    vec!["in1", "in2"], vec!["out"], vec![]
+                    vec!["in1", "in2"], vec!["out"]
             )],
             vec![]
         ).unwrap();

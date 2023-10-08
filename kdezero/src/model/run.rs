@@ -102,7 +102,7 @@ impl Model {
                 )?;
                 grad_model.add_new_operator(
                     add_operator_id, Some(add_node_id),
-                    vec![], Box::new(Add {})
+                    Box::new(Add {})
                 )?;
                 grad_model.add_node_output(target_grad_id, add_node_id)?;
                 grad_model.add_node_output(grad, add_node_id)?;

@@ -37,7 +37,7 @@ impl OperatorContents for Transpose {
             vec![
                 ModelOperator::new(
                     "op", Box::new(Transpose {}),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
                 ),
             ],
             vec![]
@@ -60,7 +60,6 @@ mod tests {
         let tensor = Tensor::new(
             vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], vec![2, 3]
         ).unwrap();
-        let shape = Tensor::<usize>::new(vec![3, 2], vec![2]).unwrap();
         let mut model = Model::make_model(
             vec![ModelVariable::new(
                     "in", tensor.into()
@@ -70,7 +69,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Transpose {}),
-                    vec!["in"], vec!["out"], vec![shape.into()]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -87,7 +86,6 @@ mod tests {
         let tensor = Tensor::new(
             vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], vec![2, 3]
         ).unwrap();
-        let shape = Tensor::<usize>::new(vec![3, 2], vec![2]).unwrap();
         let mut model = Model::make_model(
             vec![ModelVariable::new(
                     "in", tensor.into()
@@ -97,7 +95,7 @@ mod tests {
             )],
             vec![ModelOperator::new(
                     "op", Box::new(Transpose {}),
-                    vec!["in"], vec!["out"], vec![shape.into()]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();

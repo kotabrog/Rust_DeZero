@@ -44,23 +44,23 @@ impl OperatorContents for Div {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Div {}),
-                    vec!["in", "x1"], vec!["out0"], vec![]
+                    vec!["in", "x1"], vec!["out0"]
                 ),
                 ModelOperator::new(
                     "op0", Box::new(Mul {}),
-                    vec!["x1", "x1"], vec!["x1_2"], vec![]
+                    vec!["x1", "x1"], vec!["x1_2"]
                 ),
                 ModelOperator::new(
                     "op0", Box::new(Div {}),
-                    vec!["x0", "x1_2"], vec!["x0_x1_2"], vec![]
+                    vec!["x0", "x1_2"], vec!["x0_x1_2"]
                 ),
                 ModelOperator::new(
                     "op0", Box::new(Neg {}),
-                    vec!["x0_x1_2"], vec!["minus_x0_x1_2"], vec![]
+                    vec!["x0_x1_2"], vec!["minus_x0_x1_2"]
                 ),
                 ModelOperator::new(
                     "op1", Box::new(Mul {}),
-                    vec!["in", "minus_x0_x1_2"], vec!["out1"], vec![]
+                    vec!["in", "minus_x0_x1_2"], vec!["out1"]
                 ),
             ],
             vec![]
@@ -96,7 +96,7 @@ mod tests {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Div {}),
-                    vec!["in0", "in1"], vec!["out"], vec![]
+                    vec!["in0", "in1"], vec!["out"]
                 ),
             ],
             vec![]
@@ -124,7 +124,7 @@ mod tests {
             vec![
                 ModelOperator::new(
                     "op0", Box::new(Div {}),
-                    vec!["in0", "in1"], vec!["out"], vec![]
+                    vec!["in0", "in1"], vec!["out"]
                 ),
             ],
             vec![]

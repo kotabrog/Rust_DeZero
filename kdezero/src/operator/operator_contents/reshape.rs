@@ -43,7 +43,7 @@ impl OperatorContents for Reshape {
                     "op", Box::new(Reshape {
                         shape,
                     }),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
                 ),
             ],
             vec![]
@@ -77,7 +77,7 @@ mod tests {
                     "op", Box::new(Reshape {
                         shape: vec![3, 2]
                     }),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();
@@ -105,7 +105,7 @@ mod tests {
                     "op", Box::new(Reshape {
                         shape: vec![3, 2]
                     }),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )], vec![]
         ).unwrap();
         model.forward().unwrap();

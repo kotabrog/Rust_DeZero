@@ -37,7 +37,7 @@ impl OperatorContents for ScalarAdd {
             vec![ModelVariable::new("out", VariableData::None)],
             vec![ModelOperator::new(
                 "op", Box::new(Identity {}),
-                vec!["in"], vec!["out"], vec![]
+                vec!["in"], vec!["out"]
             )],
             vec![]
         )?;
@@ -70,7 +70,7 @@ mod tests {
                     "op", Box::new(ScalarAdd {
                         c: 3.0,
                     }),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )],
             vec![]
         ).unwrap();
@@ -98,7 +98,7 @@ mod tests {
                     "op", Box::new(ScalarAdd {
                         c: 3.0,
                     }),
-                    vec!["in"], vec!["out"], vec![]
+                    vec!["in"], vec!["out"]
             )],
             vec![]
         ).unwrap();

@@ -27,8 +27,4 @@ impl Operators {
         Ok(())
     }
 
-    pub fn check_params_len(&self, operator_id: usize, params_len: usize) -> Result<&Vec<usize>> {
-        self.get_operator(operator_id)?
-            .check_params_len(params_len)
-    }
 }
