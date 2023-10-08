@@ -2,7 +2,7 @@ use anyhow::Result;
 use super::Model;
 use crate::node::NodeData;
 use crate::variable::VariableData;
-use crate::operator::OperatorContents;
+use crate::operator::{Contents, OperatorContents};
 
 impl Model {
     // pub(crate) fn add_node(&mut self, node: Node) -> Result<()> {
@@ -29,7 +29,9 @@ impl Model {
     pub fn add_new_operator(
         &mut self, id: usize, node: Option<usize>, operator: Box<dyn OperatorContents>
     ) -> Result<()> {
-        self.operators.add_new_operator(id, node, operator)
+        self.operators.add_new_operator(
+            id, node,
+            Contents::make_operator(operator))
     }
 
     pub(crate) fn add_node_input(&mut self, node_id: usize, input: usize) -> Result<()> {

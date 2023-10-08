@@ -14,6 +14,7 @@ use crate::node::Graph;
 use crate::variable::Variables;
 use crate::operator::Operators;
 
+#[derive(Clone)]
 pub struct Model {
     graph: Graph,
     variables: Variables,

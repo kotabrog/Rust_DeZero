@@ -4,8 +4,9 @@ mod setter;
 mod utility;
 
 use std::collections::HashMap;
-use super::{Operator, OperatorContents};
+use super::Operator;
 
+#[derive(Clone)]
 pub struct Operators {
     operators: HashMap<usize, Operator>,
     next_id: usize,

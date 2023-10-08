@@ -3,7 +3,7 @@ use super::Model;
 use anyhow::Result;
 use crate::node::NodeData;
 use crate::variable::VariableData;
-use crate::operator::operator_contents::Add;
+use crate::operator::{Contents, operator_contents::Add};
 
 impl Model {
     pub fn forward(&mut self) -> Result<()> {
@@ -15,15 +15,20 @@ impl Model {
             let operator_contents = match node.get_data() {
                 NodeData::Operator(operator_id) => {
                     let operator = self.operators.get_operator_mut(*operator_id)?;
-                    Some((*operator_id, operator.take_operator_result()?))
+                    Some((*operator_id, operator.take_operator()))
                 },
                 _ => None,
             };
             if let Some(temp) = operator_contents {
-                let (operator_id, mut operator_contents) = temp;
-                operator_contents.forward(*id, self)?;
-                let operator = self.operators.get_operator_mut(operator_id)?;
-                operator.set_operator(operator_contents);
+                let (operator_id, contents) = temp;
+                match contents {
+                    Contents::Operator(mut operator_contents) => {
+                        operator_contents.forward(*id, self)?;
+                        let operator = self.operators.get_operator_mut(operator_id)?;
+                        operator.set_operator(operator_contents.into());
+                    }
+                    _ => (),
+                }
             }
         }
         Ok(())
@@ -44,15 +49,20 @@ impl Model {
             let operator_contents = match node.get_data() {
                 NodeData::Operator(operator_id) => {
                     let operator = self.operators.get_operator_mut(*operator_id)?;
-                    Some((*operator_id, operator.take_operator_result()?))
+                    Some((*operator_id, operator.take_operator()))
                 },
                 _ => None,
             };
             if let Some(temp) = operator_contents {
-                let (operator_id, mut operator_contents) = temp;
-                operator_contents.backward(*id, self)?;
-                let operator = self.operators.get_operator_mut(operator_id)?;
-                operator.set_operator(operator_contents);
+                let (operator_id, contents) = temp;
+                match contents {
+                    Contents::Operator(mut operator_contents) => {
+                        operator_contents.backward(*id, self)?;
+                        let operator = self.operators.get_operator_mut(operator_id)?;
+                        operator.set_operator(operator_contents.into());
+                    }
+                    _ => (),
+                }
             }
         }
 

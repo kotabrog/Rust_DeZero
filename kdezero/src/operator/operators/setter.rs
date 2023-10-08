@@ -1,5 +1,6 @@
 use anyhow::Result;
-use super::{Operator, Operators, OperatorContents};
+use super::{Operator, Operators};
+use super::super::Contents;
 
 impl Operators {
     pub fn add_operator_no_check(&mut self, operator: Operator) {
@@ -7,7 +8,7 @@ impl Operators {
     }
 
     pub fn add_new_operator(
-        &mut self, id: usize, node: Option<usize>, operator: Box<dyn OperatorContents>
+        &mut self, id: usize, node: Option<usize>, operator: Contents
     ) -> Result<()> {
         self.check_id_in_operators(id)?;
         let operator = Operator::new(id, node, operator);
