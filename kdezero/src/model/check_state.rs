@@ -31,12 +31,12 @@ impl Model {
         Ok((node.get_inputs(), node.get_outputs()))
     }
 
-    pub(crate) fn check_params_len(
-        &self, node_id: usize, params_len: usize
-    ) -> Result<&Vec<usize>> {
-        let operator_id = self.get_operator_id_from_node_id(node_id)?;
-        self.operators.check_params_len(operator_id, params_len)
-    }
+    // pub(crate) fn check_params_len(
+    //     &self, node_id: usize, params_len: usize
+    // ) -> Result<&Vec<usize>> {
+    //     let operator_id = self.get_operator_id_from_node_id(node_id)?;
+    //     self.operators.check_params_len(operator_id, params_len)
+    // }
 
     pub(crate) fn is_in_node_id(&self, node_id: usize) -> bool {
         self.graph.get_nodes().contains_key(&node_id)

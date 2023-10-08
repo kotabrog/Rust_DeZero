@@ -143,10 +143,10 @@ impl Model {
         Ok(grad_ids)
     }
 
-    pub(crate) fn get_operator_id_from_node_id(&self, node_id: usize) -> Result<usize> {
-        self.graph.get_node(node_id)?
-            .get_operator_id()
-    }
+    // pub(crate) fn get_operator_id_from_node_id(&self, node_id: usize) -> Result<usize> {
+    //     self.graph.get_node(node_id)?
+    //         .get_operator_id()
+    // }
 
     // pub(crate) fn get_operator_from_node_id(&self, node_id: usize) -> Result<&Operator> {
     //     let operator_id = self.get_operator_id_from_node_id(node_id)?;
