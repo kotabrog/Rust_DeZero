@@ -1,5 +1,4 @@
 use anyhow::Result;
-use ktensor::Tensor;
 use super::{OperatorContents, Mul, ScalarMul};
 use crate::variable::VariableData;
 use crate::model::{Model, ModelVariable, ModelOperator};
@@ -37,9 +36,6 @@ impl OperatorContents for Pow {
             .ok_or_else(|| KdezeroError::OverflowError(
                 "Pow c".to_string()
             ))?;
-        let input_data = model.get_variable_data_from_node_id(input)?;
-        let c1 = VariableData::as_type_from_other(
-            Tensor::scalar(self.c), input_data)?;
         let output_grad_id = model.get_grad_id_from_node_id(output)?;
         model.clone_node_to_grad_model_if_needed(input)?;
         let insert_model = Model::make_model(
@@ -55,9 +51,10 @@ impl OperatorContents for Pow {
                     }),
                     vec!["x"], vec!["pow"], vec![]
                 ), ModelOperator::new(
-                    "op1", Box::new(ScalarMul {}),
-                    vec!["pow"], vec!["scalar_mul"],
-                    vec![c1]
+                    "op1", Box::new(ScalarMul {
+                        c: self.c as f64,
+                    }),
+                    vec!["pow"], vec!["scalar_mul"], vec![]
                 ), ModelOperator::new(
                     "op2", Box::new(Mul {}),
                     vec!["in", "scalar_mul"], vec!["out"], vec![]

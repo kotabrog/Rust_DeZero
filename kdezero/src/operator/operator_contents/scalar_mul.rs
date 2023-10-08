@@ -4,7 +4,9 @@ use crate::variable::VariableData;
 use crate::model::{Model, ModelVariable, ModelOperator};
 
 #[derive(Clone)]
-pub struct ScalarMul {}
+pub struct ScalarMul {
+    pub c: f64,
+}
 
 impl OperatorContents for ScalarMul {
     fn forward(
@@ -13,14 +15,10 @@ impl OperatorContents for ScalarMul {
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =
             model.check_inputs_outputs_len(node_id, 1, 1)?;
-        let params = model.check_params_len(node_id, 1)?;
         let input = inputs[0];
         let output = outputs[0];
-        let c = model.get_variable_data_from_variable_id(params[0])?
-            .to_f64_tensor()?
-            .to_scalar()?;
         let input_data = model.get_variable_data_from_node_id(input)?;
-        let output_data = input_data.scalar_mul(c)?;
+        let output_data = input_data.scalar_mul(self.c)?;
         model.set_variable_data_from_node_id(output, output_data)?;
         Ok(vec![output])
     }
@@ -31,19 +29,17 @@ impl OperatorContents for ScalarMul {
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =
             model.check_inputs_outputs_len(node_id, 1, 1)?;
-        let params = model.check_params_len(node_id, 1)?;
         let input = inputs[0];
         let output = outputs[0];
-        let c = model.get_variable_data_from_variable_id(params[0])?
-            .to_f64_tensor()?.clone();
         let output_grad_id = model.get_grad_id_from_node_id(output)?;
         let insert_model = Model::make_model(
             vec![ModelVariable::new("in", VariableData::None)],
             vec![ModelVariable::new("out", VariableData::None)],
             vec![ModelOperator::new(
-                "op", Box::new(ScalarMul {}),
-                vec!["in"], vec!["out"],
-                vec![c.into()]
+                "op", Box::new(ScalarMul {
+                    c: self.c,
+                }),
+                vec!["in"], vec!["out"], vec![]
             )],
             vec![]
         )?;
@@ -73,9 +69,10 @@ mod tests {
                     "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                    "op", Box::new(ScalarMul {}),
-                    vec!["in"], vec!["out"],
-                    vec![Tensor::scalar(3.0).into()]
+                    "op", Box::new(ScalarMul {
+                        c: 3.0,
+                    }),
+                    vec!["in"], vec!["out"], vec![]
             )],
             vec![]
         ).unwrap();
@@ -100,9 +97,10 @@ mod tests {
                     "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                    "op", Box::new(ScalarMul {}),
-                    vec!["in"], vec!["out"],
-                    vec![Tensor::scalar(3.0).into()]
+                    "op", Box::new(ScalarMul {
+                        c: 3.0,
+                    }),
+                    vec!["in"], vec!["out"], vec![]
             )],
             vec![]
         ).unwrap();

@@ -1,5 +1,4 @@
 use anyhow::Result;
-use ktensor::Tensor;
 use super::{OperatorContents, Sub, BroadcastTo, Mul, ScalarMul, Neg};
 use crate::model::{Model, ModelVariable, ModelOperator};
 use crate::variable::VariableData;
@@ -65,9 +64,10 @@ impl OperatorContents for MeanSquaredError {
                     vec!["gy", "diff"], vec!["mul"], vec![]
                 ),
                 ModelOperator::new(
-                    "op3", Box::new(ScalarMul {}),
-                    vec!["mul"], vec!["out0"],
-                    vec![Tensor::scalar(2.0 / size as f64).into()]
+                    "op3", Box::new(ScalarMul {
+                        c: 2.0 / size as f64,
+                    }),
+                    vec!["mul"], vec!["out0"], vec![]
                 ),
                 ModelOperator::new(
                     "op4", Box::new(Neg {}),
