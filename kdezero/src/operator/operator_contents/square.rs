@@ -1,5 +1,3 @@
-use std::vec;
-
 use anyhow::Result;
 use super::{OperatorContents, Mul, Add};
 use crate::model::{Model, ModelVariable, ModelOperator};
