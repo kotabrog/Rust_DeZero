@@ -1,5 +1,4 @@
 use anyhow::Result;
-use ktensor::Tensor;
 use super::{OperatorContents, Mul, Pow, ScalarAdd, Neg};
 use crate::model::{Model, ModelVariable, ModelOperator};
 use crate::variable::VariableData;
@@ -48,9 +47,10 @@ impl OperatorContents for Tanh {
                     "op0", Box::new(Neg {}),
                     vec!["pow"], vec!["neg"], vec![]
                 ), ModelOperator::new(
-                    "op0", Box::new(ScalarAdd {}),
-                    vec!["neg"], vec!["add"],
-                    vec![Tensor::scalar(1.0).into()]
+                    "op0", Box::new(ScalarAdd {
+                        c: 1.0,
+                    }),
+                    vec!["neg"], vec!["add"], vec![]
                 ), ModelOperator::new(
                     "op1", Box::new(Mul {}),
                     vec!["in", "add"], vec!["out"], vec![]

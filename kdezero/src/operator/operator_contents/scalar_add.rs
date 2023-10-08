@@ -4,7 +4,9 @@ use crate::variable::VariableData;
 use crate::model::{Model, ModelVariable, ModelOperator};
 
 #[derive(Clone)]
-pub struct ScalarAdd {}
+pub struct ScalarAdd {
+    pub c: f64,
+}
 
 impl OperatorContents for ScalarAdd {
     fn forward(
@@ -13,14 +15,10 @@ impl OperatorContents for ScalarAdd {
         ) -> Result<Vec<usize>> {
         let (inputs, outputs) =
             model.check_inputs_outputs_len(node_id, 1, 1)?;
-        let params = model.check_params_len(node_id, 1)?;
         let input = inputs[0];
         let output = outputs[0];
-        let c = model.get_variable_data_from_variable_id(params[0])?
-            .to_f64_tensor()?
-            .to_scalar()?;
         let input_data = model.get_variable_data_from_node_id(input)?;
-        let output_data = input_data.scalar_add(c)?;
+        let output_data = input_data.scalar_add(self.c)?;
         model.set_variable_data_from_node_id(output, output_data)?;
         Ok(vec![output])
     }
@@ -39,8 +37,7 @@ impl OperatorContents for ScalarAdd {
             vec![ModelVariable::new("out", VariableData::None)],
             vec![ModelOperator::new(
                 "op", Box::new(Identity {}),
-                vec!["in"], vec!["out"],
-                vec![]
+                vec!["in"], vec!["out"], vec![]
             )],
             vec![]
         )?;
@@ -70,9 +67,10 @@ mod tests {
                     "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                    "op", Box::new(ScalarAdd {}),
-                    vec!["in"], vec!["out"],
-                    vec![Tensor::scalar(3.0).into()]
+                    "op", Box::new(ScalarAdd {
+                        c: 3.0,
+                    }),
+                    vec!["in"], vec!["out"], vec![]
             )],
             vec![]
         ).unwrap();
@@ -97,9 +95,10 @@ mod tests {
                     "out", VariableData::None
             )],
             vec![ModelOperator::new(
-                    "op", Box::new(ScalarAdd {}),
-                    vec!["in"], vec!["out"],
-                    vec![Tensor::scalar(3.0).into()]
+                    "op", Box::new(ScalarAdd {
+                        c: 3.0,
+                    }),
+                    vec!["in"], vec!["out"], vec![]
             )],
             vec![]
         ).unwrap();
