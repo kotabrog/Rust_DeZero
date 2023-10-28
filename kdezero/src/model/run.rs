@@ -1,6 +1,5 @@
-use super::Model;
-
 use anyhow::Result;
+use super::Model;
 use crate::node::NodeData;
 use crate::variable::VariableData;
 use crate::operator::{Contents, operator_contents::Add};
